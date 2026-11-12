@@ -1,6 +1,13 @@
-frozenfiah@192 local % docker compose ps
-NAME                   IMAGE                                             COMMAND                   SERVICE   CREATED         STATUS                          PORTS
-yunshu-local-minio-1   yunshu-local-minio:RELEASE.2025-10-15T17-29-55Z   "/usr/local/bin/mini…"   minio     6 minutes ago   Restarting (1) 53 seconds ago   
-yunshu-local-mysql-1   mysql:8.4                                         "docker-entrypoint.s…"   mysql     6 minutes ago   Up 6 minutes (healthy)          127.0.0.1:3306->3306/tcp
-yunshu-local-redis-1   redis:7.4-alpine                                  "docker-entrypoint.s…"   redis     6 minutes ago   Up 6 minutes (healthy)          127.0.0.1:6379->6379/tcp
-frozenfiah@192 local % 
+frozenfiah@192 云枢智学 %  source "/Users/frozenfiah/Desktop/ACER/Agent_Learning
+/ClaudeCode 2026-10-28/云枢智学/backend/.venv/bin/activate"
+(yunshu-backend) frozenfiah@192 云枢智学 % git remote set-url origin https://github.com/FishInSydney-ops/AI-Interview
+(yunshu-backend) frozenfiah@192 云枢智学 % git push -u origin main
+To https://github.com/FishInSydney-ops/AI-Interview
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/FishInSydney-ops/AI-Interview'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+(yunshu-backend) frozenfiah@192 云枢智学 % 
