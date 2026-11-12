@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面试记录 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <style>
+    .history-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .history-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 16px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .history-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+
+    .history-score {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .history-score.excellent {
+      background: rgba(103, 194, 58, 0.1);
+      color: var(--success-color);
+    }
+
+    .history-score.good {
+      background: rgba(64, 158, 255, 0.1);
+      color: var(--primary-color);
+    }
+
+    .history-score.average {
+      background: rgba(230, 162, 60, 0.1);
+      color: var(--warning-color);
+    }
+
+    .history-score.poor {
+      background: rgba(245, 108, 108, 0.1);
+      color: var(--danger-color);
+    }
+
+    .score-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .score-label {
+      font-size: 11px;
+    }
+
+    .history-info {
+      flex: 1;
+    }
+
+    .history-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .history-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .history-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="nav-container container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon brand-mark" aria-hidden="true"></span>
+        <span class="logo-text">云枢智学</span>
+      </a>
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="routes.html" class="nav-link">学习路线</a>
+        <a href="questions.html" class="nav-link">题库</a>
+        <a href="ai-config.html" class="nav-link">AI面试</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar">M</div>
+          <span class="user-name">黑马学员</span>
+          <div class="user-dropdown">
+            <a href="profile.html">个人中心</a>
+            <a href="wrong-book.html">我的错题</a>
+            <a href="interview-history.html">面试记录</a>
+            <div class="dropdown-divider"></div>
+            <a href="../admin/index.html">管理后台</a>
+            <a href="login.html" class="text-danger">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="container">
+        <div class="page-header-content">
+          <div>
+            <h1 class="page-title">面试记录</h1>
+            <p class="page-subtitle">查看历史面试，回顾成长历程</p>
+          </div>
+          <div class="breadcrumb">
+            <a href="index.html">首页</a>
+            <span>/</span>
+            <span>面试记录</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding: 40px 20px;">
+      <!-- 统计 -->
+      <div class="history-stats">
+        <div class="stat-card">
+          <div class="stat-number text-primary">2</div>
+          <div class="stat-label">面试总次数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number text-success">85</div>
+          <div class="stat-label">平均分数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number text-warning">92</div>
+          <div class="stat-label">最高分数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">5.2h</div>
+          <div class="stat-label">累计时长</div>
+        </div>
+      </div>
+
+      <!-- 记录列表 -->
+      <div class="history-list">
+        <div class="history-card" onclick="location.href='interview-report.html'">
+          <div class="history-score good">
+            <div class="score-value">85</div>
+            <div class="score-label">分</div>
+          </div>
+          <div class="history-info">
+            <div class="history-title">AI应用与智能体开发面试</div>
+            <div class="history-meta">
+              <span>📅 2026-07-03 14:30</span>
+              <span>⏱️ 35分钟</span>
+              <span>📝 10题</span>
+              <span>📊 中等难度</span>
+            </div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-primary btn-sm">查看报告</button>
+            <button class="btn btn-secondary btn-sm">再来一次</button>
+          </div>
+        </div>
+
+        <div class="history-card" onclick="location.href='interview-report.html'">
+          <div class="history-score excellent">
+            <div class="score-value">92</div>
+            <div class="score-label">分</div>
+          </div>
+          <div class="history-info">
+            <div class="history-title">AI视觉设计面试</div>
+            <div class="history-meta">
+              <span>📅 2026-06-28 10:15</span>
+              <span>⏱️ 25分钟</span>
+              <span>📝 8题</span>
+              <span>📊 简单难度</span>
+            </div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-primary btn-sm">查看报告</button>
+            <button class="btn btn-secondary btn-sm">再来一次</button>
+          </div>
+        </div>
+
+        <div class="history-card" onclick="location.href='interview-report.html'">
+          <div class="history-score average">
+            <div class="score-value">72</div>
+            <div class="score-label">分</div>
+          </div>
+          <div class="history-info">
+            <div class="history-title">AI应用与智能体开发面试</div>
+            <div class="history-meta">
+              <span>📅 2026-06-20 16:00</span>
+              <span>⏱️ 40分钟</span>
+              <span>📝 12题</span>
+              <span>📊 困难难度</span>
+            </div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-primary btn-sm">查看报告</button>
+            <button class="btn btn-secondary btn-sm">再来一次</button>
+          </div>
+        </div>
+
+        <div class="history-card" onclick="location.href='interview-report.html'">
+          <div class="history-score good">
+            <div class="score-value">88</div>
+            <div class="score-label">分</div>
+          </div>
+          <div class="history-info">
+            <div class="history-title">数据库方向面试</div>
+            <div class="history-meta">
+              <span>📅 2026-06-15 09:30</span>
+              <span>⏱️ 30分钟</span>
+              <span>📝 10题</span>
+              <span>📊 中等难度</span>
+            </div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-primary btn-sm">查看报告</button>
+            <button class="btn btn-secondary btn-sm">再来一次</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分页 -->
+      <div class="pagination" style="margin-top: 32px;">
+        <div class="pagination-item">‹</div>
+        <div class="pagination-item active">1</div>
+        <div class="pagination-item">2</div>
+        <div class="pagination-item">›</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+</body>
+</html>

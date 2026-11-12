@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>角色管理 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .page-header h2 {
+      font-size: 16px;
+      color: #606266;
+      font-weight: 500;
+    }
+
+    .page-header h2 strong {
+      color: #303133;
+    }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .role-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 24px;
+      transition: all 0.3s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .role-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .role-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .role-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .role-code {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #f5f7fa;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .role-user-count {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #909399;
+    }
+
+    .role-user-count strong {
+      font-size: 24px;
+      color: #409eff;
+    }
+
+    .role-desc {
+      font-size: 13px;
+      color: #909399;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    .role-perms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 16px;
+      border-top: 1px solid #e4e7ed;
+      min-height: 36px;
+    }
+
+    .perm-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      background: rgba(64, 158, 255, 0.08);
+      color: #409eff;
+    }
+
+    .perm-tag.all {
+      background: rgba(245, 108, 108, 0.1);
+      color: #f56c6c;
+      font-weight: 600;
+    }
+
+    .role-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    /* Form styles */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #606266;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    /* Permission tree styles */
+    .edit-role-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #909399;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+
+    .perm-group {
+      margin-bottom: 20px;
+    }
+
+    .perm-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .perm-group-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+
+    .perm-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .perm-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #606266;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .perm-checkbox:hover {
+      background: #f5f7fa;
+    }
+
+    .perm-checkbox input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #409eff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item active">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">角色管理</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="page-header">
+          <h2>共 <strong id="roleCount">0</strong> 个角色</h2>
+          <button class="btn btn-primary" onclick="showAddRole()">+ 新增角色</button>
+        </div>
+
+        <div class="roles-grid" id="rolesGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // 权限分类定义
+    var permissionGroups = [
+      {
+        key: 'question',
+        name: '题库管理',
+        perms: [
+          { key: 'question:view', label: '查看' },
+          { key: 'question:create', label: '新增' },
+          { key: 'question:edit', label: '编辑' },
+          { key: 'question:delete', label: '删除' },
+          { key: 'question:import', label: '导入' },
+          { key: 'question:export', label: '导出' },
+          { key: 'question:review', label: '审核' }
+        ]
+      },
+      {
+        key: 'kb',
+        name: '面试题库管理',
+        perms: [
+          { key: 'kb:view', label: '查看' },
+          { key: 'kb:upload', label: '上传' },
+          { key: 'kb:edit', label: '编辑' },
+          { key: 'kb:delete', label: '删除' },
+          { key: 'kb:search', label: '检索测试' }
+        ]
+      },
+      {
+        key: 'user',
+        name: '用户管理',
+        perms: [
+          { key: 'user:list', label: '查看' },
+          { key: 'user:create', label: '新增' },
+          { key: 'user:edit', label: '编辑' },
+          { key: 'user:disable', label: '禁用' }
+        ]
+      },
+      {
+        key: 'route',
+        name: '学习路线',
+        perms: [
+          { key: 'route:view', label: '查看' },
+          { key: 'route:create', label: '新增' },
+          { key: 'route:edit', label: '编辑' },
+          { key: 'route:delete', label: '删除' }
+        ]
+      },
+      {
+        key: 'student',
+        name: '学员管理',
+        perms: [
+          { key: 'student:view', label: '查看' },
+          { key: 'student:edit', label: '编辑' },
+          { key: 'student:delete', label: '删除' }
+        ]
+      },
+      {
+        key: 'system',
+        name: '系统管理',
+        perms: [
+          { key: 'log:view', label: '日志查看' },
+          { key: 'system:setting', label: '系统设置' }
+        ]
+      }
+    ];
+
+    // 构建权限 key -> label 映射（带组名前缀，避免跨组同名的"查看"无法区分）
+    var permLabelMap = {};
+    permissionGroups.forEach(function(g) {
+      g.perms.forEach(function(p) {
+        permLabelMap[p.key] = g.name + '·' + p.label;
+      });
+    });
+
+    // 渲染角色卡片
+    function renderRoles() {
+      var grid = document.getElementById('rolesGrid');
+      var roles = MockData.adminRoles;
+      document.getElementById('roleCount').textContent = roles.length;
+
+      if (roles.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#909399;font-size:15px;">暂无角色数据，点击右上角新增角色</div>';
+        return;
+      }
+
+      grid.innerHTML = roles.map(function(role) {
+        var permTagsHtml;
+        if (role.permissions.indexOf('all') !== -1) {
+          permTagsHtml = '<span class="perm-tag all">全部权限</span>';
+        } else if (role.permissions.length === 0) {
+          permTagsHtml = '<span style="font-size:12px;color:#c0c4cc;">暂无权限</span>';
+        } else {
+          permTagsHtml = role.permissions.map(function(p) {
+            var label = permLabelMap[p] || p;
+            return '<span class="perm-tag">' + label + '</span>';
+          }).join('');
+        }
+
+        var canDelete = role.userCount === 0;
+        var deleteStyle = canDelete ? 'color:#f56c6c;' : 'color:#909399;';
+        var deleteTitle = canDelete ? '' : 'title="该角色下有' + role.userCount + '个用户，无法删除"';
+
+        return [
+          '<div class="role-card" onclick="editRolePerms(\'' + role.id + '\')">',
+            '<div class="role-card-header">',
+              '<div>',
+                '<div class="role-name">' + role.name + '</div>',
+                '<div class="role-code">' + role.code + '</div>',
+              '</div>',
+              '<div class="role-user-count">',
+                '<strong>' + role.userCount + '</strong> 用户',
+              '</div>',
+            '</div>',
+            '<div class="role-desc">' + role.description + '</div>',
+            '<div class="role-perms">' + permTagsHtml + '</div>',
+            '<div class="role-actions" onclick="event.stopPropagation();">',
+              '<button class="btn btn-secondary btn-sm" onclick="editRolePerms(\'' + role.id + '\')">编辑权限</button>',
+              '<button class="btn btn-secondary btn-sm" style="' + deleteStyle + '" ' + deleteTitle + ' onclick="deleteRole(\'' + role.id + '\')">删除</button>',
+            '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+    }
+
+    // 新增角色
+    function showAddRole() {
+      var bodyHtml = [
+        '<div class="form-group">',
+          '<label>角色名称</label>',
+          '<input class="form-input" id="newRoleName" placeholder="请输入角色名称">',
+        '</div>',
+        '<div class="form-group">',
+          '<label>角色编码</label>',
+          '<input class="form-input" id="newRoleCode" placeholder="请输入角色编码，如：editor">',
+        '</div>',
+        '<div class="form-group">',
+          '<label>角色描述</label>',
+          '<textarea class="form-textarea" id="newRoleDesc" placeholder="请输入角色描述"></textarea>',
+        '</div>'
+      ].join('');
+
+      var footerHtml = [
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>',
+        '<button class="btn btn-primary" onclick="confirmAddRole()">确定</button>'
+      ].join('');
+
+      showModal('新增角色', bodyHtml, footerHtml);
+    }
+
+    function confirmAddRole() {
+      var name = document.getElementById('newRoleName').value.trim();
+      var code = document.getElementById('newRoleCode').value.trim();
+      var desc = document.getElementById('newRoleDesc').value.trim();
+
+      if (!name) {
+        showToast('请输入角色名称', 'warning');
+        return;
+      }
+      if (!code) {
+        showToast('请输入角色编码', 'warning');
+        return;
+      }
+
+      // 检查编码是否重复
+      var exists = MockData.adminRoles.some(function(r) {
+        return r.code === code;
+      });
+      if (exists) {
+        showToast('角色编码已存在，请使用其他编码', 'error');
+        return;
+      }
+
+      MockData.adminRoles.push({
+        id: 'r' + Date.now(),
+        name: name,
+        code: code,
+        userCount: 0,
+        description: desc || '-',
+        permissions: []
+      });
+
+      document.querySelector('.modal-overlay').remove();
+      renderRoles();
+      showToast('角色「' + name + '」创建成功', 'success');
+    }
+
+    // 编辑权限
+    function editRolePerms(roleId) {
+      var role = MockData.adminRoles.find(function(r) { return r.id === roleId; });
+      if (!role) return;
+
+      var isAll = role.permissions.indexOf('all') !== -1;
+      var perms = role.permissions;
+
+      var bodyHtml = [
+        '<div class="edit-role-info">',
+          '正在编辑：<strong>' + role.name + '</strong>（' + role.code + '）',
+        '</div>'
+      ].join('');
+
+      permissionGroups.forEach(function(group) {
+        var groupHtml = [
+          '<div class="perm-group">',
+            '<div class="perm-group-title">' + group.name + '</div>',
+            '<div class="perm-checkboxes">'
+        ];
+
+        group.perms.forEach(function(p) {
+          var checked = isAll || perms.indexOf(p.key) !== -1;
+          groupHtml.push(
+            '<label class="perm-checkbox">',
+              '<input type="checkbox" value="' + p.key + '" ' + (checked ? 'checked' : '') + '>',
+              p.label,
+            '</label>'
+          );
+        });
+
+        groupHtml.push('</div></div>');
+        bodyHtml += groupHtml.join('');
+      });
+
+      var footerHtml = [
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>',
+        '<button class="btn btn-primary" onclick="confirmEditPerms(\'' + roleId + '\')">保存权限</button>'
+      ].join('');
+
+      showModal('编辑权限 - ' + role.name, bodyHtml, footerHtml);
+    }
+
+    function confirmEditPerms(roleId) {
+      var role = MockData.adminRoles.find(function(r) { return r.id === roleId; });
+      if (!role) return;
+
+      var checkedBoxes = document.querySelectorAll('.perm-checkboxes input[type="checkbox"]:checked');
+      role.permissions = Array.from(checkedBoxes).map(function(cb) {
+        return cb.value;
+      });
+
+      document.querySelector('.modal-overlay').remove();
+      renderRoles();
+      showToast('角色「' + role.name + '」权限更新成功', 'success');
+    }
+
+    // 删除角色
+    function deleteRole(roleId) {
+      var role = MockData.adminRoles.find(function(r) { return r.id === roleId; });
+      if (!role) return;
+
+      if (role.userCount > 0) {
+        showToast('无法删除「' + role.name + '」：该角色下有 ' + role.userCount + ' 个用户', 'error');
+        return;
+      }
+
+      showConfirm('确定要删除角色「' + role.name + '」吗？此操作不可撤销。', function() {
+        var idx = MockData.adminRoles.findIndex(function(r) { return r.id === roleId; });
+        if (idx !== -1) {
+          MockData.adminRoles.splice(idx, 1);
+          renderRoles();
+          showToast('角色「' + role.name + '」已删除', 'success');
+        }
+      });
+    }
+
+    // 初始化
+    renderRoles();
+  </script>
+</body>
+</html>

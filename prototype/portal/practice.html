@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刷题练习 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <style>
+    body {
+      background: var(--bg-color);
+    }
+
+    .practice-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* 左侧面板 */
+    .practice-sidebar {
+      width: 280px;
+      background: white;
+      border-right: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .back-btn:hover {
+      color: var(--primary-color);
+    }
+
+    .practice-info h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .practice-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border-light);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+    }
+
+    .timer-icon {
+      font-size: 24px;
+    }
+
+    .timer-time {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--primary-color);
+    }
+
+    .question-nav {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+    }
+
+    .nav-item {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .nav-item:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .nav-item.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .nav-item.answered {
+      background: var(--success-color);
+      color: white;
+      border-color: var(--success-color);
+    }
+
+    .nav-item.wrong {
+      background: var(--danger-color);
+      color: white;
+      border-color: var(--danger-color);
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+    }
+
+    /* 右侧答题区 */
+    .practice-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* ---- 空闲态（未开始练习） ---- */
+    .practice-container.idle .practice-sidebar {
+      display: none;
+    }
+
+    /* ---- 练习模式选择弹窗 ---- */
+    .mode-picker-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+
+    .mode-picker-overlay.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .mode-picker-modal {
+      background: white;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .mode-picker-header {
+      position: relative;
+      padding: 28px 24px 16px;
+      border-bottom: 1px solid var(--border-light);
+      text-align: center;
+    }
+
+    .mode-picker-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .mode-picker-subtitle {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .mode-picker-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      font-size: 16px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .mode-picker-close:hover {
+      background: var(--bg-color);
+      color: var(--text-primary);
+    }
+
+    .mode-picker-body {
+      display: flex;
+      gap: 16px;
+      padding: 24px;
+    }
+
+    .mode-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 24px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: white;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .mode-card:hover {
+      border-color: var(--primary-color);
+      background: rgba(64, 158, 255, 0.05);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .mode-card-icon {
+      font-size: 32px;
+    }
+
+    .mode-card-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .mode-card-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    /* ---- 选择题选项 ---- */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: white;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .option-item:hover {
+      border-color: var(--primary-color);
+      background: rgba(64, 158, 255, 0.04);
+    }
+
+    .option-label {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--bg-color);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .option-content {
+      flex: 1;
+      padding-top: 2px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    /* 已选中（未批改） */
+    .option-item.selected {
+      border-color: var(--primary-color);
+      background: rgba(64, 158, 255, 0.08);
+      box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.4);
+    }
+
+    .option-item.selected .option-label {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .option-item.selected .option-content {
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+
+    .option-item.selected::after {
+      content: '✓';
+      flex-shrink: 0;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.6;
+      color: var(--primary-color);
+    }
+
+    /* 批改后：正确答案 */
+    .option-item.correct {
+      border-color: var(--success-color);
+      background: rgba(103, 194, 58, 0.08);
+      cursor: default;
+    }
+
+    .option-item.correct .option-label {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .option-item.correct .option-content {
+      font-weight: 500;
+      color: var(--success-color);
+    }
+
+    .option-item.correct::after {
+      content: '✓';
+      flex-shrink: 0;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.6;
+      color: var(--success-color);
+    }
+
+    /* 批改后：选错的选项 */
+    .option-item.wrong {
+      border-color: var(--danger-color);
+      background: rgba(245, 108, 108, 0.08);
+      cursor: default;
+    }
+
+    .option-item.wrong .option-label {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .option-item.wrong .option-content {
+      font-weight: 500;
+      color: var(--danger-color);
+    }
+
+    .option-item.wrong::after {
+      content: '✕';
+      flex-shrink: 0;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.6;
+      color: var(--danger-color);
+    }
+
+    /* ---- 简答题 ---- */
+    .short-answer-area {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .short-answer-area.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .short-answer-textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.8;
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      outline: none;
+      resize: vertical;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    .short-answer-textarea:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+    }
+
+    .short-answer-textarea::placeholder {
+      color: var(--text-placeholder);
+    }
+
+    .short-answer-submit {
+      align-self: flex-end;
+    }
+
+    /* AI 评分 */
+    .ai-grading {
+      display: none;
+      margin-top: 20px;
+      border-radius: var(--radius-lg);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-grading.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .ai-grading-inner {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .ai-grading::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-lg);
+      padding: 2px;
+      background: linear-gradient(135deg, var(--primary-color), #8b5cf6, var(--success-color));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .ai-grading-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .ai-grading-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+    }
+
+    .ai-grading-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .ai-grading-badge {
+      margin-left: auto;
+      padding: 6px 14px;
+      border-radius: var(--radius-round);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .ai-grading-badge.high {
+      background: rgba(103, 194, 58, 0.1);
+      color: var(--success-color);
+    }
+
+    .ai-grading-badge.medium {
+      background: rgba(230, 162, 60, 0.1);
+      color: var(--warning-color);
+    }
+
+    .ai-grading-badge.low {
+      background: rgba(245, 108, 108, 0.1);
+      color: var(--danger-color);
+    }
+
+    .ai-grading-section {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+    }
+
+    .ai-grading-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ai-grading-section-content {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-regular);
+    }
+
+    .ai-grading-key-points {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .ai-grading-key-point {
+      padding: 4px 12px;
+      background: rgba(64, 158, 255, 0.1);
+      color: var(--primary-color);
+      border-radius: var(--radius-round);
+      font-size: 13px;
+    }
+
+    /* AI 加载动画 */
+    .ai-loading {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 32px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-top: 20px;
+    }
+
+    .ai-loading.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .ai-loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-light);
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .ai-loading-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    .ai-loading-dots::after {
+      content: '';
+      animation: dots 1.5s steps(3, end) infinite;
+    }
+
+    @keyframes dots {
+      0% { content: ''; }
+      33% { content: '.'; }
+      66% { content: '..'; }
+      100% { content: '...'; }
+    }
+
+    /* 答案解析 */
+    .analysis-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      border-left: 4px solid var(--success-color);
+      display: none;
+    }
+
+    .analysis-card.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .analysis-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .analysis-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(103, 194, 58, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .analysis-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .analysis-result {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      padding: 6px 12px;
+      border-radius: var(--radius-round);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .analysis-result.correct {
+      background: rgba(103, 194, 58, 0.1);
+      color: var(--success-color);
+    }
+
+    .analysis-result.wrong {
+      background: rgba(245, 108, 108, 0.1);
+      color: var(--danger-color);
+    }
+
+    .analysis-content {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text-regular);
+    }
+
+    /* 底部操作栏 */
+    .practice-footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px 0;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .practice-footer-left {
+      display: flex;
+      gap: 8px;
+    }
+
+    .practice-footer-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ---- 键盘快捷键图标 ---- */
+    .keyboard-help {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+    }
+
+    .keyboard-help-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: white;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-secondary);
+    }
+
+    .keyboard-help-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      box-shadow: 0 4px 16px rgba(64,158,255,0.2);
+    }
+
+    .keyboard-shortcuts-panel {
+      display: none;
+      position: fixed;
+      bottom: 76px;
+      right: 24px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 20px 24px;
+      z-index: 999;
+      min-width: 280px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .keyboard-shortcuts-panel.show {
+      display: block;
+    }
+
+    .keyboard-shortcuts-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--text-primary);
+    }
+
+    .keyboard-shortcut-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .keyboard-shortcut-row:last-child {
+      border-bottom: none;
+    }
+
+    .keyboard-shortcut-keys {
+      display: flex;
+      gap: 4px;
+    }
+
+    .keyboard-shortcut-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 8px;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: monospace;
+      color: var(--text-regular);
+      min-width: 24px;
+    }
+
+    .keyboard-shortcut-desc {
+      font-size: 13px;
+      color: var(--text-regular);
+    }
+
+    /* ---- 继续练习提示 ---- */
+    .continue-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      padding: 20px 28px;
+      display: none;
+      align-items: center;
+      gap: 16px;
+      /* 高于模式选择弹窗(2000)，保证未开始练习时「继续」入口可点 */
+      z-index: 2100;
+      animation: fadeIn 0.4s ease;
+      border-left: 4px solid var(--warning-color);
+    }
+
+    .continue-toast.show {
+      display: flex;
+    }
+
+    .continue-toast-icon {
+      font-size: 28px;
+    }
+
+    .continue-toast-text {
+      font-size: 15px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .continue-toast-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ---- 响应式 ---- */
+    @media (max-width: 768px) {
+      .practice-container {
+        flex-direction: column;
+      }
+
+      .practice-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+        max-height: 200px;
+      }
+
+      .sidebar-content {
+        overflow-y: auto;
+      }
+
+      .question-nav {
+        grid-template-columns: repeat(8, 1fr);
+      }
+
+      .practice-main {
+        padding: 16px;
+      }
+
+      .question-card {
+        padding: 20px;
+      }
+
+      .mode-picker-body {
+        flex-direction: column;
+        padding: 16px;
+      }
+
+      .practice-footer {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .practice-footer-left,
+      .practice-footer-right {
+        justify-content: center;
+      }
+
+      .continue-toast {
+        flex-direction: column;
+        text-align: center;
+        width: 90%;
+        bottom: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .option-item {
+        padding: 12px;
+      }
+
+      .question-nav {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="practice-container">
+    <!-- 左侧面板 -->
+    <aside class="practice-sidebar">
+      <div class="sidebar-header">
+        <div class="back-btn" onclick="history.back()">
+          <span>←</span>
+          <span>返回题库</span>
+        </div>
+        <div class="practice-info">
+          <h2>AI应用基础练习</h2>
+          <div class="practice-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 0%"></div>
+            </div>
+            <span>0/0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="timer">
+          <span class="timer-icon">⏱️</span>
+          <span class="timer-time" id="timer">00:00:00</span>
+        </div>
+
+        <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--text-secondary);">答题卡</h4>
+        <div class="question-nav" id="questionNav">
+          <!-- 动态生成 -->
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-primary submit-btn" onclick="submitPractice()">结束练习</button>
+      </div>
+    </aside>
+
+    <!-- 右侧答题区 -->
+    <main class="practice-main">
+      <!-- 题目卡片 -->
+      <div class="question-card" id="questionCard">
+        <span class="question-type" id="questionType">单选题</span>
+        <div class="question-content" id="questionContent">
+          加载题目中...
+        </div>
+
+        <!-- 选择题选项 -->
+        <div class="options-list" id="optionsList"></div>
+
+        <!-- 简答题区域 -->
+        <div class="short-answer-area" id="shortAnswerArea">
+          <textarea class="short-answer-textarea" id="shortAnswerTextarea" placeholder="请输入你的回答..." rows="6"></textarea>
+          <button class="btn btn-primary short-answer-submit" onclick="submitShortAnswer()">提交答案</button>
+        </div>
+
+        <!-- AI 加载动画 -->
+        <div class="ai-loading" id="aiLoading">
+          <div class="ai-loading-spinner"></div>
+          <span class="ai-loading-text">AI评分中<span class="ai-loading-dots"></span></span>
+        </div>
+
+        <!-- AI 评分结果 -->
+        <div class="ai-grading" id="aiGrading">
+          <div class="ai-grading-inner">
+            <div class="ai-grading-header">
+              <div class="ai-grading-icon">🤖</div>
+              <span class="ai-grading-title">AI 评分结果</span>
+              <div class="ai-grading-badge high" id="aiScoreBadge">0/10分</div>
+            </div>
+            <div class="ai-grading-section">
+              <div class="ai-grading-section-title">💬 评语</div>
+              <div class="ai-grading-section-content" id="aiFeedback"></div>
+            </div>
+            <div class="ai-grading-section">
+              <div class="ai-grading-section-title">🎯 关键点</div>
+              <div class="ai-grading-key-points" id="aiKeyPoints"></div>
+            </div>
+            <div class="ai-grading-section">
+              <div class="ai-grading-section-title">📖 参考答案</div>
+              <div class="ai-grading-section-content" id="aiReference"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 答案解析 -->
+      <div class="analysis-card" id="analysisCard">
+        <div class="analysis-header">
+          <div class="analysis-icon">📝</div>
+          <span class="analysis-title">答案解析</span>
+          <div class="analysis-result correct" id="analysisResultBadge">
+            <span>✓</span>
+            <span>回答正确</span>
+          </div>
+        </div>
+        <div class="analysis-content" id="analysisContent">
+          <p><strong id="analysisCorrectAnswer">正确答案：A</strong></p>
+          <p style="margin-top: 12px;" id="analysisExplanation">
+            加载解析中...
+          </p>
+        </div>
+      </div>
+
+      <div class="practice-footer" id="practiceFooter">
+        <div class="practice-footer-left">
+          <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">上一题</button>
+        </div>
+        <div class="practice-footer-right">
+          <button class="btn btn-secondary" id="showAnalysisBtn" onclick="showAnalysis()">查看解析</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">下一题</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 键盘快捷键按钮 -->
+  <div class="keyboard-help">
+    <div class="keyboard-shortcuts-panel" id="shortcutsPanel">
+      <div class="keyboard-shortcuts-title">⌨️ 键盘快捷键</div>
+      <div class="keyboard-shortcut-row">
+        <span class="keyboard-shortcut-keys">
+          <span class="keyboard-shortcut-key">←</span>
+        </span>
+        <span class="keyboard-shortcut-desc">上一题</span>
+      </div>
+      <div class="keyboard-shortcut-row">
+        <span class="keyboard-shortcut-keys">
+          <span class="keyboard-shortcut-key">→</span>
+        </span>
+        <span class="keyboard-shortcut-desc">下一题</span>
+      </div>
+      <div class="keyboard-shortcut-row">
+        <span class="keyboard-shortcut-keys">
+          <span class="keyboard-shortcut-key">Enter</span>
+        </span>
+        <span class="keyboard-shortcut-desc">提交答案 / 下一题</span>
+      </div>
+      <div class="keyboard-shortcut-row">
+        <span class="keyboard-shortcut-keys">
+          <span class="keyboard-shortcut-key">?</span>
+        </span>
+        <span class="keyboard-shortcut-desc">显示快捷键</span>
+      </div>
+    </div>
+    <button class="keyboard-help-btn" id="keyboardHelpBtn" onclick="toggleShortcuts()" title="键盘快捷键">⌨️</button>
+  </div>
+
+  <!-- 练习模式选择弹窗 -->
+  <div class="mode-picker-overlay" id="modePicker">
+    <div class="mode-picker-modal">
+      <div class="mode-picker-header">
+        <div class="mode-picker-title">选择练习模式</div>
+        <div class="mode-picker-subtitle">共 <strong id="modePickerCount">0</strong> 道题</div>
+        <button class="mode-picker-close" onclick="cancelPractice()" title="取消，返回题库">✕</button>
+      </div>
+      <div class="mode-picker-body">
+        <button class="mode-card" onclick="startPractice('sequential')">
+          <span class="mode-card-icon">📝</span>
+          <span class="mode-card-name">顺序练习</span>
+          <span class="mode-card-desc">按题库顺序逐题作答</span>
+        </button>
+        <button class="mode-card" onclick="startPractice('random')">
+          <span class="mode-card-icon">🔀</span>
+          <span class="mode-card-name">随机练习</span>
+          <span class="mode-card-desc">打乱题目顺序作答</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 继续练习提示 -->
+  <div class="continue-toast" id="continueToast">
+    <span class="continue-toast-icon">📌</span>
+    <span class="continue-toast-text">检测到未完成的练习，是否继续？</span>
+    <div class="continue-toast-actions">
+      <button class="btn btn-primary btn-sm" onclick="continueLastSession()">继续</button>
+      <button class="btn btn-secondary btn-sm" onclick="restartSession()">重新开始</button>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ==============================
+    // 数据准备
+    // ==============================
+    let practiceQuestions = [];
+    let currentQuestion = 0;
+    let answers = [];           // 存储选中选项索引或简答题文本
+    let answerStatus = [];      // 'correct' / 'wrong' / null(未批改)
+    let aiResults = [];         // 简答题的 AI 评分结果，按题目索引存储
+    let elapsedSeconds = 0;     // 本次练习已用时
+    let timerInterval = null;
+    let practiceMode = 'sequential';
+    let shortAnswerSubmitted = false;
+    let practiceStarted = false; // 是否已选模式进入答题
+
+    // 从 MockData 加载题目
+    function loadQuestions() {
+      const raw = MockData.questions || [];
+      // 取前10题做演示，包含各种类型
+      practiceQuestions = raw.slice(0, 10).map(q => ({
+        id: q.id,
+        type: q.type,
+        typeLabel: getTypeLabel(q.type),
+        subject: q.subject,
+        options: q.options || [],
+        analysis: q.analysis || ''
+      }));
+
+      // 如果题目不够，补一些
+      if (practiceQuestions.length < 5) {
+        practiceQuestions = getDefaultQuestions();
+      }
+
+      resetAnswerState();
+    }
+
+    // 重置作答状态
+    function resetAnswerState() {
+      answers = new Array(practiceQuestions.length).fill(null);
+      answerStatus = new Array(practiceQuestions.length).fill(null);
+      aiResults = new Array(practiceQuestions.length).fill(null);
+    }
+
+    function getDefaultQuestions() {
+      return [
+        { id: 'q001', type: 'single', typeLabel: '单选题', subject: '在Java中，ArrayList和LinkedList的区别是什么？', options: [{ id: 'a', content: 'ArrayList基于数组，LinkedList基于链表', correct: true }, { id: 'b', content: 'ArrayList和LinkedList完全相同', correct: false }, { id: 'c', content: 'LinkedList查询更快', correct: false }, { id: 'd', content: 'ArrayList插入更快', correct: false }], analysis: 'ArrayList底层是数组，查询快，增删慢；LinkedList底层是双向链表，增删快，查询慢。' },
+        { id: 'q002', type: 'multiple', typeLabel: '多选题', subject: '以下哪些是JavaScript的基本数据类型？', options: [{ id: 'a', content: 'String', correct: true }, { id: 'b', content: 'Number', correct: true }, { id: 'c', content: 'Array', correct: false }, { id: 'd', content: 'Boolean', correct: true }], analysis: 'JS基本数据类型：String、Number、Boolean、null、undefined、Symbol、BigInt。Array是引用类型。' },
+        { id: 'q003', type: 'single', typeLabel: '单选题', subject: 'MySQL中，以下哪个命令用于创建数据库？', options: [{ id: 'a', content: 'CREATE DATABASE', correct: true }, { id: 'b', content: 'NEW DATABASE', correct: false }, { id: 'c', content: 'ADD DATABASE', correct: false }, { id: 'd', content: 'INSERT DATABASE', correct: false }], analysis: 'MySQL中使用CREATE DATABASE语句来创建数据库。' },
+        { id: 'q004', type: 'short', typeLabel: '简答题', subject: '请简述Spring中IoC和DI的区别与联系。', options: [], analysis: 'IoC（控制反转）是一种设计思想，DI（依赖注入）是IoC的具体实现方式。Spring通过DI实现IoC。' },
+        { id: 'q005', type: 'judge', typeLabel: '判断题', subject: 'Redis是单线程模型，所以不需要考虑线程安全问题。', options: [{ id: 'a', content: '正确', correct: false }, { id: 'b', content: '错误', correct: true }], analysis: 'Redis核心命令执行是单线程，但从6.0引入了多线程IO。' },
+        { id: 'q006', type: 'single', typeLabel: '单选题', subject: 'HashMap的底层数据结构是什么？', options: [{ id: 'a', content: '数组+链表+红黑树', correct: true }, { id: 'b', content: '只有数组', correct: false }, { id: 'c', content: '双向链表', correct: false }, { id: 'd', content: '跳表', correct: false }], analysis: 'HashMap底层是数组+链表+红黑树。' },
+        { id: 'q007', type: 'short', typeLabel: '简答题', subject: '什么是CAP理论？在分布式系统中如何权衡？', options: [], analysis: 'CAP理论指一致性(C)、可用性(A)、分区容错性(P)三者最多满足两个。分布式系统通常优先保证P，然后在C和A之间权衡。' },
+        { id: 'q008', type: 'multiple', typeLabel: '多选题', subject: 'MySQL中什么情况下索引会失效？', options: [{ id: 'a', content: '使用LIKE左模糊匹配', correct: true }, { id: 'b', content: '对索引列使用函数', correct: true }, { id: 'c', content: '使用OR连接非索引列', correct: true }, { id: 'd', content: '使用WHERE id = 1', correct: false }], analysis: '索引失效常见情况：左模糊、使用函数、OR条件、类型隐式转换等。' },
+        { id: 'q009', type: 'single', typeLabel: '单选题', subject: 'Python中列表和元组的区别？', options: [{ id: 'a', content: '列表可变，元组不可变', correct: true }, { id: 'b', content: '列表不可变，元组可变', correct: false }, { id: 'c', content: '两者没有区别', correct: false }, { id: 'd', content: '列表用()定义', correct: false }], analysis: '列表(list)用[]定义，可变；元组(tuple)用()定义，不可变。' },
+        { id: 'q010', type: 'short', typeLabel: '简答题', subject: 'TCP三次握手的过程是什么？', options: [], analysis: '三次握手：SYN→SYN+ACK→ACK。确保双方收发能力正常。' }
+      ];
+    }
+
+    // ==============================
+    // 开始刷题 / 模式选择
+    // ==============================
+    // 未开始：隐藏答题区，直接弹出模式选择
+    function openPracticeEntry() {
+      practiceStarted = false;
+      document.querySelector('.practice-container').classList.add('idle');
+      document.getElementById('questionCard').style.display = 'none';
+      document.getElementById('analysisCard').classList.remove('show');
+      document.getElementById('practiceFooter').style.display = 'none';
+      openModePicker();
+    }
+
+    function openModePicker() {
+      document.getElementById('modePickerCount').textContent = practiceQuestions.length;
+      document.getElementById('modePicker').classList.add('show');
+    }
+
+    function closeModePicker() {
+      document.getElementById('modePicker').classList.remove('show');
+    }
+
+    // 未选模式就关闭弹窗 = 放弃练习，返回题库
+    function cancelPractice() {
+      closeModePicker();
+      window.location.href = 'questions.html';
+    }
+
+    // 选定模式后进入答题
+    function startPractice(mode) {
+      practiceMode = mode;
+      closeModePicker();
+      // 重新选模式视为开新练习，丢弃上次进度提示
+      document.getElementById('continueToast').classList.remove('show');
+      clearSession();
+
+      // 顺序练习恢复原始题序，随机练习打乱
+      if (mode === 'random') {
+        shuffleQuestions();
+      } else {
+        loadQuestions();
+      }
+
+      currentQuestion = 0;
+      shortAnswerSubmitted = false;
+      resetTimer();
+      enterPracticeView();
+      startTimer();
+      renderAll();
+    }
+
+    // 切到答题视图
+    function enterPracticeView() {
+      practiceStarted = true;
+      document.querySelector('.practice-container').classList.remove('idle');
+      document.getElementById('questionCard').style.display = '';
+      document.getElementById('practiceFooter').style.display = '';
+    }
+
+    function shuffleQuestions() {
+      for (let i = practiceQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [practiceQuestions[i], practiceQuestions[j]] = [practiceQuestions[j], practiceQuestions[i]];
+      }
+      resetAnswerState();
+    }
+
+    // ==============================
+    // 渲染
+    // ==============================
+    function renderAll() {
+      renderNav();
+      renderQuestion();
+      renderProgress();
+    }
+
+    function renderNav() {
+      const nav = document.getElementById('questionNav');
+      nav.innerHTML = practiceQuestions.map((q, i) => {
+        let cls = 'nav-item';
+        if (i === currentQuestion) cls += ' active';
+        if (answerStatus[i] === 'correct') cls += ' answered';
+        else if (answerStatus[i] === 'wrong') cls += ' wrong';
+        else if (answers[i] !== null && q.type === 'short' && answerStatus[i] !== 'wrong') cls += ' answered';
+        return `<div class="${cls}" data-index="${i}">${i + 1}</div>`;
+      }).join('');
+
+      nav.querySelectorAll('.nav-item').forEach((item, index) => {
+        item.addEventListener('click', () => {
+          currentQuestion = index;
+          shortAnswerSubmitted = qTypeIsShort(practiceQuestions[index]);
+          renderAll();
+        });
+      });
+    }
+
+    function renderProgress() {
+      const total = practiceQuestions.length;
+      document.querySelector('.practice-progress span').textContent = `${currentQuestion + 1}/${total}`;
+      const progress = total > 0 ? ((currentQuestion + 1) / total) * 100 : 0;
+      document.querySelector('.progress-fill').style.width = `${progress}%`;
+    }
+
+    function renderQuestion() {
+      if (practiceQuestions.length === 0) return;
+      const q = practiceQuestions[currentQuestion];
+      const isShort = qTypeIsShort(q.type);
+
+      // 更新类型和题目
+      document.getElementById('questionType').textContent = q.typeLabel;
+      document.getElementById('questionContent').textContent = q.subject;
+
+      // 选择/简答切换
+      const optionsList = document.getElementById('optionsList');
+      const shortArea = document.getElementById('shortAnswerArea');
+
+      if (isShort) {
+        optionsList.style.display = 'none';
+        shortArea.classList.add('show');
+        // 隐藏分析卡片（简答用AI评分代替）
+        document.getElementById('analysisCard').classList.remove('show');
+        // 已提交过的简答题回显 AI 评分结果
+        if (aiResults[currentQuestion]) {
+          renderAIGradingResult(aiResults[currentQuestion]);
+        } else {
+          document.getElementById('aiGrading').classList.remove('show');
+        }
+        document.getElementById('aiLoading').classList.remove('show');
+      } else {
+        optionsList.style.display = 'flex';
+        shortArea.classList.remove('show');
+        document.getElementById('aiGrading').classList.remove('show');
+        document.getElementById('aiLoading').classList.remove('show');
+
+        // 渲染选项
+        const labelLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        optionsList.innerHTML = q.options.map((opt, idx) => {
+          let cls = 'option-item';
+          // 显示解析后的正确/错误状态
+          if (answerStatus[currentQuestion] !== null) {
+            if (opt.correct) cls += ' correct';
+            else if (answers[currentQuestion] !== null && answers[currentQuestion] === idx) cls += ' wrong';
+          }
+          if (answers[currentQuestion] === idx && answerStatus[currentQuestion] === null) {
+            cls += ' selected';
+          }
+          return `<div class="${cls}" data-index="${idx}" onclick="selectOption(this)">
+            <div class="option-label">${labelLetters[idx] || idx}</div>
+            <div class="option-content">${opt.content}</div>
+          </div>`;
+        }).join('');
+      }
+
+      // 按钮状态
+      document.getElementById('prevBtn').disabled = currentQuestion === 0;
+      const isLast = currentQuestion === practiceQuestions.length - 1;
+      document.getElementById('nextBtn').textContent = isLast ? '完成' : '下一题';
+
+      // 简答未提交时隐藏查看解析
+      document.getElementById('showAnalysisBtn').style.display =
+        (isShort && !shortAnswerSubmitted) ? 'none' : '';
+
+      // 恢复简答内容
+      if (isShort) {
+        const textarea = document.getElementById('shortAnswerTextarea');
+        textarea.value = answers[currentQuestion] !== null ? answers[currentQuestion] : '';
+        textarea.disabled = shortAnswerSubmitted;
+        document.querySelector('.short-answer-submit').style.display = shortAnswerSubmitted ? 'none' : '';
+      }
+
+      // 切换题目后先收起解析卡片；已批改的题目直接展示对应解析
+      document.getElementById('analysisCard').classList.remove('show');
+      if (!isShort && answerStatus[currentQuestion] !== null) {
+        showAnalysis();
+      }
+
+      // 更新答题卡
+      renderNav();
+
+      // 保存 session
+      saveSession();
+    }
+
+    function qTypeIsShort(type) {
+      return type === 'short';
+    }
+
+    // ==============================
+    // 选择题
+    // ==============================
+    function selectOption(element) {
+      if (answerStatus[currentQuestion] !== null) return; // 已批改
+
+      const q = practiceQuestions[currentQuestion];
+      const isMultiple = q.type === 'multiple';
+
+      if (isMultiple) {
+        element.classList.toggle('selected');
+        // 收集多选
+        const selectedIndices = [];
+        document.querySelectorAll('.option-item').forEach((opt, idx) => {
+          if (opt.classList.contains('selected')) selectedIndices.push(idx);
+        });
+        answers[currentQuestion] = selectedIndices;
+      } else {
+        document.querySelectorAll('.option-item').forEach(o => o.classList.remove('selected'));
+        element.classList.add('selected');
+        const index = parseInt(element.dataset.index);
+        answers[currentQuestion] = index;
+      }
+
+      renderNav();
+      saveSession();
+    }
+
+    // ==============================
+    // 简答题 AI 评分
+    // ==============================
+    function submitShortAnswer() {
+      const textarea = document.getElementById('shortAnswerTextarea');
+      const text = textarea.value.trim();
+      if (!text) {
+        showToast('请输入你的回答', 'warning');
+        return;
+      }
+
+      if (shortAnswerSubmitted) return;
+      shortAnswerSubmitted = true;
+
+      answers[currentQuestion] = text;
+
+      // 显示加载
+      const aiLoading = document.getElementById('aiLoading');
+      aiLoading.classList.add('show');
+      document.getElementById('aiGrading').classList.remove('show');
+
+      // 模拟 AI 评分延迟
+      setTimeout(() => {
+        aiLoading.classList.remove('show');
+        const result = buildAIGradingResult();
+        aiResults[currentQuestion] = result;
+        answerStatus[currentQuestion] = result.score >= 6 ? 'correct' : 'wrong';
+        renderAIGradingResult(result);
+
+        // 禁用 textarea
+        document.getElementById('shortAnswerTextarea').disabled = true;
+        document.querySelector('.short-answer-submit').style.display = 'none';
+        renderNav();
+        saveSession();
+      }, 2000);
+    }
+
+    // 生成一次 AI 评分结果（结果会缓存在 aiResults 中，切题回看不重复评分）
+    function buildAIGradingResult() {
+      const q = practiceQuestions[currentQuestion];
+      const score = Math.floor(Math.random() * 5) + 5; // 5-9分
+      const level = score >= 8 ? 'high' : score >= 6 ? 'medium' : 'low';
+      const feedbacks = {
+        high: ['回答得很好！思路清晰，关键点覆盖全面。', '非常棒的答案，逻辑严谨，表述准确。'],
+        medium: ['回答基本正确，但可以补充更多细节。', '核心要点提到了，但深度可以进一步加强。'],
+        low: ['回答不够完整，建议加强相关知识点的学习。', '部分内容有偏差，建议参考正确答案进行复习。']
+      };
+      const fbList = feedbacks[level];
+
+      return {
+        score: score,
+        feedback: fbList[Math.floor(Math.random() * fbList.length)],
+        keyPoints: generateKeyPoints(q),
+        reference: q.analysis || '暂无参考答案'
+      };
+    }
+
+    function renderAIGradingResult(result) {
+      const badge = document.getElementById('aiScoreBadge');
+      badge.textContent = `${result.score}/10分`;
+      badge.className = 'ai-grading-badge';
+      if (result.score >= 8) badge.classList.add('high');
+      else if (result.score >= 6) badge.classList.add('medium');
+      else badge.classList.add('low');
+
+      document.getElementById('aiFeedback').textContent = result.feedback;
+      document.getElementById('aiKeyPoints').innerHTML =
+        result.keyPoints.map(kp => `<span class="ai-grading-key-point">${kp}</span>`).join('');
+      document.getElementById('aiReference').textContent = result.reference;
+
+      document.getElementById('aiGrading').classList.add('show');
+    }
+
+    function generateKeyPoints(q) {
+      const subject = q.subject;
+      // 根据题目关键词生成关键点
+      const defaultPoints = ['理解核心概念', '掌握基本原理', '能够举例说明'];
+      const topicPoints = {
+        'IoC': ['控制反转思想', '依赖注入方式', 'Spring容器管理'],
+        'CAP': ['一致性(C)', '可用性(A)', '分区容错性(P)', '三者权衡'],
+        'TCP': ['三次握手过程', 'SYN/SYN-ACK/ACK', '状态转换'],
+        'Spring': ['IoC容器', 'Bean生命周期', '依赖注入'],
+        'Redis': ['单线程模型', '多线程IO', '线程安全'],
+      };
+
+      for (const [key, points] of Object.entries(topicPoints)) {
+        if (subject.includes(key)) return points;
+      }
+      return defaultPoints;
+    }
+
+    // ==============================
+    // 显示解析
+    // ==============================
+    function showAnalysis() {
+      const q = practiceQuestions[currentQuestion];
+      if (qTypeIsShort(q.type)) {
+        // 简答题用 AI 评分代替
+        if (!shortAnswerSubmitted) {
+          showToast('请先提交答案', 'warning');
+          return;
+        }
+        if (!aiResults[currentQuestion]) {
+          const result = buildAIGradingResult();
+          aiResults[currentQuestion] = result;
+          answerStatus[currentQuestion] = result.score >= 6 ? 'correct' : 'wrong';
+        }
+        renderAIGradingResult(aiResults[currentQuestion]);
+        return;
+      }
+
+      const card = document.getElementById('analysisCard');
+      card.classList.add('show');
+
+      // 正确答案文本
+      const labelLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const correctLabels = q.options.filter(o => o.correct).map(o => labelLetters[q.options.indexOf(o)]);
+      document.getElementById('analysisCorrectAnswer').textContent = `正确答案：${correctLabels.join('、')}`;
+      document.getElementById('analysisExplanation').textContent = q.analysis;
+
+      // 标记正确/错误
+      const badge = document.getElementById('analysisResultBadge');
+      if (q.type === 'multiple') {
+        // 多选
+        const selected = answers[currentQuestion];
+        if (selected && Array.isArray(selected)) {
+          const isCorrect = selected.length === q.options.filter(o => o.correct).length &&
+            selected.every(idx => q.options[idx].correct);
+          badge.className = `analysis-result ${isCorrect ? 'correct' : 'wrong'}`;
+          badge.innerHTML = isCorrect ? '<span>✓</span><span>回答正确</span>' : '<span>✕</span><span>回答错误</span>';
+        } else {
+          badge.className = 'analysis-result wrong';
+          badge.innerHTML = '<span>—</span><span>未作答</span>';
+        }
+      } else {
+        const selected = answers[currentQuestion];
+        if (selected !== null && q.options[selected] && q.options[selected].correct) {
+          badge.className = 'analysis-result correct';
+          badge.innerHTML = '<span>✓</span><span>回答正确</span>';
+          answerStatus[currentQuestion] = 'correct';
+        } else {
+          badge.className = 'analysis-result wrong';
+          badge.innerHTML = selected !== null ? '<span>✕</span><span>回答错误</span>' : '<span>—</span><span>未作答</span>';
+          if (selected !== null) answerStatus[currentQuestion] = 'wrong';
+        }
+      }
+
+      // 标记选项
+      document.querySelectorAll('.option-item').forEach((option, index) => {
+        option.classList.remove('selected');
+        if (q.options[index].correct) {
+          option.classList.add('correct');
+        } else if (answers[currentQuestion] !== null) {
+          if (q.type === 'multiple') {
+            if (Array.isArray(answers[currentQuestion]) && answers[currentQuestion].includes(index)) {
+              option.classList.add('wrong');
+            }
+          } else if (answers[currentQuestion] === index) {
+            option.classList.add('wrong');
+          }
+        }
+      });
+
+      renderNav();
+    }
+
+    // ==============================
+    // 导航
+    // ==============================
+    function prevQuestion() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        shortAnswerSubmitted = qTypeIsShort(practiceQuestions[currentQuestion]) && answers[currentQuestion] !== null;
+        renderAll();
+      }
+    }
+
+    function nextQuestion() {
+      const q = practiceQuestions[currentQuestion];
+      const isShort = qTypeIsShort(q.type);
+
+      // 简答题必须提交后才能下一题
+      if (isShort && !shortAnswerSubmitted) {
+        showToast('请先提交答案', 'warning');
+        return;
+      }
+
+      if (currentQuestion < practiceQuestions.length - 1) {
+        currentQuestion++;
+        shortAnswerSubmitted = qTypeIsShort(practiceQuestions[currentQuestion]) && answers[currentQuestion] !== null;
+        renderAll();
+      } else {
+        submitPractice();
+      }
+    }
+
+    // ==============================
+    // 计时器（记录本次练习已用时）
+    // ==============================
+    function resetTimer() {
+      stopTimer();
+      elapsedSeconds = 0;
+      updateTimerDisplay();
+    }
+
+    function startTimer() {
+      stopTimer();
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        elapsedSeconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const hrs = Math.floor(elapsedSeconds / 3600).toString().padStart(2, '0');
+      const mins = Math.floor((elapsedSeconds % 3600) / 60).toString().padStart(2, '0');
+      const secs = (elapsedSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer').textContent = `${hrs}:${mins}:${secs}`;
+    }
+
+    // ==============================
+    // 提交
+    // ==============================
+    function submitPractice() {
+      // 检查是否有未完成的简答题
+      for (let i = 0; i < practiceQuestions.length; i++) {
+        if (qTypeIsShort(practiceQuestions[i].type) && answers[i] === null) {
+          showToast('还有简答题未作答，请完成所有题目', 'warning');
+          // 跳到未完成的简答题
+          currentQuestion = i;
+          shortAnswerSubmitted = false;
+          renderAll();
+          return;
+        }
+      }
+
+      const unanswered = answers.filter(a => a === null).length;
+      const msg = unanswered > 0 ? `还有${unanswered}道题未完成，确定要结束练习吗？` : '确定要结束练习吗？';
+      showConfirm(msg, () => {
+        showToast('练习已结束！', 'success');
+        stopTimer();
+        clearSession();
+        setTimeout(() => {
+          window.location.href = 'questions.html';
+        }, 1500);
+      });
+    }
+
+    // ==============================
+    // Session 存储
+    // ==============================
+    const SESSION_KEY = 'practice_session';
+
+    function saveSession() {
+      const answered = answers.some(a => a !== null);
+      if (!answered) return;
+
+      const session = {
+        mode: practiceMode,
+        currentIndex: currentQuestion,
+        answers: answers,
+        status: answerStatus,
+        aiResults: aiResults,
+        shortSubmitted: shortAnswerSubmitted,
+        elapsedSeconds: elapsedSeconds,
+        questions: practiceQuestions.map(q => q.id),
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+
+    function loadSession() {
+      const data = sessionStorage.getItem(SESSION_KEY);
+      if (!data) return false;
+
+      try {
+        const session = JSON.parse(data);
+        // 只校验题目数量，题序可能因随机练习被打乱
+        if (!session.questions || session.questions.length !== practiceQuestions.length) {
+          return false;
+        }
+        if (!restoreSessionOrder(session)) return false;
+        return session;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // 按 session 中记录的题序重排当前题目列表
+    function restoreSessionOrder(session) {
+      const ordered = session.questions.map(id => practiceQuestions.find(q => q.id === id));
+      if (ordered.some(q => !q)) return false;
+      practiceQuestions = ordered;
+      return true;
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem(SESSION_KEY);
+    }
+
+    function continueLastSession() {
+      const session = loadSession();
+      if (!session) {
+        showToast('未找到练习记录', 'info');
+        document.getElementById('continueToast').classList.remove('show');
+        return;
+      }
+
+      // 恢复数据
+      practiceMode = session.mode || 'sequential';
+      answers = session.answers || new Array(practiceQuestions.length).fill(null);
+      answerStatus = session.status || new Array(practiceQuestions.length).fill(null);
+      aiResults = session.aiResults || new Array(practiceQuestions.length).fill(null);
+      currentQuestion = session.currentIndex || 0;
+      shortAnswerSubmitted = session.shortSubmitted || false;
+      elapsedSeconds = session.elapsedSeconds || 0;
+
+      document.getElementById('continueToast').classList.remove('show');
+      showToast('已恢复练习进度', 'success');
+      enterPracticeView();
+      startTimer();
+      renderAll();
+    }
+
+    function restartSession() {
+      document.getElementById('continueToast').classList.remove('show');
+      clearSession();
+      resetAnswerState();
+      currentQuestion = 0;
+      shortAnswerSubmitted = false;
+      stopTimer();
+      elapsedSeconds = 0;
+      showToast('已重新开始', 'info');
+      openPracticeEntry();
+    }
+
+    // ==============================
+    // 键盘快捷键
+    // ==============================
+    function toggleShortcuts() {
+      document.getElementById('shortcutsPanel').classList.toggle('show');
+    }
+
+    document.addEventListener('keydown', function(e) {
+      // 如果焦点在 textarea 中，Enter 不触发全局
+      const activeEl = document.activeElement;
+      const inTextarea = activeEl && activeEl.tagName === 'TEXTAREA';
+
+      // ? 显示快捷键
+      if (e.key === '?' && !inTextarea) {
+        toggleShortcuts();
+        return;
+      }
+
+      // Escape 关闭弹窗或快捷键面板
+      if (e.key === 'Escape') {
+        document.getElementById('shortcutsPanel').classList.remove('show');
+        if (document.getElementById('modePicker').classList.contains('show')) {
+          cancelPractice();
+        }
+        return;
+      }
+
+      // 未进入答题前禁用答题快捷键
+      if (!practiceStarted) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevQuestion();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextQuestion();
+      } else if (e.key === 'Enter') {
+        if (!inTextarea) {
+          e.preventDefault();
+          const isShort = qTypeIsShort(practiceQuestions[currentQuestion].type);
+          if (isShort && !shortAnswerSubmitted) {
+            submitShortAnswer();
+          } else {
+            nextQuestion();
+          }
+        }
+      }
+    });
+
+    // 点击外部关闭快捷键面板
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('shortcutsPanel');
+      const btn = document.getElementById('keyboardHelpBtn');
+      if (panel.classList.contains('show') && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('show');
+      }
+    });
+
+    // ==============================
+    // 初始化
+    // ==============================
+    function init() {
+      loadQuestions();
+      resetAnswerState();
+
+      // 检查是否有未完成的 session（弹窗之上仍保留「继续」入口）
+      const session = loadSession();
+      if (session) {
+        document.getElementById('continueToast').classList.add('show');
+      }
+
+      openPracticeEntry();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B站课程库 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      width: 240px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #409eff;
+    }
+
+    .filter-select {
+      padding: 10px 36px 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23909399' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    /* 统计卡片 */
+    .course-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .course-stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .course-stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .course-stat-icon.blue { background: rgba(64, 158, 255, 0.1); }
+    .course-stat-icon.green { background: rgba(103, 194, 58, 0.1); }
+    .course-stat-icon.orange { background: rgba(230, 162, 60, 0.1); }
+
+    .course-stat-info h3 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .course-stat-info p {
+      font-size: 13px;
+      color: #909399;
+      margin-top: 2px;
+    }
+
+    /* 课程封面 */
+    .course-thumb {
+      width: 180px;
+      height: 100px;
+      border-radius: 6px;
+      object-fit: cover;
+      display: inline-block;
+      background: #f5f7fa;
+    }
+
+    .course-title-cell {
+      max-width: 300px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .course-title-cell a {
+      color: #409eff;
+      text-decoration: none;
+    }
+
+    .course-title-cell a:hover {
+      text-decoration: underline;
+      color: #337ecc;
+    }
+
+    .bv-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(64, 158, 255, 0.08);
+      color: #409eff;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .subject-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(103, 194, 58, 0.1);
+      color: #67c23a;
+      margin: 1px 2px;
+    }
+
+    .subject-tag.other {
+      background: rgba(144, 147, 153, 0.1);
+      color: #909399;
+    }
+
+    .duration-text {
+      font-size: 13px;
+      color: #606266;
+      font-family: monospace;
+    }
+
+    .play-count-text {
+      font-size: 13px;
+      color: #606266;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .page-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .page-btn.active {
+      background: #409eff;
+      border-color: #409eff;
+      color: white;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 批量导入 */
+    .batch-import-textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .batch-import-textarea:focus {
+      border-color: #409eff;
+    }
+
+    .batch-import-format {
+      background: #f5f7fa;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #606266;
+      margin-bottom: 16px;
+    }
+
+    .batch-import-format code {
+      display: block;
+      background: #1d1e2c;
+      color: #a8e6cf;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      margin-top: 6px;
+      white-space: pre-wrap;
+    }
+
+    .batch-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .batch-preview-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background: #f5f7fa;
+      color: #606266;
+      font-weight: 600;
+      border-bottom: 1px solid #e4e7ed;
+      font-size: 12px;
+    }
+
+    .batch-preview-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f0f2f5;
+      color: #303133;
+      font-size: 12px;
+    }
+
+    .batch-preview-table .status-ok { color: #67c23a; font-weight: 600; }
+    .batch-preview-table .status-err { color: #f56c6c; }
+    .batch-preview-table .status-duplicate { color: #e6a23c; }
+
+    .course-link-cell a {
+      color: #409eff;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .course-link-cell a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .course-stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item active">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">B站课程库</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <!-- 统计卡片 -->
+        <div class="course-stats-bar" id="statsBar"></div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="toolbar">
+              <input type="text" class="search-input" id="searchInput" placeholder="搜索课程标题..." oninput="debouncedSearch()">
+              <select class="filter-select" id="filterSubject" onchange="applyFilters()">
+                <option value="">全部学科</option>
+              </select>
+              <select class="filter-select" id="filterSource" onchange="applyFilters()">
+                <option value="">全部来源</option>
+                <option value="bilibili">B站</option>
+                <option value="_other">其他</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn btn-primary" onclick="showAddModal()">+ 新增课程</button>
+              <button class="btn btn-secondary" onclick="showBatchImportModal()">📋 批量导入</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:80px;text-align:center;">序号</th>
+                  <th style="width:200px;text-align:center;">封面</th>
+                  <th style="width:300px;text-align:left;">课程名称</th>
+                  <th style="width:150px;text-align:left;">时长</th>
+                  <th style="width:200px;text-align:left;">学科</th>
+                  <th style="width:80px;text-align:center;">来源</th>
+                  <th style="width:130px;text-align:center;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="courseTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info">
+              <span>共 <strong id="totalRecords">0</strong> 条记录</span>
+            </div>
+            <div class="pagination-btns" id="paginationBtns"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // 状态管理
+    // ============================
+    let currentPage = 1;
+    let pageSize = 10;
+    let filteredData = [];
+    let editingCourse = null;
+
+    // 「其他学科」是表单里的兜底选项，不对应 MockData.subjects 中任何真实学科
+    const OTHER_SUBJECT_ID = 'other';
+    const OTHER_SUBJECT_NAME = '其他学科';
+
+    // ============================
+    // 初始化
+    // ============================
+    document.addEventListener('DOMContentLoaded', function() {
+      initFilters();
+      renderStats();
+      renderTable();
+    });
+
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ============================
+    // 统计数据
+    // ============================
+    function renderStats() {
+      const all = MockData.courses;
+      const total = all.length;
+
+      // 计算总时长（小时）
+      let totalMinutes = 0;
+      all.forEach(function(c) {
+        totalMinutes += c.durationMin || 0;
+      });
+      const totalHours = Math.floor(totalMinutes / 60);
+
+      // 计算关联学科数（「其他学科」是兜底选项，不计入学科数）
+      const subjectSet = new Set();
+      all.forEach(function(c) {
+        (c.subjectIds || []).forEach(function(sid) {
+          if (sid === OTHER_SUBJECT_ID) return;
+          subjectSet.add(sid);
+        });
+      });
+
+      document.getElementById('statsBar').innerHTML = [
+        '<div class="course-stat-card">',
+        '  <div class="course-stat-icon blue">🎬</div>',
+        '  <div class="course-stat-info">',
+        '    <h3>' + total + '</h3>',
+        '    <p>课程总数</p>',
+        '  </div>',
+        '</div>',
+        '<div class="course-stat-card">',
+        '  <div class="course-stat-icon green">⏱️</div>',
+        '  <div class="course-stat-info">',
+        '    <h3>' + totalHours + 'h</h3>',
+        '    <p>总时长</p>',
+        '  </div>',
+        '</div>',
+        '<div class="course-stat-card">',
+        '  <div class="course-stat-icon orange">📂</div>',
+        '  <div class="course-stat-info">',
+        '    <h3>' + subjectSet.size + ' 个</h3>',
+        '    <p>关联学科</p>',
+        '  </div>',
+        '</div>'
+      ].join('');
+    }
+
+    // ============================
+    // 筛选器初始化
+    // ============================
+    function initFilters() {
+      var subjectSelect = document.getElementById('filterSubject');
+      MockData.subjects.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); }).forEach(function(sub) {
+        var opt = document.createElement('option');
+        opt.value = sub.id;
+        opt.textContent = sub.name;
+        subjectSelect.appendChild(opt);
+      });
+    }
+
+    function getFilteredData() {
+      var keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      var subjectId = document.getElementById('filterSubject').value;
+      var source = document.getElementById('filterSource').value;
+
+      return MockData.courses.filter(function(c) {
+        if (keyword) {
+          if (c.title.toLowerCase().indexOf(keyword) === -1) return false;
+        }
+        if (subjectId) {
+          if (!c.subjectIds || c.subjectIds.indexOf(subjectId) === -1) return false;
+        }
+        if (source === 'bilibili') {
+          if (c.source !== 'bilibili') return false;
+        } else if (source === '_other') {
+          if (c.source === 'bilibili') return false;
+        }
+        return true;
+      });
+    }
+
+    function applyFilters() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    function debouncedSearch() {
+      clearTimeout(window._searchTimer);
+      window._searchTimer = setTimeout(applyFilters, 300);
+    }
+
+    // ============================
+    // 工具函数
+    // ============================
+    function getSubjectTags(subjectIds) {
+      if (!subjectIds || subjectIds.length === 0) return '<span style="color:#909399;font-size:12px;">未关联</span>';
+      return subjectIds.map(function(sid) {
+        if (sid === OTHER_SUBJECT_ID) return '<span class="subject-tag other">' + OTHER_SUBJECT_NAME + '</span>';
+        for (var i = 0; i < MockData.subjects.length; i++) {
+          if (MockData.subjects[i].id === sid) return '<span class="subject-tag">' + MockData.subjects[i].name + '</span>';
+        }
+        return '';
+      }).join('');
+    }
+
+    function formatDuration(durationStr) {
+      if (!durationStr) return '';
+      var parts = durationStr.split(':');
+      if (parts.length === 2) return parts[0] + 'h' + parts[1] + 'min';
+      if (parts.length === 3) return parseInt(parts[0], 10) + 'h' + parts[1] + 'min';
+      return durationStr;
+    }
+
+    function generateId() {
+      var maxNum = 0;
+      MockData.courses.forEach(function(c) {
+        var num = parseInt(c.id.replace('crs', ''), 10);
+        if (num > maxNum) maxNum = num;
+      });
+      return 'crs' + String(maxNum + 1).padStart(3, '0');
+    }
+
+    // ============================
+    // 表格渲染
+    // ============================
+    function renderTable() {
+      filteredData = getFilteredData();
+      var total = filteredData.length;
+      var totalPages = Math.max(1, Math.ceil(total / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      var start = (currentPage - 1) * pageSize;
+      var end = Math.min(start + pageSize, total);
+      var pageData = filteredData.slice(start, end);
+
+      var tbody = document.getElementById('courseTableBody');
+      if (pageData.length === 0) {
+        tbody.innerHTML = [
+          '<tr>',
+          '  <td colspan="7" style="text-align:center;padding:60px 0;color:#909399;">',
+          '    <div style="font-size:48px;margin-bottom:12px;">🎬</div>',
+          '    <div style="font-size:15px;">暂无匹配的课程，试试调整筛选条件</div>',
+          '  </td>',
+          '</tr>'
+        ].join('');
+      } else {
+        tbody.innerHTML = pageData.map(function(c, idx) {
+          var rowNum = start + idx + 1;
+          var thumbHtml = c.pic
+            ? '<img class="course-thumb" src="' + c.pic + '" alt="' + c.title + '" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'180\\\' height=\\\'100\\\' viewBox=\\\'0 0 180 100\\\'%3E%3Crect fill=\\\'%23f5f7fa\\\' width=\\\'180\\\' height=\\\'100\\\'/%3E%3Ctext x=\\\'90\\\' y=\\\'50\\\' text-anchor=\\\'middle\\\' fill=\\\'%23909399\\\' font-size=\\\'12\\\'%3E无封面%3C/text%3E%3C/svg%3E\'">'
+            : '<div style="width:180px;height:100px;background:#f5f7fa;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#909399;">无封面</div>';
+          return [
+            '<tr>',
+            '<td style="font-size:13px;color:#909399;text-align:center;">' + rowNum + '</td>',
+            '<td style="text-align:center;">' + thumbHtml + '</td>',
+            '<td><div class="course-title-cell">' + (c.link ? '<a href="' + c.link + '" target="_blank">' + c.title + '</a>' : c.title) + '</div></td>',
+            '<td><span class="duration-text">' + formatDuration(c.duration) + '</span></td>',
+            '<td>' + getSubjectTags(c.subjectIds) + '</td>',
+            '<td style="font-size:12px;color:#909399;text-align:center;">' + (c.source === 'bilibili' ? 'B站' : (c.source || '其他')) + '</td>',
+            '<td>',
+            '  <div class="action-btns">',
+            '    <button class="btn btn-secondary btn-sm" onclick="showEditModal(\'' + c.id + '\')">编辑</button>',
+            '    <button class="btn btn-secondary btn-sm" style="color:#f56c6c;" onclick="deleteCourse(\'' + c.id + '\')">删除</button>',
+            '  </div>',
+            '</td>',
+            '</tr>'
+          ].join('');
+        }).join('');
+      }
+
+      document.getElementById('totalRecords').textContent = total;
+      renderPagination(totalPages);
+    }
+
+    // ============================
+    // 分页
+    // ============================
+    function renderPagination(totalPages) {
+      var container = document.getElementById('paginationBtns');
+      var html = '';
+
+      html += '<button class="page-btn" onclick="goToPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>&#8249;</button>';
+
+      var startPage = Math.max(1, currentPage - 2);
+      var endPage = Math.min(totalPages, currentPage + 2);
+
+      if (startPage > 1) {
+        html += '<button class="page-btn" onclick="goToPage(1)">1</button>';
+        if (startPage > 2) html += '<button class="page-btn" disabled>...</button>';
+      }
+
+      for (var i = startPage; i <= endPage; i++) {
+        html += '<button class="page-btn' + (i === currentPage ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += '<button class="page-btn" disabled>...</button>';
+        html += '<button class="page-btn" onclick="goToPage(' + totalPages + ')">' + totalPages + '</button>';
+      }
+
+      html += '<button class="page-btn" onclick="goToPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>&#8250;</button>';
+
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      var totalPages = Math.ceil(filteredData.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    // ============================
+    // 课程删除
+    // ============================
+    function deleteCourse(id) {
+      showConfirm('确定要删除这个课程吗？此操作不可恢复。', function() {
+        var idx = -1;
+        for (var i = 0; i < MockData.courses.length; i++) {
+          if (MockData.courses[i].id === id) { idx = i; break; }
+        }
+        if (idx !== -1) MockData.courses.splice(idx, 1);
+        showToast('删除成功', 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    // ============================
+    // 新增 & 编辑 Modal
+    // ============================
+    function showAddModal() {
+      editingCourse = null;
+      showModal('新增课程', buildFormHtml(null), [
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>',
+        '<button class="btn btn-primary" onclick="saveCourse()">保存</button>'
+      ].join(''));
+    }
+
+    function showEditModal(id) {
+      var c = null;
+      for (var i = 0; i < MockData.courses.length; i++) {
+        if (MockData.courses[i].id === id) { c = MockData.courses[i]; break; }
+      }
+      if (!c) return;
+      editingCourse = c;
+      showModal('编辑课程', buildFormHtml(c), [
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>',
+        '<button class="btn btn-primary" onclick="saveCourse()">保存</button>'
+      ].join(''));
+    }
+
+    function buildFormHtml(c) {
+      var isEdit = c !== null;
+      var titleVal = isEdit ? c.title : '';
+      var durationVal = isEdit ? c.duration : '';
+      var picVal = isEdit ? (c.pic || '') : '';
+      var linkVal = isEdit ? (c.link || '') : '';
+      var sourceVal = isEdit ? (c.source || 'bilibili') : 'bilibili';
+      var currentSubjectId = isEdit && c.subjectIds && c.subjectIds.length > 0 ? c.subjectIds[0] : '';
+
+      var subjectOptions = '<option value="">— 请选择学科 —</option>';
+      MockData.subjects.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); }).forEach(function(sub) {
+        var sel = sub.id === currentSubjectId ? 'selected' : '';
+        subjectOptions += '<option value="' + sub.id + '" ' + sel + '>' + sub.icon + ' ' + sub.name + '</option>';
+      });
+      // 兜底选项：课程不属于任何已有学科时选它，排在真实学科之后
+      subjectOptions += '<option value="' + OTHER_SUBJECT_ID + '" ' + (currentSubjectId === OTHER_SUBJECT_ID ? 'selected' : '') + '>📚 ' + OTHER_SUBJECT_NAME + '</option>';
+
+      return [
+        '<div class="form-group">',
+        '  <label class="form-label">课程名称 <span style="color:#f56c6c;">*</span></label>',
+        '  <input type="text" class="form-input" id="formTitle" value="' + (titleVal || '').replace(/"/g, '&quot;') + '" placeholder="请输入课程名称">',
+        '</div>',
+        '<div class="form-group">',
+        '  <label class="form-label">封面图片</label>',
+        '  <input type="text" class="form-input" id="formPic" value="' + (picVal || '').replace(/"/g, '&quot;') + '" placeholder="请输入封面图片URL">',
+        '</div>',
+        '<div class="form-group">',
+        '  <label class="form-label">时长 <span style="color:#f56c6c;">*</span></label>',
+        '  <input type="text" class="form-input" id="formDuration" value="' + (durationVal || '') + '" placeholder="格式 小时:分钟，例如 4511:45">',
+        '  <div style="font-size:12px;color:#909399;margin-top:4px;">格式：小时:分钟，例如 4511:45</div>',
+        '</div>',
+        '<div class="form-group">',
+        '  <label class="form-label">所属学科 <span style="color:#f56c6c;">*</span></label>',
+        '  <select class="form-input" id="formSubject">' + subjectOptions + '</select>',
+        '  <div style="font-size:12px;color:#909399;margin-top:4px;">选择该课程所属的学科方向；不属于任何已有学科时，选「其他学科」</div>',
+        '</div>',
+        '<div class="form-group">',
+        '  <label class="form-label">来源</label>',
+        '  <select class="form-input" id="formSource">',
+        '    <option value="bilibili"' + (sourceVal === 'bilibili' ? ' selected' : '') + '>B站</option>',
+        '    <option value="other"' + (sourceVal === 'other' ? ' selected' : '') + '>其他</option>',
+        '  </select>',
+        '</div>',
+        '<div class="form-group">',
+        '  <label class="form-label">课程链接</label>',
+        '  <input type="url" class="form-input" id="formLink" value="' + (linkVal || '').replace(/"/g, '&quot;') + '" placeholder="请输入课程完整链接">',
+        '</div>'
+      ].join('');
+    }
+
+    function saveCourse() {
+      var title = document.getElementById('formTitle').value.trim();
+      var pic = document.getElementById('formPic').value.trim();
+      var duration = document.getElementById('formDuration').value.trim();
+      var subjectId = document.getElementById('formSubject').value;
+      var source = document.getElementById('formSource').value;
+      var link = document.getElementById('formLink').value.trim();
+
+      // 校验
+      if (!title) { showToast('请输入课程名称', 'warning'); return; }
+      if (!duration) { showToast('请输入时长', 'warning'); return; }
+      if (!subjectId) { showToast('请选择所属学科', 'warning'); return; }
+
+      // 计算 durationMin
+      var durationMin = 0;
+      var parts = duration.split(':');
+      if (parts.length === 2) {
+        durationMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      } else if (parts.length === 3) {
+        durationMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      } else {
+        durationMin = parseInt(duration, 10) || 0;
+      }
+
+      // 保持与现有数据兼容：bvid 用 auto 前缀，playCount 默认为0
+      var courseData = {
+        bvid: 'auto_' + String(Date.now()).slice(-6),
+        title: title,
+        duration: duration,
+        durationMin: durationMin,
+        playCount: 0,
+        pic: pic || '',
+        subjectIds: [subjectId],
+        source: source === 'bilibili' ? 'bilibili' : '',
+        link: link || ''
+      };
+
+      if (editingCourse) {
+        // 编辑
+        editingCourse.title = courseData.title;
+        editingCourse.duration = courseData.duration;
+        editingCourse.durationMin = courseData.durationMin;
+        editingCourse.pic = courseData.pic;
+        editingCourse.subjectIds = courseData.subjectIds;
+        editingCourse.source = courseData.source;
+        editingCourse.link = courseData.link;
+        showToast('保存成功', 'success');
+      } else {
+        // 新增
+        courseData.id = generateId();
+        MockData.courses.push(courseData);
+        showToast('新增成功', 'success');
+      }
+
+      document.querySelector('.modal-overlay')?.remove();
+      renderTable();
+      renderStats();
+    }
+
+    // ============================
+    // 批量导入
+    // ============================
+    function showBatchImportModal() {
+      var bodyHtml = [
+        '<div style="max-height:540px;overflow-y:auto;padding:0 4px;">',
+        '  <div class="batch-import-format">',
+        '    <strong>📋 导入格式说明</strong>',
+        '    <div style="margin-top:8px;">每行一条课程，用 <strong>|</strong> 分隔字段：</div>',
+        '    <code>课程名称 | 时长(分钟) | 学科名称 | 来源 | 课程链接 | 封面URL(可选)</code>',
+        '    <div style="margin-top:8px;color:#909399;">学科名称填写：AI应用与智能体开发、AI大模型开发、AI具身智能机器人开发、AI嵌入式_机器人开发、AI测试、AI运维、AI视觉设计、AI视频与短剧创作</div>',
+        '    <div style="margin-top:4px;color:#909399;">来源填写：B站 或 其他（留空默认为B站）</div>',
+        '    <div style="margin-top:12px;"><strong>示例：</strong></div>',
+        '    <code>Java零基础视频教程 | 4512 | AI应用与智能体开发 | B站 | https://www.bilibili.com/video/BV17F411T7Ao | https://pic.jpg</code>',
+        '  </div>',
+        '  <div class="form-group">',
+        '    <label style="font-weight:600;font-size:14px;color:#303133;">粘贴课程数据</label>',
+        '    <textarea class="batch-import-textarea" id="batchInput" placeholder="请按上方格式粘贴课程数据，每行一条..."></textarea>',
+        '  </div>',
+        '  <div id="batchPreview"></div>',
+        '</div>'
+      ].join('');
+
+      var footerHtml = [
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>',
+        '<button class="btn btn-primary" onclick="previewBatchImport()">🔍 预览</button>',
+        '<button class="btn btn-success" id="confirmBatchBtn" onclick="confirmBatchImport()" style="display:none;background:#67c23a;color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;">✅ 确认导入</button>'
+      ].join('');
+
+      showModal('批量导入B站课程', bodyHtml, footerHtml);
+    }
+
+    function parseBatchLines(text) {
+      var lines = text.split('\n').filter(function(line) {
+        return line.trim().length > 0;
+      });
+
+      var results = [];
+      var seenTitles = {};
+
+      lines.forEach(function(line, idx) {
+        var parts = line.split('|').map(function(p) { return p.trim(); });
+        var title = parts[0] || '';
+        var durationStr = parts[1] || '';
+        var subjectName = parts[2] || '';
+        var source = parts[3] || 'B站';
+        var link = parts[4] || '';
+        var pic = parts[5] || '';
+
+        var errors = [];
+        var warnings = [];
+
+        // Validate
+        if (!title) errors.push('缺少课程名称');
+        var durationMin = parseInt(durationStr, 10);
+        if (!durationStr || isNaN(durationMin) || durationMin <= 0) errors.push('时长无效');
+
+        // Find subject
+        var subjectId = '';
+        if (subjectName) {
+          for (var i = 0; i < MockData.subjects.length; i++) {
+            if (MockData.subjects[i].name.indexOf(subjectName.replace(/^[^\w]/,'')) !== -1 ||
+                subjectName.indexOf(MockData.subjects[i].name) !== -1 ||
+                MockData.subjects[i].name === subjectName) {
+              subjectId = MockData.subjects[i].id;
+              break;
+            }
+          }
+          // Try fuzzy match by keyword
+          if (!subjectId) {
+            for (var i = 0; i < MockData.subjects.length; i++) {
+              if (subjectName.indexOf(MockData.subjects[i].name.replace(/[☕🌐🐍⚙️🤖🧠🧪🔧🔩]/g,'').trim()) !== -1) {
+                subjectId = MockData.subjects[i].id;
+                break;
+              }
+            }
+          }
+          if (!subjectId) errors.push('未找到学科「' + subjectName + '」');
+        } else {
+          errors.push('缺少学科');
+        }
+
+        // Check duplicate by title
+        var isDuplicate = false;
+        for (var i = 0; i < MockData.courses.length; i++) {
+          if (MockData.courses[i].title === title) { isDuplicate = true; break; }
+        }
+        if (isDuplicate) warnings.push('已存在同名课程');
+
+        // Build status
+        var status = errors.length > 0 ? 'error' : (warnings.length > 0 ? 'warning' : 'ok');
+
+        results.push({
+          line: idx + 1,
+          title: title,
+          durationMin: isNaN(durationMin) ? 0 : durationMin,
+          duration: Math.floor(durationMin / 60) + ':' + (durationMin % 60 < 10 ? '0' : '') + (durationMin % 60),
+          subjectId: subjectId,
+          subjectName: subjectName,
+          source: source === 'B站' ? 'bilibili' : '',
+          sourceLabel: source || 'B站',
+          link: link,
+          pic: pic,
+          errors: errors,
+          warnings: warnings,
+          status: status,
+          isValid: errors.length === 0
+        });
+      });
+
+      return results;
+    }
+
+    function previewBatchImport() {
+      var text = document.getElementById('batchInput').value;
+      if (!text.trim()) {
+        showToast('请先粘贴课程数据', 'warning');
+        return;
+      }
+
+      var parsed = parseBatchLines(text);
+      var container = document.getElementById('batchPreview');
+      var validCount = parsed.filter(function(p) { return p.isValid; }).length;
+      var errorCount = parsed.length - validCount;
+
+      var html = [
+        '<div style="margin-top:16px;padding:12px 16px;background:#f0f9eb;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">',
+        '  <span style="font-size:14px;font-weight:500;color:#303133;">📊 共解析 <strong>' + parsed.length + '</strong> 条，有效 <strong style="color:#67c23a;">' + validCount + '</strong> 条' + (errorCount > 0 ? '，<strong style="color:#f56c6c;">' + errorCount + '</strong> 条有误' : '') + '</span>',
+        '</div>'
+      ].join('');
+
+      if (parsed.length === 0) {
+        html += '<div style="text-align:center;padding:40px;color:#909399;">未能解析到有效数据，请检查格式</div>';
+      } else {
+        html += '<table class="batch-preview-table"><thead><tr>' +
+          '<th style="width:40px;">#</th>' +
+          '<th>课程名称</th>' +
+          '<th style="width:60px;">时长</th>' +
+          '<th style="width:80px;">学科</th>' +
+          '<th style="width:50px;">来源</th>' +
+          '<th>状态</th>' +
+          '</tr></thead><tbody>';
+
+        parsed.forEach(function(p) {
+          var statusIcon = p.status === 'ok' ? '✅' : (p.status === 'warning' ? '⚠️' : '❌');
+          var statusText = p.status === 'ok' ? '有效' : (p.status === 'warning' ? '警告' : '无效');
+          var statusClass = p.status === 'ok' ? 'status-ok' : (p.status === 'warning' ? 'status-duplicate' : 'status-err');
+          var reason = p.errors.concat(p.warnings).join('; ');
+
+          var subjName = '';
+          for (var i = 0; i < MockData.subjects.length; i++) {
+            if (MockData.subjects[i].id === p.subjectId) { subjName = MockData.subjects[i].name; break; }
+          }
+
+          html += '<tr>' +
+            '<td style="color:#909399;">' + p.line + '</td>' +
+            '<td>' + (p.title || '<span style="color:#f56c6c;">(无名称)</span>') + '</td>' +
+            '<td>' + (p.durationMin > 0 ? p.duration : '-') + '</td>' +
+            '<td>' + (subjName || '<span style="color:#f56c6c;">' + p.subjectName + '</span>') + '</td>' +
+            '<td>' + p.sourceLabel + '</td>' +
+            '<td class="' + statusClass + '">' + statusIcon + ' ' + statusText + (reason ? '<br><span style="font-size:11px;">' + reason + '</span>' : '') + '</td>' +
+            '</tr>';
+        });
+
+        html += '</tbody></table>';
+      }
+
+      container.innerHTML = html;
+
+      // Show/hide confirm button
+      var confirmBtn = document.getElementById('confirmBatchBtn');
+      if (confirmBtn) {
+        if (validCount > 0) {
+          confirmBtn.style.display = 'inline-flex';
+        } else {
+          confirmBtn.style.display = 'none';
+        }
+      }
+    }
+
+    function confirmBatchImport() {
+      var text = document.getElementById('batchInput').value;
+      var parsed = parseBatchLines(text);
+      var valid = parsed.filter(function(p) { return p.isValid; });
+
+      if (valid.length === 0) {
+        showToast('没有有效数据可导入', 'warning');
+        return;
+      }
+
+      valid.forEach(function(p) {
+        MockData.courses.push({
+          id: generateId(),
+          bvid: 'auto_' + String(Date.now()).slice(-4) + String(Math.random()).slice(2, 6),
+          title: p.title,
+          duration: p.duration,
+          durationMin: p.durationMin,
+          playCount: 0,
+          pic: p.pic || '',
+          subjectIds: [p.subjectId],
+          source: p.source,
+          link: p.link || ''
+        });
+      });
+
+      document.querySelector('.modal-overlay')?.remove();
+      renderTable();
+      renderStats();
+      showToast('成功导入 ' + valid.length + ' 门课程', 'success');
+    }
+  </script>
+</body>
+</html>

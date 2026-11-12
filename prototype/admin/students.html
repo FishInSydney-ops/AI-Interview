@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学员管理 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      width: 200px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .filter-select {
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      color: #606266;
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    .table .col-checkbox {
+      width: 40px;
+      text-align: center;
+    }
+
+    .table input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #409eff;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .user-cell:hover .user-info h4 {
+      color: #409eff;
+    }
+
+    .user-info h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      transition: color 0.2s;
+    }
+
+    .user-info p {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .status-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .status-tag.active {
+      background: rgba(103, 194, 58, 0.1);
+      color: #67c23a;
+    }
+
+    .status-tag.disabled {
+      background: rgba(144, 147, 153, 0.1);
+      color: #909399;
+    }
+
+    .operation-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .operation-btns .btn-sm {
+      white-space: nowrap;
+    }
+
+    .batch-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: #f0f9ff;
+      border-bottom: 1px solid #e4e7ed;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .batch-actions .selected-count {
+      font-weight: 600;
+      color: #409eff;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .page-btn.active {
+      background: #409eff;
+      color: white;
+      border-color: #409eff;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #909399;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Stat cards */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #909399;
+      margin-top: 2px;
+    }
+
+    /* Detail modal */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+
+    .detail-profile {
+      text-align: center;
+      padding-right: 24px;
+      border-right: 1px solid #f0f2f5;
+    }
+
+    .detail-profile .user-avatar {
+      width: 64px;
+      height: 64px;
+      font-size: 24px;
+      margin: 0 auto 12px;
+    }
+
+    .detail-profile h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .detail-role {
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #909399;
+    }
+
+    .detail-info {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+    }
+
+    .detail-info li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f7fa;
+      font-size: 13px;
+    }
+
+    .detail-info .label {
+      color: #909399;
+    }
+
+    .detail-info .value {
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .detail-section h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #303133;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stats-row .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+
+    .stats-row .num {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .stats-row .num.blue { color: #409eff; }
+    .stats-row .num.green { color: #67c23a; }
+    .stats-row .num.orange { color: #e6a23c; }
+    .stats-row .num.purple { color: #9b59b6; }
+
+    .stats-row .desc {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+
+    .activity-log {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .activity-log li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f7fa;
+    }
+
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #409eff;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .activity-content .action {
+      font-size: 13px;
+      color: #303133;
+    }
+
+    .activity-content .time {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 2px;
+    }
+
+    /* Toggle switch */
+    .toggle-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .toggle-track {
+      width: 40px;
+      height: 22px;
+      border-radius: 11px;
+      background: #dcdfe6;
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch input:checked + .toggle-track {
+      background: #409eff;
+    }
+
+    .toggle-switch input:checked + .toggle-track::after {
+      transform: translateX(18px);
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      color: #606266;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item active">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">学员管理</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap" onclick="toggleAdminDropdown(event)">
+            <div class="admin-avatar">管</div>
+            <span class="admin-name">管理员</span>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="card">
+          <!-- Search & Filter Bar -->
+          <div class="card-header">
+            <div class="search-bar">
+              <input type="text" class="search-input" id="searchInput" placeholder="搜索昵称/手机号..." oninput="filterStudents()">
+              <select class="filter-select" id="statusFilter" onchange="filterStudents()">
+                <option value="">全部状态</option>
+                <option value="active">已启用</option>
+                <option value="disabled">已禁用</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="batchEnable()">批量启用</button>
+              <button class="btn btn-secondary btn-sm" onclick="batchDisable()">批量禁用</button>
+              <button class="btn btn-danger btn-sm" onclick="batchDelete()">批量删除</button>
+            </div>
+          </div>
+
+          <!-- Batch Action Bar -->
+          <div class="batch-actions" id="batchActions" style="display:none;">
+            <span>已选择 <span class="selected-count" id="selectedCount">0</span> 项</span>
+            <button class="btn btn-secondary btn-sm" onclick="clearSelection()">取消选择</button>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrapper">
+            <table class="table" id="studentTable">
+              <thead>
+                <tr>
+                  <th class="col-checkbox"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                  <th>学员</th>
+                  <th>手机号</th>
+                  <th>注册时间</th>
+                  <th>学习天数</th>
+                  <th>刷题/面试</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="studentTableBody">
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <div class="pagination-info" id="paginationInfo">共 0 条记录</div>
+            <div class="pagination-btns">
+              <button class="page-btn" onclick="prevPage()">‹</button>
+              <button class="page-btn active" id="page1">1</button>
+              <button class="page-btn" id="page2" onclick="goPage(2)">2</button>
+              <button class="page-btn" id="page3" onclick="goPage(3)">3</button>
+              <button class="page-btn" onclick="nextPage()">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // State
+    // ============================
+    let students = JSON.parse(JSON.stringify(MockData.students));
+    let filteredStudents = [];
+    let selectedStudentIds = new Set();
+    let currentPage = 1;
+    const PAGE_SIZE = 8;
+
+    const avatarColors = [
+      'linear-gradient(135deg, #667eea, #764ba2)',
+      'linear-gradient(135deg, #43e97b, #38f9d7)',
+      'linear-gradient(135deg, #fa709a, #fee140)',
+      'linear-gradient(135deg, #4facfe, #00f2fe)',
+      'linear-gradient(135deg, #f093fb, #f5576c)',
+      'linear-gradient(135deg, #4bc0c8, #c779d0)'
+    ];
+
+    function getAvatarColor(index) {
+      return avatarColors[index % avatarColors.length];
+    }
+
+    function getFirstChar(name) {
+      return name ? name.charAt(0) : '?';
+    }
+
+    // ============================
+    // Render
+    // ============================
+    function renderTable() {
+      const tbody = document.getElementById('studentTableBody');
+      const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+      const statusVal = document.getElementById('statusFilter').value;
+
+      filteredStudents = students.filter(s => {
+        const matchSearch = !searchVal || s.nickname.toLowerCase().includes(searchVal) || s.phone.includes(searchVal);
+        const matchStatus = !statusVal || s.status === statusVal;
+        return matchSearch && matchStatus;
+      });
+
+      const total = filteredStudents.length;
+      const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, total);
+      const pageData = filteredStudents.slice(start, end);
+
+      document.getElementById('paginationInfo').textContent = `共 ${total} 条记录，第 ${currentPage}/${totalPages} 页`;
+      updatePagination(totalPages);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <p>没有找到匹配的学员</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = pageData.map((s, idx) => {
+        const globalIdx = students.indexOf(s);
+        const statusLabel = s.status === 'active' ? '已启用' : '已禁用';
+        const statusClass = s.status === 'active' ? 'active' : 'disabled';
+        const toggleAction = s.status === 'active' ? '禁用' : '启用';
+        const toggleColor = s.status === 'active' ? '#f56c6c' : '#67c23a';
+        const checked = selectedStudentIds.has(s.id) ? 'checked' : '';
+
+        return `
+          <tr>
+            <td class="col-checkbox"><input type="checkbox" class="row-checkbox" data-id="${s.id}" ${checked} onchange="toggleRow('${s.id}')"></td>
+            <td>
+              <div class="user-cell" onclick="showStudentDetail('${s.id}')">
+                <div class="user-avatar" style="width:36px;height:36px;font-size:12px;background:${getAvatarColor(globalIdx)};">${getFirstChar(s.nickname)}</div>
+                <div class="user-info">
+                  <h4>${s.nickname}</h4>
+                </div>
+              </div>
+            </td>
+            <td>${s.phone}</td>
+            <td style="font-size:13px;color:#909399;">${s.registerTime}</td>
+            <td style="font-size:13px;color:#606266;">${s.studyDays}天</td>
+            <td style="font-size:13px;color:#606266;">${s.practiceCount}题 / ${s.interviewCount}次</td>
+            <td><span class="status-tag ${statusClass}">${statusLabel}</span></td>
+            <td>
+              <div class="operation-btns">
+                <button class="btn btn-secondary btn-sm" onclick="showStudentDetail('${s.id}')">查看详情</button>
+                <button class="btn btn-secondary btn-sm" style="color:${toggleColor};" onclick="toggleStudentStatus('${s.id}')">${toggleAction}</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStudent('${s.id}')">删除</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      updateBatchBar();
+    }
+
+    function updatePagination(totalPages) {
+      document.getElementById('page1').textContent = '1';
+      document.getElementById('page2').textContent = totalPages >= 2 ? '2' : '';
+      document.getElementById('page3').textContent = totalPages >= 3 ? '3' : '';
+      [1,2,3].forEach(i => {
+        const btn = document.getElementById('page' + i);
+        btn.classList.toggle('active', i === currentPage);
+        btn.style.display = i <= totalPages ? '' : 'none';
+      });
+    }
+
+    function prevPage() {
+      if (currentPage > 1) { currentPage--; renderTable(); }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE) || 1;
+      if (currentPage < totalPages) { currentPage++; renderTable(); }
+    }
+
+    function goPage(p) {
+      currentPage = p;
+      renderTable();
+    }
+
+    // ============================
+    // Filter
+    // ============================
+    function filterStudents() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    // ============================
+    // Selection
+    // ============================
+    function toggleSelectAll() {
+      const checked = document.getElementById('selectAll').checked;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, filteredStudents.length);
+      const pageData = filteredStudents.slice(start, end);
+      pageData.forEach(s => {
+        if (checked) selectedStudentIds.add(s.id);
+        else selectedStudentIds.delete(s.id);
+      });
+      renderTable();
+    }
+
+    function toggleRow(id) {
+      if (selectedStudentIds.has(id)) selectedStudentIds.delete(id);
+      else selectedStudentIds.add(id);
+      updateBatchBar();
+      updateSelectAllCheckbox();
+    }
+
+    function updateBatchBar() {
+      const bar = document.getElementById('batchActions');
+      const count = selectedStudentIds.size;
+      document.getElementById('selectedCount').textContent = count;
+      bar.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    function updateSelectAllCheckbox() {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, filteredStudents.length);
+      const pageData = filteredStudents.slice(start, end);
+      const allChecked = pageData.length > 0 && pageData.every(s => selectedStudentIds.has(s.id));
+      document.getElementById('selectAll').checked = allChecked;
+    }
+
+    function clearSelection() {
+      selectedStudentIds.clear();
+      renderTable();
+    }
+
+    function getSelectedStudents() {
+      return students.filter(s => selectedStudentIds.has(s.id));
+    }
+
+    // ============================
+    // Student Operations
+    // ============================
+    function toggleStudentStatus(id) {
+      const student = students.find(s => s.id === id);
+      if (!student) return;
+      const newStatus = student.status === 'active' ? 'disabled' : 'active';
+      const label = newStatus === 'active' ? '启用' : '禁用';
+      showConfirm(`确认${label}学员「${student.nickname}」吗？`, () => {
+        student.status = newStatus;
+        showToast(`学员已${label}`, 'success');
+        renderTable();
+      });
+    }
+
+    function deleteStudent(id) {
+      const student = students.find(s => s.id === id);
+      if (!student) return;
+      showConfirm(`确认删除学员「${student.nickname}」吗？<br><br><strong style="color:#f56c6c;">此操作不可恢复！</strong>`, () => {
+        const idx = students.indexOf(student);
+        if (idx > -1) students.splice(idx, 1);
+        showToast('学员已删除', 'success');
+        renderTable();
+      });
+    }
+
+    // ============================
+    // Student Detail
+    // ============================
+    function showStudentDetail(id) {
+      const s = students.find(st => st.id === id);
+      if (!s) return;
+
+      const avatarColor = getAvatarColor(students.indexOf(s));
+      const statusLabel = s.status === 'active' ? '已启用' : '已禁用';
+
+      const bodyHtml = `
+        <div class="detail-grid">
+          <div class="detail-profile">
+            <div class="user-avatar" style="background:${avatarColor};">${getFirstChar(s.nickname)}</div>
+            <h3>${s.nickname}</h3>
+            <div class="detail-role"><span class="status-tag ${s.status}">${statusLabel}</span></div>
+            <ul class="detail-info">
+              <li><span class="label">手机号</span><span class="value">${s.phone}</span></li>
+              <li><span class="label">邮箱</span><span class="value">${s.email || '-'}</span></li>
+              <li><span class="label">注册时间</span><span class="value">${s.registerTime}</span></li>
+              <li><span class="label">最后登录</span><span class="value">${s.lastLogin}</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="detail-section">
+              <h4>学习统计</h4>
+              <div class="stats-row">
+                <div class="stat-item">
+                  <div class="num blue">${s.studyDays}</div>
+                  <div class="desc">学习天数</div>
+                </div>
+                <div class="stat-item">
+                  <div class="num green">${s.courseCount}</div>
+                  <div class="desc">已学课程</div>
+                </div>
+                <div class="stat-item">
+                  <div class="num orange">${s.practiceCount}</div>
+                  <div class="desc">刷题总数</div>
+                </div>
+                <div class="stat-item">
+                  <div class="num purple">${s.accuracy}%</div>
+                  <div class="desc">正确率</div>
+                </div>
+              </div>
+            </div>
+            <div class="detail-section">
+              <h4>面试记录</h4>
+              <div style="text-align:center;padding:16px;background:#f5f7fa;border-radius:8px;">
+                <div style="font-size:28px;font-weight:700;color:#409eff;">${s.interviewCount}</div>
+                <div style="font-size:13px;color:#909399;margin-top:4px;">累计面试次数</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      showModal('学员详情', bodyHtml);
+    }
+
+    // ============================
+    // Batch Operations
+    // ============================
+    function batchEnable() {
+      const selected = getSelectedStudents();
+      if (selected.length === 0) { showToast('请先选择学员', 'warning'); return; }
+      const names = selected.map(s => s.nickname).join(', ');
+      showConfirm(`确认启用以下学员吗？<br><small>${names}</small>`, () => {
+        selected.forEach(s => s.status = 'active');
+        showToast(`已启用 ${selected.length} 个学员`, 'success');
+        selectedStudentIds.clear();
+        renderTable();
+      });
+    }
+
+    function batchDisable() {
+      const selected = getSelectedStudents();
+      if (selected.length === 0) { showToast('请先选择学员', 'warning'); return; }
+      const names = selected.map(s => s.nickname).join(', ');
+      showConfirm(`确认禁用以下学员吗？<br><small>${names}</small>`, () => {
+        selected.forEach(s => s.status = 'disabled');
+        showToast(`已禁用 ${selected.length} 个学员`, 'success');
+        selectedStudentIds.clear();
+        renderTable();
+      });
+    }
+
+    function batchDelete() {
+      const selected = getSelectedStudents();
+      if (selected.length === 0) { showToast('请先选择学员', 'warning'); return; }
+      const names = selected.map(s => s.nickname).join(', ');
+      showConfirm(`确认删除以下学员吗？<br><small>${names}</small><br><br><strong style="color:#f56c6c;">此操作不可恢复！</strong>`, () => {
+        selected.forEach(s => {
+          const idx = students.indexOf(s);
+          if (idx > -1) students.splice(idx, 1);
+        });
+        showToast(`已删除 ${selected.length} 个学员`, 'success');
+        selectedStudentIds.clear();
+        renderTable();
+      });
+    }
+
+    // ============================
+    // Toggle Sidebar & Login
+    // ============================
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    // ============================
+    // Init
+    // ============================
+    renderTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户管理 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      width: 200px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .filter-select {
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      color: #606266;
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    .table th:first-child,
+    .table td:first-child {
+      width: 40px;
+      text-align: center;
+    }
+
+    .table .col-checkbox {
+      width: 40px;
+      text-align: center;
+    }
+
+    .table input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #409eff;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .user-cell:hover .user-info h4 {
+      color: #409eff;
+    }
+
+    .user-info h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      transition: color 0.2s;
+    }
+
+    .user-info p {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    .status-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .status-tag.active {
+      background: rgba(103, 194, 58, 0.1);
+      color: #67c23a;
+    }
+
+    .status-tag.disabled {
+      background: rgba(144, 147, 153, 0.1);
+      color: #909399;
+    }
+
+    .operation-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .operation-btns .btn-sm {
+      white-space: nowrap;
+    }
+
+    /* Batch action bar */
+    .batch-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: #f0f9ff;
+      border-bottom: 1px solid #e4e7ed;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .batch-actions .selected-count {
+      font-weight: 600;
+      color: #409eff;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .page-btn.active {
+      background: #409eff;
+      border-color: #409eff;
+      color: white;
+    }
+
+    /* Modal form styles */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #606266;
+      margin-bottom: 6px;
+    }
+
+    .form-group .required::after {
+      content: ' *';
+      color: #f56c6c;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Toggle switch */
+    .toggle-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .toggle-track {
+      width: 44px;
+      height: 22px;
+      background: #dcdfe6;
+      border-radius: 11px;
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-track {
+      background: #67c23a;
+    }
+
+    .toggle-switch input:checked + .toggle-track::after {
+      transform: translateX(22px);
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      color: #606266;
+    }
+
+    /* Detail modal */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+
+    .detail-profile {
+      text-align: center;
+      padding: 24px;
+      background: #f5f7fa;
+      border-radius: 12px;
+    }
+
+    .detail-profile .user-avatar {
+      width: 72px;
+      height: 72px;
+      font-size: 24px;
+      margin: 0 auto 12px;
+    }
+
+    .detail-profile h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 4px;
+    }
+
+    .detail-profile .detail-role {
+      font-size: 13px;
+      color: #909399;
+      margin-bottom: 16px;
+    }
+
+    .detail-info {
+      list-style: none;
+      text-align: left;
+    }
+
+    .detail-info li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e4e7ed;
+      font-size: 14px;
+    }
+
+    .detail-info li:last-child {
+      border-bottom: none;
+    }
+
+    .detail-info .label {
+      color: #909399;
+    }
+
+    .detail-info .value {
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-section h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px 12px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+
+    .stat-item .num {
+      font-size: 22px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .stat-item .num.green { color: #67c23a; }
+    .stat-item .num.blue { color: #409eff; }
+    .stat-item .num.orange { color: #e6a23c; }
+    .stat-item .num.purple { color: #764ba2; }
+
+    .stat-item .desc {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+
+    .activity-log {
+      list-style: none;
+    }
+
+    .activity-log li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .activity-log li:last-child {
+      border-bottom: none;
+    }
+
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #409eff;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-content .action {
+      font-size: 14px;
+      color: #303133;
+    }
+
+    .activity-content .action span {
+      color: #409eff;
+    }
+
+    .activity-content .time {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #909399;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Responsive for detail grid */
+    @media (max-width: 768px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item active">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">用户管理</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="card">
+          <!-- Search & Filter Bar -->
+          <div class="card-header">
+            <div class="search-bar">
+              <input type="text" class="search-input" id="searchInput" placeholder="搜索用户名/手机号..." oninput="filterUsers()">
+              <select class="filter-select" id="roleFilter" onchange="filterUsers()">
+                <option value="">全部角色</option>
+                <option value="超级管理员">超级管理员</option>
+                <option value="管理员">管理员</option>
+                <option value="内容编辑">内容编辑</option>
+                <option value="运营人员">运营人员</option>
+              </select>
+              <select class="filter-select" id="statusFilter" onchange="filterUsers()">
+                <option value="">全部状态</option>
+                <option value="active">已启用</option>
+                <option value="disabled">已禁用</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="batchEnable()">批量启用</button>
+              <button class="btn btn-secondary btn-sm" onclick="batchDisable()">批量禁用</button>
+              <button class="btn btn-danger btn-sm" onclick="batchDelete()">批量删除</button>
+              <button class="btn btn-primary" onclick="showAddUserModal()">+ 新增用户</button>
+            </div>
+          </div>
+
+          <!-- Batch Action Bar -->
+          <div class="batch-actions" id="batchActions" style="display:none;">
+            <span>已选择 <span class="selected-count" id="selectedCount">0</span> 项</span>
+            <button class="btn btn-secondary btn-sm" onclick="clearSelection()">取消选择</button>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrapper">
+            <table class="table" id="userTable">
+              <thead>
+                <tr>
+                  <th class="col-checkbox"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                  <th>用户</th>
+                  <th>手机号</th>
+                  <th>角色</th>
+                  <th>状态</th>
+                  <th>最后登录</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <div class="pagination-info" id="paginationInfo">共 0 条记录</div>
+            <div class="pagination-btns">
+              <button class="page-btn" onclick="prevPage()">‹</button>
+              <button class="page-btn active" id="page1">1</button>
+              <button class="page-btn" id="page2" onclick="goPage(2)">2</button>
+              <button class="page-btn" id="page3" onclick="goPage(3)">3</button>
+              <button class="page-btn" onclick="nextPage()">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // State
+    // ============================
+    let users = JSON.parse(JSON.stringify(MockData.adminUsers));
+    let filteredUsers = [];
+    let selectedUserIds = new Set();
+    let currentPage = 1;
+    const PAGE_SIZE = 8;
+
+    // Avatars pool
+    const avatarColors = [
+      'linear-gradient(135deg, #667eea, #764ba2)',
+      'linear-gradient(135deg, #43e97b, #38f9d7)',
+      'linear-gradient(135deg, #fa709a, #fee140)',
+      'linear-gradient(135deg, #4facfe, #00f2fe)',
+      'linear-gradient(135deg, #f093fb, #f5576c)',
+      'linear-gradient(135deg, #4bc0c8, #c779d0)'
+    ];
+
+    function getAvatarColor(index) {
+      return avatarColors[index % avatarColors.length];
+    }
+
+    function getFirstChar(name) {
+      return name ? name.charAt(0) : '?';
+    }
+
+    // ============================
+    // Render
+    // ============================
+    function renderTable() {
+      const tbody = document.getElementById('userTableBody');
+      const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+      const roleVal = document.getElementById('roleFilter').value;
+      const statusVal = document.getElementById('statusFilter').value;
+
+      filteredUsers = users.filter(u => {
+        const matchSearch = !searchVal || u.username.toLowerCase().includes(searchVal) || u.phone.includes(searchVal);
+        const matchRole = !roleVal || u.role === roleVal;
+        const matchStatus = !statusVal || u.status === statusVal;
+        return matchSearch && matchRole && matchStatus;
+      });
+
+      const total = filteredUsers.length;
+      const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, total);
+      const pageData = filteredUsers.slice(start, end);
+
+      document.getElementById('paginationInfo').textContent = `共 ${total} 条记录，第 ${currentPage}/${totalPages} 页`;
+      updatePagination(totalPages);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <p>没有找到匹配的用户</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = pageData.map((u, idx) => {
+        const globalIdx = users.indexOf(u);
+        const statusLabel = u.status === 'active' ? '已启用' : '已禁用';
+        const statusClass = u.status === 'active' ? 'active' : 'disabled';
+        const toggleAction = u.status === 'active' ? '禁用' : '启用';
+        const toggleColor = u.status === 'active' ? '#f56c6c' : '#67c23a';
+        const roleBadgeClass = u.role === '超级管理员' ? 'badge-danger' : u.role === '管理员' ? 'badge-warning' : u.role === '内容编辑' ? 'badge-primary' : 'badge-success';
+        const checked = selectedUserIds.has(u.id) ? 'checked' : '';
+
+        return `
+          <tr>
+            <td class="col-checkbox"><input type="checkbox" class="row-checkbox" data-id="${u.id}" ${checked} onchange="toggleRow('${u.id}')"></td>
+            <td>
+              <div class="user-cell" onclick="showUserDetail('${u.id}')">
+                <div class="user-avatar" style="width:36px;height:36px;font-size:12px;background:${getAvatarColor(globalIdx)};">${getFirstChar(u.username)}</div>
+                <div class="user-info">
+                  <h4>${u.username}</h4>
+                </div>
+              </div>
+            </td>
+            <td>${u.phone}</td>
+            <td><span class="badge ${roleBadgeClass}">${u.role}</span></td>
+            <td><span class="status-tag ${statusClass}">${statusLabel}</span></td>
+            <td style="font-size:13px;color:#606266;">${u.lastLogin}</td>
+            <td>
+              <div class="operation-btns">
+                <button class="btn btn-secondary btn-sm" onclick="showEditUserModal('${u.id}')">编辑</button>
+                <button class="btn btn-secondary btn-sm" style="color:${toggleColor};" onclick="toggleUserStatus('${u.id}')">${toggleAction}</button>
+                <button class="btn btn-secondary btn-sm" onclick="resetPassword('${u.id}')">重置密码</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">删除</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      updateBatchBar();
+    }
+
+    function updatePagination(totalPages) {
+      document.getElementById('page1').textContent = '1';
+      document.getElementById('page2').textContent = totalPages >= 2 ? '2' : '';
+      document.getElementById('page3').textContent = totalPages >= 3 ? '3' : '';
+      [1,2,3].forEach(i => {
+        const btn = document.getElementById('page' + i);
+        btn.classList.toggle('active', i === currentPage);
+        btn.style.display = i <= totalPages ? '' : 'none';
+      });
+    }
+
+    function prevPage() {
+      if (currentPage > 1) { currentPage--; renderTable(); }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE) || 1;
+      if (currentPage < totalPages) { currentPage++; renderTable(); }
+    }
+
+    function goPage(p) {
+      currentPage = p;
+      renderTable();
+    }
+
+    // ============================
+    // Filter
+    // ============================
+    function filterUsers() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    // ============================
+    // Selection
+    // ============================
+    function toggleSelectAll() {
+      const checked = document.getElementById('selectAll').checked;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, filteredUsers.length);
+      const pageData = filteredUsers.slice(start, end);
+      pageData.forEach(u => {
+        if (checked) selectedUserIds.add(u.id);
+        else selectedUserIds.delete(u.id);
+      });
+      renderTable();
+    }
+
+    function toggleRow(id) {
+      if (selectedUserIds.has(id)) selectedUserIds.delete(id);
+      else selectedUserIds.add(id);
+      updateBatchBar();
+      updateSelectAllCheckbox();
+    }
+
+    function updateBatchBar() {
+      const bar = document.getElementById('batchActions');
+      const count = selectedUserIds.size;
+      document.getElementById('selectedCount').textContent = count;
+      bar.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    function updateSelectAllCheckbox() {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, filteredUsers.length);
+      const pageData = filteredUsers.slice(start, end);
+      const allChecked = pageData.length > 0 && pageData.every(u => selectedUserIds.has(u.id));
+      document.getElementById('selectAll').checked = allChecked;
+    }
+
+    function clearSelection() {
+      selectedUserIds.clear();
+      renderTable();
+    }
+
+    function getSelectedUsers() {
+      return users.filter(u => selectedUserIds.has(u.id));
+    }
+
+    // ============================
+    // User CRUD
+    // ============================
+    function showAddUserModal() {
+      const bodyHtml = `
+        <form id="userForm" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="required">用户名</label>
+              <input type="text" class="form-control" id="formUsername" placeholder="请输入用户名" required>
+            </div>
+            <div class="form-group">
+              <label class="required">手机号</label>
+              <input type="text" class="form-control" id="formPhone" placeholder="请输入手机号" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>邮箱</label>
+              <input type="email" class="form-control" id="formEmail" placeholder="请输入邮箱（选填）">
+            </div>
+            <div class="form-group">
+              <label class="required">角色</label>
+              <select class="form-control" id="formRole">
+                <option value="管理员">管理员</option>
+                <option value="内容编辑">内容编辑</option>
+                <option value="运营人员">运营人员</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="required">密码</label>
+              <input type="password" class="form-control" id="formPassword" placeholder="请输入密码" required>
+              <div class="form-hint">至少6位字符</div>
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <div style="margin-top:8px;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="formStatus" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-label" id="formStatusLabel">已启用</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      `;
+      const footerHtml = `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" id="submitUserBtn">确认新增</button>
+      `;
+      const overlay = showModal('新增用户', bodyHtml, footerHtml);
+
+      overlay.querySelector('#formStatus').addEventListener('change', function() {
+        overlay.querySelector('#formStatusLabel').textContent = this.checked ? '已启用' : '已禁用';
+      });
+
+      overlay.querySelector('#submitUserBtn').addEventListener('click', function() {
+        const username = overlay.querySelector('#formUsername').value.trim();
+        const phone = overlay.querySelector('#formPhone').value.trim();
+        const email = overlay.querySelector('#formEmail').value.trim();
+        const role = overlay.querySelector('#formRole').value;
+        const password = overlay.querySelector('#formPassword').value;
+        const status = overlay.querySelector('#formStatus').checked ? 'active' : 'disabled';
+
+        if (!username) { showToast('请输入用户名', 'warning'); return; }
+        if (!phone) { showToast('请输入手机号', 'warning'); return; }
+        if (!password || password.length < 6) { showToast('密码至少6位字符', 'warning'); return; }
+
+        const maxId = users.reduce((max, u) => Math.max(max, typeof u.id === 'number' ? u.id : parseInt(u.id) || 0), 0);
+        const newUser = {
+          id: maxId + 1,
+          username: username,
+          phone: phone,
+          email: email,
+          role: role,
+          status: status,
+          lastLogin: '-',
+          createTime: formatDate(new Date(), 'YYYY-MM-DD')
+        };
+        users.push(newUser);
+        overlay.remove();
+        showToast('用户添加成功', 'success');
+        renderTable();
+      });
+    }
+
+    function showEditUserModal(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+
+      const bodyHtml = `
+        <form id="editUserForm" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="required">用户名</label>
+              <input type="text" class="form-control" id="editUsername" value="${user.username}" required>
+            </div>
+            <div class="form-group">
+              <label class="required">手机号</label>
+              <input type="text" class="form-control" id="editPhone" value="${user.phone}" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>邮箱</label>
+              <input type="email" class="form-control" id="editEmail" value="${user.email || ''}">
+            </div>
+            <div class="form-group">
+              <label class="required">角色</label>
+              <select class="form-control" id="editRole">
+                <option value="超级管理员" ${user.role === '超级管理员' ? 'selected' : ''}>超级管理员</option>
+                <option value="管理员" ${user.role === '管理员' ? 'selected' : ''}>管理员</option>
+                <option value="内容编辑" ${user.role === '内容编辑' ? 'selected' : ''}>内容编辑</option>
+                <option value="运营人员" ${user.role === '运营人员' ? 'selected' : ''}>运营人员</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>新密码</label>
+              <input type="password" class="form-control" id="editPassword" placeholder="留空则不修改密码">
+              <div class="form-hint">留空保持原密码不变，修改请至少输入6位</div>
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <div style="margin-top:8px;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="editStatus" ${user.status === 'active' ? 'checked' : ''}>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-label" id="editStatusLabel">${user.status === 'active' ? '已启用' : '已禁用'}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      `;
+      const footerHtml = `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" id="saveUserBtn">保存修改</button>
+      `;
+      const overlay = showModal('编辑用户', bodyHtml, footerHtml);
+
+      overlay.querySelector('#editStatus').addEventListener('change', function() {
+        overlay.querySelector('#editStatusLabel').textContent = this.checked ? '已启用' : '已禁用';
+      });
+
+      overlay.querySelector('#saveUserBtn').addEventListener('click', function() {
+        const username = overlay.querySelector('#editUsername').value.trim();
+        const phone = overlay.querySelector('#editPhone').value.trim();
+        const email = overlay.querySelector('#editEmail').value.trim();
+        const role = overlay.querySelector('#editRole').value;
+        const password = overlay.querySelector('#editPassword').value;
+        const status = overlay.querySelector('#editStatus').checked ? 'active' : 'disabled';
+
+        if (!username) { showToast('请输入用户名', 'warning'); return; }
+        if (!phone) { showToast('请输入手机号', 'warning'); return; }
+        if (password && password.length < 6) { showToast('密码至少6位字符', 'warning'); return; }
+
+        user.username = username;
+        user.phone = phone;
+        user.email = email;
+        user.role = role;
+        user.status = status;
+        if (password) {
+          showToast('密码已更新', 'success');
+        }
+        overlay.remove();
+        showToast('用户信息已更新', 'success');
+        renderTable();
+      });
+    }
+
+    function toggleUserStatus(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+      const newStatus = user.status === 'active' ? 'disabled' : 'active';
+      const label = newStatus === 'active' ? '启用' : '禁用';
+      showConfirm(`确认${label}用户「${user.username}」吗？`, () => {
+        user.status = newStatus;
+        showToast(`用户已${label}`, 'success');
+        renderTable();
+      });
+    }
+
+    function resetPassword(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+      showConfirm(`确认重置用户「${user.username}」的密码为默认密码(123456)吗？`, () => {
+        showToast('密码已重置为 123456', 'success');
+      });
+    }
+
+    function deleteUser(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+      showConfirm(`确认删除用户「${user.username}」吗？<br><br><strong style="color:#f56c6c;">此操作不可恢复！</strong>`, () => {
+        const idx = users.indexOf(user);
+        if (idx > -1) users.splice(idx, 1);
+        showToast('用户已删除', 'success');
+        renderTable();
+      });
+    }
+
+    // ============================
+    // User Detail
+    // ============================
+    function showUserDetail(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+
+      const avatarColor = getAvatarColor(users.indexOf(user));
+      const statusLabel = user.status === 'active' ? '已启用' : '已禁用';
+      const roleBadgeClass = user.role === '超级管理员' ? 'badge-danger' : user.role === '管理员' ? 'badge-warning' : user.role === '内容编辑' ? 'badge-primary' : 'badge-success';
+
+      const userLogs = MockData.adminLogs.filter(log => log.user === user.username);
+      const logsHtml = userLogs.length > 0
+        ? userLogs.map(log => `
+            <li>
+              <span class="activity-dot"></span>
+              <div class="activity-content">
+                <div class="action">${log.action} - ${log.target}</div>
+                <div class="time">${log.time}</div>
+              </div>
+            </li>
+          `).join('')
+        : '<li style="justify-content:center;color:#909399;padding:20px;">暂无操作记录</li>';
+
+      const bodyHtml = `
+        <div class="detail-grid">
+          <div class="detail-profile">
+            <div class="user-avatar" style="background:${avatarColor};">${getFirstChar(user.username)}</div>
+            <h3>${user.username}</h3>
+            <div class="detail-role"><span class="badge ${roleBadgeClass}">${user.role}</span> · <span class="status-tag ${user.status}">${statusLabel}</span></div>
+            <ul class="detail-info">
+              <li><span class="label">手机号</span><span class="value">${user.phone}</span></li>
+              <li><span class="label">邮箱</span><span class="value">${user.email || '-'}</span></li>
+              <li><span class="label">创建时间</span><span class="value">${user.createTime}</span></li>
+              <li><span class="label">最后登录</span><span class="value">${user.lastLogin}</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="detail-section">
+              <h4>最近操作</h4>
+              <ul class="activity-log">
+                ${logsHtml}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+
+      showModal('用户详情', bodyHtml);
+    }
+
+    // ============================
+    // Batch Operations
+    // ============================
+    function batchEnable() {
+      const selected = getSelectedUsers();
+      if (selected.length === 0) { showToast('请先选择用户', 'warning'); return; }
+      const names = selected.map(u => u.username).join(', ');
+      showConfirm(`确认启用以下用户吗？<br><small>${names}</small>`, () => {
+        selected.forEach(u => u.status = 'active');
+        showToast(`已启用 ${selected.length} 个用户`, 'success');
+        selectedUserIds.clear();
+        renderTable();
+      });
+    }
+
+    function batchDisable() {
+      const selected = getSelectedUsers();
+      if (selected.length === 0) { showToast('请先选择用户', 'warning'); return; }
+      const names = selected.map(u => u.username).join(', ');
+      showConfirm(`确认禁用以下用户吗？<br><small>${names}</small>`, () => {
+        selected.forEach(u => u.status = 'disabled');
+        showToast(`已禁用 ${selected.length} 个用户`, 'success');
+        selectedUserIds.clear();
+        renderTable();
+      });
+    }
+
+    function batchDelete() {
+      const selected = getSelectedUsers();
+      if (selected.length === 0) { showToast('请先选择用户', 'warning'); return; }
+      const names = selected.map(u => u.username).join(', ');
+      showConfirm(`确认删除以下用户吗？<br><small>${names}</small><br><br><strong style="color:#f56c6c;">此操作不可恢复！</strong>`, () => {
+        selected.forEach(u => {
+          const idx = users.indexOf(u);
+          if (idx > -1) users.splice(idx, 1);
+        });
+        showToast(`已删除 ${selected.length} 个用户`, 'success');
+        selectedUserIds.clear();
+        renderTable();
+      });
+    }
+
+    // ============================
+    // Toggle Sidebar
+    // ============================
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ============================
+    // Init
+    // ============================
+    renderTable();
+  </script>
+</body>
+</html>

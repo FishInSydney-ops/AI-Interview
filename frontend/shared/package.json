@@ -1,0 +1,17 @@
+{
+  "name": "@yunshu/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./api": "./src/api.ts",
+    "./ServiceStatus.vue": "./src/ServiceStatus.vue",
+    "./style.css": "./src/style.css",
+    "./BrandMark.vue": "./src/components/BrandMark.vue",
+    "./AuthLayout.vue": "./src/components/AuthLayout.vue",
+    "./auth-form.css": "./src/auth-form.css"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  }
+}

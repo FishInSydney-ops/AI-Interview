@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item active">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <!-- 顶栏 -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">数据看板</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- 内容 -->
+      <div class="admin-content">
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon purple">🎓</div>
+            <div class="stat-info">
+              <h3>8</h3>
+              <p>学科数量</p>
+              <div class="stat-trend up">↑ 1 新增</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📚</div>
+            <div class="stat-info">
+              <h3>5,678</h3>
+              <p>题目数量</p>
+              <div class="stat-trend up">↑ 23 新增</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-info">
+              <h3>12,580</h3>
+              <p>注册用户</p>
+              <div class="stat-trend up">↑ 12.5% 较昨日</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">🤖</div>
+            <div class="stat-info">
+              <h3>3,420</h3>
+              <p>AI面试次数</p>
+              <div class="stat-trend up">↑ 89 今日</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="quick-actions" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+          <a href="routes.html" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+            🗺️ 管理学习路线
+          </a>
+          <a href="routes.html" onclick="return openCreateRoute()" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+            ➕ 创建新路线
+          </a>
+          <a href="courses.html" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+            🎬 B站课程库
+          </a>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="card-header">
+              <h3 class="card-title">用户增长趋势</h3>
+              <div class="chart-filter">
+                <button class="filter-btn active">7天</button>
+                <button class="filter-btn">30天</button>
+                <button class="filter-btn">90天</button>
+              </div>
+            </div>
+            <div class="chart-body" style="padding: 12px 8px 8px 8px;">
+              <div class="line-chart-container" id="chartContainer">
+                <svg class="line-chart-svg" id="chartSvg" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#667eea" stop-opacity="0.25"/>
+                      <stop offset="100%" stop-color="#667eea" stop-opacity="0.01"/>
+                    </linearGradient>
+                    <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="#667eea"/>
+                      <stop offset="100%" stop-color="#764ba2"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- 动态渲染全部内容 -->
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="card-header">
+              <h3 class="card-title">题目学科分布</h3>
+            </div>
+            <div class="chart-body">
+              <div class="pie-chart">
+                <div class="pie-item">
+                  <div class="pie-color" style="background: #667eea;"></div>
+                  <span class="pie-label">AI应用与智能体开发</span>
+                  <span class="pie-value">256</span>
+                </div>
+                <div class="pie-item">
+                  <div class="pie-color" style="background: #43e97b;"></div>
+                  <span class="pie-label">AI视觉设计</span>
+                  <span class="pie-value">312</span>
+                </div>
+                <div class="pie-item">
+                  <div class="pie-color" style="background: #fa709a;"></div>
+                  <span class="pie-label">AI大模型开发</span>
+                  <span class="pie-value">189</span>
+                </div>
+                <div class="pie-item">
+                  <div class="pie-color" style="background: #fee140;"></div>
+                  <span class="pie-label">AI测试</span>
+                  <span class="pie-value">178</span>
+                </div>
+                <div class="pie-item">
+                  <div class="pie-color" style="background: #a8edea;"></div>
+                  <span class="pie-label">其他</span>
+                  <span class="pie-value">635</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近活动 -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">最近活动</h3>
+            <a href="logs.html" class="btn btn-secondary btn-sm">查看全部</a>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>用户</th>
+                  <th>操作</th>
+                  <th>详情</th>
+                  <th>时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;">张</div>
+                      <span>张三</span>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-success">完成面试</span></td>
+                  <td>AI应用开发面试，得分85分</td>
+                  <td>5分钟前</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,#43e97b,#38f9d7);">李</div>
+                      <span>李四</span>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-primary">新增错题</span></td>
+                  <td>收录错题：Redis持久化方式</td>
+                  <td>15分钟前</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,#fa709a,#fee140);">王</div>
+                      <span>王五</span>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-warning">开始学习</span></td>
+                  <td>开始学习：Spring框架课程</td>
+                  <td>30分钟前</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,#4facfe,#00f2fe);">赵</div>
+                      <span>赵六</span>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-info">注册账号</span></td>
+                  <td>新用户注册</td>
+                  <td>1小时前</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    function openCreateRoute() {
+      sessionStorage.setItem('adminRouteAction', 'create');
+      return true;
+    }
+
+    // ============================
+    // 曲线图数据
+    // ============================
+    const chartData = {
+      '7天': {
+        values: [120, 150, 90, 180, 140, 170, 200],
+        labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      },
+      '30天': {
+        values: [85, 92, 108, 120, 135, 118, 145, 160, 155, 172, 180, 165, 190, 205, 198, 215, 225, 210, 240, 250, 235, 260, 275, 268, 285, 295, 280, 310, 320, 305],
+        labels: ['D1','D3','D5','D7','D9','D11','D13','D15','D17','D19','D21','D23','D25','D27','D29','D31','D33','D35','D37','D39','D41','D43','D45','D47','D49','D51','D53','D55','D57','D59']
+      },
+      '90天': {
+        values: [45, 52, 48, 55, 50, 60, 58, 65, 62, 70, 68, 75, 72, 80, 78, 85, 82, 90, 88, 95, 92, 100, 98, 105, 110, 108, 115, 112, 120, 118, 125, 122, 130, 128, 135, 132, 140, 138, 145, 142, 150, 148, 155, 160, 158, 165, 162, 170, 168, 175, 172, 180, 178, 185, 182, 190, 188, 195, 192, 200, 198, 205, 210, 208, 215, 212, 220, 218, 225, 222, 230, 228, 235, 232, 240, 238, 245, 242, 250, 248, 255, 260, 258, 265, 262, 270, 268, 275, 272, 280],
+        labels: []
+      }
+    };
+
+    // 生成90天标签（每10天一个）
+    (function init90Labels() {
+      const labels = [];
+      for (let i = 1; i <= 90; i++) {
+        labels.push(i % 10 === 1 ? 'D' + i : '');
+      }
+      chartData['90天'].labels = labels;
+    })();
+
+    // ============================
+    // Catmull-Rom → 平滑贝塞尔曲线
+    // ============================
+    function smoothCurvePath(pts) {
+      if (pts.length === 0) return '';
+      if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+      let d = `M ${pts[0].x} ${pts[0].y}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = i > 0 ? pts[i - 1] : pts[i];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = i + 2 < pts.length ? pts[i + 2] : pts[i + 1];
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+      }
+      return d;
+    }
+
+    // ============================
+    // 渲染曲线图（铺满容器）
+    // ============================
+    let currentRange = '7天';
+
+    function renderSmoothChart(range) {
+      currentRange = range;
+      const data = chartData[range];
+      const vals = data.values;
+      const container = document.getElementById('chartContainer');
+      const svg = document.getElementById('chartSvg');
+
+      // 读容器实际宽高
+      const W = container.clientWidth || 600;
+      const H = container.clientHeight || 240;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.setAttribute('width', W);
+      svg.setAttribute('height', H);
+
+      // 边距（尽量小，让曲线铺满）
+      const ML = 44, MR = 8, MT = 8, MB = 28;
+      const DRAW_W = W - ML - MR;
+      const DRAW_H = H - MT - MB;
+      const maxVal = Math.max(...vals) * 1.12;
+      const minVal = 0;
+
+      // 坐标映射
+      const stepX = vals.length === 1 ? DRAW_W / 2 : DRAW_W / (vals.length - 1);
+      const getX = (i) => ML + i * stepX;
+      const getY = (v) => MT + DRAW_H - ((v - minVal) / (maxVal - minVal)) * DRAW_H;
+
+      // 构建数据点数组
+      const pts = vals.map((v, i) => ({ x: getX(i), y: getY(v) }));
+      const curveD = smoothCurvePath(pts);
+
+      // 面积填充路径
+      const bottomY = MT + DRAW_H;
+      const areaD = `M ${getX(0)} ${bottomY} ${curveD.slice(1)} L ${getX(vals.length - 1)} ${bottomY} Z`;
+
+      // ---- 清空并重绘 ----
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#667eea" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#667eea" stop-opacity="0.01"/>
+          </linearGradient>
+          <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#667eea"/>
+            <stop offset="100%" stop-color="#764ba2"/>
+          </linearGradient>
+        </defs>
+      `;
+
+      // Y轴网格线 + 标签（4条水平线）
+      const yTicks = 4;
+      for (let t = 0; t <= yTicks; t++) {
+        const y = MT + (DRAW_H / yTicks) * t;
+        const val = maxVal - (maxVal / yTicks) * t;
+        const grid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        grid.setAttribute('x1', ML); grid.setAttribute('y1', y);
+        grid.setAttribute('x2', W - MR); grid.setAttribute('y2', y);
+        grid.setAttribute('stroke', '#f0f0f0'); grid.setAttribute('stroke-width', '1');
+        svg.appendChild(grid);
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', ML - 6); label.setAttribute('y', y + 4);
+        label.setAttribute('text-anchor', 'end');
+        label.setAttribute('fill', '#909399');
+        label.setAttribute('font-size', '11');
+        label.setAttribute('font-family', "'PingFang SC','Microsoft YaHei',sans-serif");
+        label.textContent = Math.round(val);
+        svg.appendChild(label);
+      }
+
+      // 面积填充
+      const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      areaPath.setAttribute('d', areaD);
+      areaPath.setAttribute('fill', 'url(#areaGradient)');
+      svg.appendChild(areaPath);
+
+      // 曲线
+      const curvePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      curvePath.setAttribute('d', curveD);
+      curvePath.setAttribute('fill', 'none');
+      curvePath.setAttribute('stroke', 'url(#lineGradient)');
+      curvePath.setAttribute('stroke-width', '2.8');
+      curvePath.setAttribute('stroke-linecap', 'round');
+      curvePath.setAttribute('stroke-linejoin', 'round');
+      curvePath.setAttribute('class', 'curve-path');
+      svg.appendChild(curvePath);
+
+      // X轴标签（最多8个，均匀采样）
+      const maxLabels = 8;
+      const labelStep = Math.max(1, Math.floor(vals.length / maxLabels));
+      for (let i = 0; i < vals.length; i++) {
+        if (i % labelStep !== 0 && i !== vals.length - 1) continue;
+        const xl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        xl.setAttribute('x', getX(i)); xl.setAttribute('y', H - 4);
+        xl.setAttribute('text-anchor', 'middle');
+        xl.setAttribute('fill', '#909399');
+        xl.setAttribute('font-size', '11');
+        xl.setAttribute('font-family', "'PingFang SC','Microsoft YaHei',sans-serif");
+        xl.textContent = data.labels[i] || '';
+        svg.appendChild(xl);
+      }
+
+      // 数据点 + 交互
+      vals.forEach((v, i) => {
+        const cx = getX(i), cy = getY(v);
+        // 悬浮热区（透明大圆，方便hover）
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
+        hit.setAttribute('r', '14');
+        hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('style', 'cursor:pointer');
+        hit.setAttribute('class', 'dot-hit');
+        hit.setAttribute('data-index', i);
+        hit.setAttribute('data-value', v);
+        svg.appendChild(hit);
+
+        // 可见圆点
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+        dot.setAttribute('r', '4');
+        dot.setAttribute('fill', '#667eea');
+        dot.setAttribute('stroke', '#fff');
+        dot.setAttribute('stroke-width', '2');
+        dot.setAttribute('class', 'data-dot');
+        dot.setAttribute('data-index', i);
+        dot.setAttribute('data-value', v);
+        svg.appendChild(dot);
+
+        // 7天模式显示数值标签
+        if (range === '7天') {
+          const vl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          vl.setAttribute('x', cx); vl.setAttribute('y', cy - 14);
+          vl.setAttribute('text-anchor', 'middle');
+          vl.setAttribute('fill', '#606266');
+          vl.setAttribute('font-size', '11');
+          vl.setAttribute('font-family', "'PingFang SC','Microsoft YaHei',sans-serif");
+          vl.textContent = v;
+          svg.appendChild(vl);
+        }
+      });
+
+      // 工具提示
+      const tipBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      tipBg.setAttribute('id', 'tooltipBg');
+      tipBg.setAttribute('rx', '6'); tipBg.setAttribute('fill', '#1d1e2c');
+      tipBg.setAttribute('opacity', '0');
+      tipBg.setAttribute('style', 'pointer-events:none');
+      svg.appendChild(tipBg);
+
+      const tipVal = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tipVal.setAttribute('id', 'tooltipValue');
+      tipVal.setAttribute('fill', 'white');
+      tipVal.setAttribute('font-size', '13');
+      tipVal.setAttribute('font-weight', '600');
+      tipVal.setAttribute('text-anchor', 'middle');
+      tipVal.setAttribute('opacity', '0');
+      tipVal.setAttribute('style', 'pointer-events:none');
+      svg.appendChild(tipVal);
+
+      const tipLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tipLbl.setAttribute('id', 'tooltipLabel');
+      tipLbl.setAttribute('fill', 'rgba(255,255,255,0.7)');
+      tipLbl.setAttribute('font-size', '10');
+      tipLbl.setAttribute('text-anchor', 'middle');
+      tipLbl.setAttribute('opacity', '0');
+      tipLbl.setAttribute('style', 'pointer-events:none');
+      svg.appendChild(tipLbl);
+
+      // ---- 绑定交互 ----
+      const dots = svg.querySelectorAll('.data-dot');
+      function showTooltip(el, idx, val) {
+        const cx = parseFloat(el.getAttribute('cx'));
+        const cy = parseFloat(el.getAttribute('cy'));
+        const bg = document.getElementById('tooltipBg');
+        const vt = document.getElementById('tooltipValue');
+        const lt = document.getElementById('tooltipLabel');
+        const lbl = data.labels[idx] || '';
+        vt.textContent = val + ' 人';
+        lt.textContent = lbl;
+        const tw = 80, th = 36;
+        let tx = cx - tw / 2, ty = cy - th - 18;
+        if (tx < 4) tx = 4;
+        if (tx + tw > W - 4) tx = W - tw - 4;
+        if (ty < 4) ty = cy + 18;
+        bg.setAttribute('x', tx); bg.setAttribute('y', ty);
+        bg.setAttribute('width', tw); bg.setAttribute('height', th);
+        bg.setAttribute('opacity', '0.95');
+        vt.setAttribute('x', tx + tw / 2); vt.setAttribute('y', ty + 17);
+        vt.setAttribute('opacity', '1');
+        lt.setAttribute('x', tx + tw / 2); lt.setAttribute('y', ty + 30);
+        lt.setAttribute('opacity', '1');
+      }
+      function hideTooltip() {
+        const bg = document.getElementById('tooltipBg');
+        if (bg) bg.setAttribute('opacity', '0');
+        const vt = document.getElementById('tooltipValue');
+        if (vt) vt.setAttribute('opacity', '0');
+        const lt = document.getElementById('tooltipLabel');
+        if (lt) lt.setAttribute('opacity', '0');
+      }
+
+      svg.querySelectorAll('.dot-hit').forEach((hit) => {
+        hit.addEventListener('mouseenter', function() {
+          const i = parseInt(this.getAttribute('data-index'));
+          const v = parseInt(this.getAttribute('data-value'));
+          const dot = dots[i];
+          if (dot) { dot.setAttribute('r', '7'); dot.setAttribute('fill', '#764ba2'); }
+          showTooltip(this, i, v);
+        });
+        hit.addEventListener('mouseleave', function() {
+          const i = parseInt(this.getAttribute('data-index'));
+          const dot = dots[i];
+          if (dot) { dot.setAttribute('r', '4'); dot.setAttribute('fill', '#667eea'); }
+          hideTooltip();
+        });
+      });
+
+      // ---- 入场动画 ----
+      const totalLen = curvePath.getTotalLength ? curvePath.getTotalLength() : 1200;
+      curvePath.style.strokeDasharray = totalLen;
+      curvePath.style.strokeDashoffset = totalLen;
+      let start = null;
+      function animStep(ts) {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / 900, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        curvePath.style.strokeDashoffset = totalLen * (1 - ease);
+        if (p < 1) requestAnimationFrame(animStep);
+      }
+      requestAnimationFrame(animStep);
+    }
+
+    // ============================
+    // 自适应容器大小
+    // ============================
+    function renderChartWithSize() {
+      renderSmoothChart(currentRange);
+    }
+
+    // ============================
+    // 初始化
+    // ============================
+    setTimeout(renderChartWithSize, 50);
+    window.addEventListener('resize', debounce(renderChartWithSize, 200));
+
+    // 筛选按钮切换
+    document.querySelectorAll('.chart-filter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        renderChartWithSize();
+      });
+    });
+  </script>
+</body>
+</html>

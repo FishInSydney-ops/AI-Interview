@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学习路线 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <style>
+    /* ========== 学科选择网格 ========== */
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .subject-card {
+      background: white;
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 20px 16px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      position: relative;
+    }
+
+    .subject-card:hover {
+      border-color: var(--primary-color);
+      box-shadow: var(--shadow-sm);
+      transform: translateY(-2px);
+    }
+
+    .subject-card.active {
+      border-color: var(--primary-color);
+      background: rgba(64, 158, 255, 0.04);
+      box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.15);
+    }
+
+    .subject-card .subject-icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .subject-card .subject-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .subject-card .subject-course-count {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ========== 路线详情容器 ========== */
+    .route-detail-area {
+      display: none;
+    }
+
+    .route-detail-area.visible {
+      display: block;
+      animation: fadeInUp 0.4s ease forwards;
+    }
+
+    /* ========== 路线头部 ========== */
+    .route-header-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+    }
+
+    .route-header-card .route-title-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .route-header-card .route-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .route-header-card .route-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(64, 158, 255, 0.1);
+      color: var(--primary-color);
+      border-radius: var(--radius-round);
+      white-space: nowrap;
+    }
+
+    .route-header-card .route-desc {
+      font-size: 14px;
+      color: var(--text-regular);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .route-header-card .route-stats {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .route-header-card .route-stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .route-header-card .route-stat-item .stat-val {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ========== 路线课程区 ========== */
+    .route-courses-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .route-courses-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px 24px;
+      transition: var(--transition);
+    }
+
+    .route-courses-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .route-courses-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .route-courses-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .route-courses-tip {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ========== 课程列表 ========== */
+    .courses-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .course-order {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(64, 158, 255, 0.1);
+      color: var(--primary-color);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .course-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+    }
+
+    .course-item:hover {
+      background: rgba(64, 158, 255, 0.05);
+    }
+
+    .course-thumb {
+      width: 120px;
+      height: 68px;
+      border-radius: 6px;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      background-color: #e8ecf1;
+    }
+
+    .course-thumb .thumb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #c0c4cc;
+    }
+
+    .course-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .course-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.4;
+    }
+
+    .course-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+
+    .course-meta .bvid-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(230, 162, 60, 0.1);
+      color: #e6a23c;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    .btn-bilibili {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      background: linear-gradient(135deg, #fb7299, #f5728b);
+      color: white;
+      border: none;
+      border-radius: var(--radius-round);
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .btn-bilibili:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(251, 114, 153, 0.4);
+    }
+
+    .courses-empty {
+      padding: 16px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      margin-top: 12px;
+    }
+
+    /* ========== 已知问题/空状态提示 ========== */
+    .route-empty-hint {
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ========== 动画 ========== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.4s ease forwards;
+    }
+
+    /* ========== 响应式 ========== */
+    @media (max-width: 1024px) {
+      .subject-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .subject-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .subject-card {
+        padding: 16px 12px;
+      }
+
+      .subject-card .subject-icon {
+        font-size: 28px;
+      }
+
+      .route-header-card {
+        padding: 20px;
+      }
+
+      .route-header-card .route-stats {
+        gap: 12px;
+      }
+
+      .route-courses-card {
+        padding: 16px;
+      }
+
+      .course-order {
+        width: 22px;
+        height: 22px;
+      }
+
+      .course-item {
+        flex-wrap: wrap;
+      }
+
+      .course-thumb {
+        width: 80px;
+        height: 46px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .subject-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="nav-container container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon brand-mark" aria-hidden="true"></span>
+        <span class="logo-text">云枢智学</span>
+      </a>
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="routes.html" class="nav-link active">学习路线</a>
+        <a href="questions.html" class="nav-link">题库</a>
+        <a href="ai-config.html" class="nav-link">AI面试</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar">M</div>
+          <span class="user-name">黑马学员</span>
+          <div class="user-dropdown">
+            <a href="profile.html">个人中心</a>
+            <a href="wrong-book.html">我的错题</a>
+            <a href="interview-history.html">面试记录</a>
+            <div class="dropdown-divider"></div>
+            <a href="../admin/index.html">管理后台</a>
+            <a href="login.html" class="text-danger">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="container">
+        <div class="page-header-content">
+          <div>
+            <h1 class="page-title">学习路线</h1>
+            <p class="page-subtitle">系统化的学习路径，助你成为技术大牛</p>
+          </div>
+          <div class="breadcrumb">
+            <a href="index.html">首页</a>
+            <span>/</span>
+            <span>学习路线</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="container" style="padding: 40px 20px;">
+
+      <!-- 学科选择标题 -->
+      <h2 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">选择学科方向</h2>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; margin-top: -10px;">选择一个学科，查看系统化的学习路线</p>
+
+      <!-- 学科网格 -->
+      <div class="subject-grid" id="subjectGrid"></div>
+
+      <!-- 路线详情区域（初始隐藏） -->
+      <div class="route-detail-area" id="routeDetailArea">
+        <!-- 路线头部 -->
+        <div class="route-header-card" id="routeHeaderCard"></div>
+        <!-- 路线课程列表（按学习顺序） -->
+        <div class="route-courses-list" id="routeCourseList"></div>
+      </div>
+
+      <!-- 初始空状态 -->
+      <div class="route-empty-hint" id="emptyHint">
+        👆 请选择一个学科方向，查看对应的系统化学习路线
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      var currentSelectedSubjectId = null;
+
+      // ============================
+      // 计算路线的汇总数据
+      // ============================
+      function computeRouteSummary(route) {
+        if (!route) return { totalCourses: 0, totalDurationMin: 0, courses: [] };
+        var courses = getCoursesByIds(route.courseIds || []);
+        var totalDurationMin = 0;
+        courses.forEach(function(c) {
+          totalDurationMin += c.durationMin || 0;
+        });
+        return {
+          totalCourses: courses.length,
+          totalDurationMin: totalDurationMin,
+          courses: courses
+        };
+      }
+
+      // ============================
+      // 格式化分钟为小时+分钟
+      // ============================
+      function formatMinutes(minutes) {
+        if (!minutes) return '0 分钟';
+        var h = Math.floor(minutes / 60);
+        var m = Math.round(minutes % 60);
+        if (h > 0 && m > 0) return h + ' 小时 ' + m + ' 分钟';
+        if (h > 0) return h + ' 小时';
+        return m + ' 分钟';
+      }
+
+      // ============================
+      // 渲染学科网格
+      // ============================
+      function renderSubjectGrid() {
+        var grid = document.getElementById('subjectGrid');
+        grid.innerHTML = '';
+
+        MockData.subjects.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); }).forEach(function(subject) {
+          var card = document.createElement('div');
+          card.className = 'subject-card fade-in-up';
+          card.setAttribute('data-subject-id', subject.id);
+
+          card.innerHTML =
+            '<span class="subject-icon">' + subject.icon + '</span>' +
+            '<div class="subject-name">' + subject.name + '</div>' +
+            '<div class="subject-course-count">' + subject.courseCount + ' 门课程</div>';
+
+          card.addEventListener('click', function() {
+            selectSubject(subject.id);
+          });
+
+          grid.appendChild(card);
+        });
+      }
+
+      // ============================
+      // 选中学科
+      // ============================
+      function selectSubject(subjectId) {
+        // 更新选中状态
+        currentSelectedSubjectId = subjectId;
+        var cards = document.querySelectorAll('.subject-card');
+        cards.forEach(function(c) {
+          c.classList.toggle('active', c.getAttribute('data-subject-id') === subjectId);
+        });
+
+        // 隐藏空状态
+        var emptyHint = document.getElementById('emptyHint');
+        emptyHint.style.display = 'none';
+
+        // 获取对应路线
+        var route = getRouteBySubjectId(subjectId);
+        if (!route) {
+          document.getElementById('routeDetailArea').classList.remove('visible');
+          emptyHint.style.display = 'block';
+          emptyHint.textContent = '😅 该学科暂无学习路线，敬请期待';
+          return;
+        }
+
+        // 渲染路线详情
+        renderRouteDetail(route);
+      }
+
+      // ============================
+      // 渲染路线详情
+      // ============================
+      function renderRouteDetail(route) {
+        var area = document.getElementById('routeDetailArea');
+        area.classList.add('visible');
+
+        // 渲染路线头部
+        renderRouteHeader(route);
+
+        // 渲染课程列表
+        renderCourseList(route);
+
+        // 滚动到路线区域
+        setTimeout(function() {
+          area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }
+
+      // ============================
+      // 渲染路线头部
+      // ============================
+      function renderRouteHeader(route) {
+        var header = document.getElementById('routeHeaderCard');
+        var summary = computeRouteSummary(route);
+
+        // 获取学科信息
+        var subject = getSubjectById(route.subjectId);
+
+        header.innerHTML =
+          '<div class="route-title-row">' +
+            (subject ? '<span style="font-size:28px;">' + subject.icon + '</span>' : '') +
+            '<span class="route-name">' + route.name + '</span>' +
+            '<span class="route-badge">' + route.suitableFor.replace('🎓 ', '') + '</span>' +
+          '</div>' +
+          '<div class="route-desc">' + route.description + '</div>' +
+          '<div class="route-stats">' +
+            '<span class="route-stat-item">📚 共 <span class="stat-val">' + summary.totalCourses + '</span> 门课程</span>' +
+            '<span class="route-stat-item">⏱ 总计 <span class="stat-val">' + formatMinutes(summary.totalDurationMin) + '</span></span>' +
+            '<span class="route-stat-item">🎯 <span class="stat-val">按列表顺序学习</span></span>' +
+          '</div>';
+      }
+
+      // ============================
+      // 渲染路线课程列表（列表顺序即学习顺序）
+      // ============================
+      function renderCourseList(route) {
+        var container = document.getElementById('routeCourseList');
+        container.innerHTML = '';
+
+        var summary = computeRouteSummary(route);
+        var courses = summary.courses || [];
+
+        // 课程列表
+        var coursesHtml = '';
+        if (courses.length > 0) {
+          coursesHtml = '<div class="courses-list">';
+          courses.forEach(function(course, idx) {
+            var thumbStyle = '';
+            if (course.pic) {
+              thumbStyle = 'background-image: url(' + course.pic + ');';
+            }
+            var formattedPlay = formatPlayCount(course.playCount);
+            var formattedDur = formatDuration(course.duration);
+            coursesHtml +=
+              '<div class="course-item">' +
+                '<div class="course-order">' + (idx + 1) + '</div>' +
+                '<div class="course-thumb" style="' + thumbStyle + '">' +
+                  (course.pic ? '' : '<div class="thumb-placeholder">🎬</div>') +
+                '</div>' +
+                '<div class="course-info">' +
+                  '<div class="course-title">' + course.title + '</div>' +
+                  '<div class="course-meta">' +
+                    '<span class="bvid-badge">' + course.bvid + '</span>' +
+                    '<span>⏱ ' + formattedDur + '</span>' +
+                    '<span>👁 ' + formattedPlay + ' 播放</span>' +
+                  '</div>' +
+                '</div>' +
+                '<a class="btn-bilibili" href="https://www.bilibili.com/video/' + course.bvid + '" target="_blank" rel="noopener noreferrer">▶ 去B站学习</a>' +
+              '</div>';
+          });
+          coursesHtml += '</div>';
+        } else {
+          coursesHtml = '<div class="courses-empty">📺 课程筹备中，敬请期待</div>';
+        }
+
+        var card = document.createElement('div');
+        card.className = 'route-courses-card fade-in-up';
+        card.innerHTML =
+          '<div class="route-courses-header">' +
+            '<div class="route-courses-title">📚 路线课程</div>' +
+            '<div class="route-courses-tip">共 ' + courses.length + ' 门课程，按顺序学习效果更佳</div>' +
+          '</div>' +
+          coursesHtml;
+
+        container.appendChild(card);
+      }
+
+      // ============================
+      // 初始化
+      // ============================
+      renderSubjectGrid();
+
+    })();
+  </script>
+</body>
+</html>

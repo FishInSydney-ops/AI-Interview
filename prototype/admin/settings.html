@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>系统设置 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    /* 卡片主体 */
+    .settings-panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+    }
+
+    .settings-panel-body {
+      padding: 28px 32px;
+    }
+
+    .settings-panel-footer {
+      padding: 16px 32px;
+      border-top: 1px solid #e4e7ed;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 4px;
+    }
+
+    .panel-desc {
+      font-size: 13px;
+      color: #909399;
+      margin-bottom: 24px;
+    }
+
+    /* Form styles */
+    .form-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      width: 140px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+
+    .form-label .label-desc {
+      font-size: 12px;
+      color: #909399;
+      font-weight: normal;
+      margin-top: 4px;
+    }
+
+    .form-control {
+      flex: 1;
+    }
+
+    .form-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .form-textarea {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100px;
+      padding: 12px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 6px;
+    }
+
+    /* File upload */
+    .file-upload-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .file-preview {
+      width: 80px;
+      height: 80px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      background: #f5f7fa;
+      overflow: hidden;
+    }
+
+    .file-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .file-upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #f5f7fa;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #606266;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-upload-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .file-upload-btn input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item active">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">系统设置</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <!-- 基本信息设置 -->
+        <div class="settings-panel">
+          <div class="settings-panel-body">
+            <div class="panel-title">基本信息设置</div>
+            <div class="panel-desc">配置平台的基本信息与展示内容</div>
+
+            <div class="form-group">
+              <div class="form-label">
+                平台名称
+              </div>
+              <div class="form-control">
+                <input type="text" class="form-input" id="platformName" value="云枢智学" placeholder="请输入平台名称">
+                <div class="form-hint">显示在浏览器标题和页面Logo旁的名称</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                平台描述
+              </div>
+              <div class="form-control">
+                <textarea class="form-textarea" id="platformDesc" placeholder="请输入平台描述">AI赋能的智能面试训练平台，助力每一位开发者拿到心仪的Offer。</textarea>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                Logo
+                <div class="label-desc">建议尺寸 256x256px</div>
+              </div>
+              <div class="form-control">
+                <div class="file-upload-wrapper">
+                  <div class="file-preview" id="logoPreview"><span class="brand-mark" aria-hidden="true"></span></div>
+                  <label class="file-upload-btn" onclick="document.getElementById('logoInput').click()">
+                    📁 选择文件
+                    <input type="file" id="logoInput" accept="image/*" onchange="previewFile(this, 'logoPreview')">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                默认头像
+                <div class="label-desc">用户未设置头像时显示</div>
+              </div>
+              <div class="form-control">
+                <div class="file-upload-wrapper">
+                  <div class="file-preview" id="avatarPreview" style="border-radius:50%;">👤</div>
+                  <label class="file-upload-btn" onclick="document.getElementById('avatarInput').click()">
+                    📁 选择文件
+                    <input type="file" id="avatarInput" accept="image/*" onchange="previewFile(this, 'avatarPreview')">
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-panel-footer">
+            <button class="btn btn-secondary" onclick="resetBasicSettings()">重置</button>
+            <button class="btn btn-primary" onclick="saveBasicSettings()">保存设置</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ========== 通用功能 ==========
+
+    // 文件预览
+    function previewFile(input, previewId) {
+      var file = input.files[0];
+      if (!file) return;
+
+      var preview = document.getElementById(previewId);
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        if (file.type.startsWith('image/')) {
+          preview.innerHTML = '<img src="' + e.target.result + '" alt="预览">';
+        } else {
+          preview.textContent = '📄';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ========== 基本信息设置 ==========
+
+    // 基本信息初始值
+    var basicDefaults = {
+      platformName: '云枢智学',
+      platformDesc: 'AI赋能的智能面试训练平台，助力每一位开发者拿到心仪的Offer。'
+    };
+
+    function saveBasicSettings() {
+      var name = document.getElementById('platformName').value.trim();
+      if (!name) {
+        showToast('请输入平台名称', 'warning');
+        return;
+      }
+      showToast('基本信息已保存', 'success');
+    }
+
+    function resetBasicSettings() {
+      document.getElementById('platformName').value = basicDefaults.platformName;
+      document.getElementById('platformDesc').value = basicDefaults.platformDesc;
+      // 重置文件预览
+      document.getElementById('logoPreview').innerHTML = '<span class="brand-mark" aria-hidden="true"></span>';
+      document.getElementById('avatarPreview').innerHTML = '👤';
+      document.getElementById('logoInput').value = '';
+      document.getElementById('avatarInput').value = '';
+      showToast('已重置为默认值', 'info');
+    }
+  </script>
+</body>
+</html>

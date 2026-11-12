@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .login-container {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* 左侧品牌区域 */
+    .brand-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: white;
+    }
+
+    .brand-logo {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .brand-title {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .brand-subtitle {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 40px;
+    }
+
+    .brand-features {
+      display: flex;
+      gap: 32px;
+    }
+
+    .feature-item {
+      text-align: center;
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .feature-text {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* 右侧登录表单 */
+    .login-section {
+      width: 480px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .login-header {
+      margin-bottom: 40px;
+    }
+
+    .login-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      color: var(--text-secondary);
+    }
+
+    /* Tab切换 */
+    .login-tabs {
+      display: flex;
+      margin-bottom: 32px;
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    .login-tab {
+      flex: 1;
+      padding: 12px 0;
+      text-align: center;
+      font-size: 16px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .login-tab.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .login-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary-color);
+    }
+
+    /* 表单样式 */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-regular);
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--text-placeholder);
+    }
+
+    .form-input {
+      padding-left: 44px;
+    }
+
+    .phone-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .phone-input .form-input {
+      flex: 1;
+    }
+
+    .sms-btn {
+      white-space: nowrap;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--primary-color);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .sms-btn:hover {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-regular);
+      cursor: pointer;
+    }
+
+    .remember-me input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .forgot-password {
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .forgot-password:hover {
+      text-decoration: underline;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    .divider span {
+      padding: 0 16px;
+    }
+
+    .social-login {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .social-btn {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .social-btn:hover {
+      border-color: var(--primary-color);
+      background: rgba(64, 158, 255, 0.05);
+    }
+
+    .register-link {
+      text-align: center;
+      margin-top: 24px;
+      color: var(--text-secondary);
+    }
+
+    .register-link a {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+
+    /* 响应式 */
+    @media (max-width: 900px) {
+      .brand-section {
+        display: none;
+      }
+
+      .login-section {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- 左侧品牌 -->
+    <div class="brand-section">
+      <div class="brand-logo"><span class="brand-mark" aria-hidden="true"></span></div>
+      <h1 class="brand-title">云枢智学</h1>
+      <p class="brand-subtitle">AI赋能的智能面试训练平台</p>
+
+      <div class="brand-features">
+        <div class="feature-item">
+          <div class="feature-icon">📚</div>
+          <p class="feature-text">海量题库</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🤖</div>
+          <p class="feature-text">AI面试官</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <p class="feature-text">智能分析</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <p class="feature-text">精准推荐</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧登录 -->
+    <div class="login-section">
+      <div class="login-box">
+        <div class="login-header">
+          <h2 class="login-title">欢迎回来</h2>
+          <p class="login-subtitle">登录你的账户继续学习</p>
+        </div>
+
+        <!-- Tab切换 -->
+        <div class="login-tabs">
+          <div class="login-tab active" data-tab="password">账号密码登录</div>
+          <div class="login-tab" data-tab="phone">手机验证码登录</div>
+        </div>
+
+        <!-- 密码登录表单 -->
+        <form id="passwordForm" class="login-form">
+          <div class="form-group">
+            <label>手机号/邮箱</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" class="form-input" placeholder="请输入手机号或邮箱">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>密码</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" class="form-input" placeholder="请输入密码">
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-me">
+              <input type="checkbox" checked> 记住我
+            </label>
+            <a class="forgot-password" href="forgot-password.html">忘记密码？</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary login-btn">登 录</button>
+        </form>
+
+        <!-- 验证码登录表单 -->
+        <form id="phoneForm" class="login-form hidden">
+          <div class="form-group">
+            <label>手机号</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📱</span>
+              <input type="tel" class="form-input" placeholder="请输入手机号">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>验证码</label>
+            <div class="phone-input">
+              <div class="input-wrapper" style="flex:1">
+                <span class="input-icon">🔐</span>
+                <input type="text" class="form-input" placeholder="请输入验证码">
+              </div>
+              <button type="button" class="sms-btn">获取验证码</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary login-btn">登 录</button>
+        </form>
+
+        <div class="divider"><span>其他登录方式</span></div>
+
+        <div class="social-login">
+          <div class="social-btn" title="微信登录">💬</div>
+          <div class="social-btn" title="QQ登录">🐧</div>
+          <div class="social-btn" title="GitHub登录">🐱</div>
+        </div>
+
+        <p class="register-link">
+          还没有账号？<a href="register.html">立即注册</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // Tab切换
+    document.querySelectorAll('.login-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const tabType = tab.dataset.tab;
+        document.querySelectorAll('.login-form').forEach(f => f.classList.add('hidden'));
+        document.getElementById(tabType + 'Form').classList.remove('hidden');
+      });
+    });
+
+    // 表单提交
+    document.querySelectorAll('.login-form').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('登录成功，正在跳转...', 'success');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+      });
+    });
+
+    // SMS按钮倒计时
+    document.querySelector('.sms-btn').addEventListener('click', function() {
+      let countdown = 60;
+      this.disabled = true;
+      this.textContent = `${countdown}s后重试`;
+
+      const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+          clearInterval(timer);
+          this.disabled = false;
+          this.textContent = '获取验证码';
+        } else {
+          this.textContent = `${countdown}s后重试`;
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

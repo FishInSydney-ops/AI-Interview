@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学习路线 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .routes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .route-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .route-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .route-card.disabled {
+      opacity: 0.55;
+    }
+
+    .route-header {
+      padding: 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .route-header.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .route-header.green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .route-header.orange { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .route-header.purple { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+    .route-header.teal { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .route-header.pink { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+    .route-title {
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .route-title:hover {
+      opacity: 0.85;
+    }
+
+    .route-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .route-actions button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 14px;
+    }
+
+    .route-actions button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .route-status-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .route-status-badge.active {
+      background: rgba(103, 194, 58, 0.2);
+      color: #fff;
+    }
+
+    .route-status-badge.disabled {
+      background: rgba(144, 147, 153, 0.2);
+      color: #fff;
+    }
+
+    .route-body {
+      padding: 20px;
+    }
+
+    .route-desc {
+      font-size: 14px;
+      color: #606266;
+      margin-bottom: 16px;
+    }
+
+    .route-stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .route-stat {
+      text-align: center;
+    }
+
+    .route-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .route-stat-label {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    .route-direction {
+      font-size: 12px;
+      color: #909399;
+      margin-bottom: 8px;
+    }
+
+    /* suitable for label */
+    .route-meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .route-meta-tags .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: #f0f9eb;
+      color: #67c23a;
+    }
+
+    .route-meta-tags .tag.tag-course {
+      background: #ecf5ff;
+      color: #409eff;
+    }
+
+    .route-meta-tags .tag.tag-duration {
+      background: #fdf6ec;
+      color: #e6a23c;
+    }
+
+    .route-meta-tags .tag.tag-education {
+      background: #fef0f0;
+      color: #f56c6c;
+    }
+
+    /* status toggle */
+    /* Route card 课程预览 */
+    .courses-preview {
+      margin-top: 12px;
+      border-top: 1px dashed #e4e7ed;
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .course-preview-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #606266;
+    }
+
+    .course-preview-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: #ecf5ff;
+      color: #409eff;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .course-preview-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .course-preview-more {
+      font-size: 12px;
+      color: #909399;
+      padding-left: 26px;
+    }
+
+    .status-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 12px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .status-toggle.active {
+      background: rgba(103, 194, 58, 0.15);
+      color: #67c23a;
+    }
+
+    .status-toggle.disabled {
+      background: rgba(144, 147, 153, 0.15);
+      color: #909399;
+    }
+
+    .status-toggle:hover {
+      opacity: 0.8;
+    }
+
+    /* Detail panel */
+    .detail-body {
+      padding: 24px;
+    }
+
+    /* Stats bar in detail view */
+    .detail-stats-bar {
+      display: flex;
+      gap: 32px;
+      padding: 16px 24px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .detail-stat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-stat-item .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .detail-stat-item .stat-icon.blue { background: #ecf5ff; }
+    .detail-stat-item .stat-icon.green { background: #f0f9eb; }
+    .detail-stat-item .stat-icon.orange { background: #fdf6ec; }
+    .detail-stat-item .stat-icon.purple { background: #f5f0ff; }
+
+    .detail-stat-item .stat-info .stat-number {
+      font-size: 22px;
+      font-weight: 700;
+      color: #303133;
+      line-height: 1.2;
+    }
+
+    .detail-stat-item .stat-info .stat-label {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    /* bvid badge */
+    .bvid-badge {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 11px;
+      background: #fb7299;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .bvid-badge.preview-link {
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .bvid-badge.preview-link:hover {
+      background: #e86188;
+    }
+
+    /* Course table */
+    .course-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .course-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background: #f5f7fa;
+      font-weight: 600;
+      color: #606266;
+      border-bottom: 1px solid #e4e7ed;
+      white-space: nowrap;
+    }
+
+    .course-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f0f2f5;
+      color: #303133;
+    }
+
+    .course-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .course-table .course-title-cell {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .course-table .duration-cell {
+      white-space: nowrap;
+      color: #909399;
+      font-size: 12px;
+    }
+
+
+    .course-table .sort-cell {
+      width: 80px;
+    }
+
+    .course-table .play-count-cell {
+      white-space: nowrap;
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .course-table .action-cell {
+      white-space: nowrap;
+    }
+
+    .course-table .action-cell button {
+      padding: 3px 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .course-table .action-cell button:hover {
+      background: #e4e7ed;
+    }
+
+    .course-table .action-cell .edit-course { color: #409eff; }
+    .course-table .action-cell .del-course { color: #f56c6c; }
+
+    /* BV preview link */
+    .bvid-preview-note {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+
+    .bvid-preview-note a {
+      color: #409eff;
+      text-decoration: none;
+    }
+
+    .bvid-preview-note a:hover {
+      text-decoration: underline;
+    }
+
+    .stage-reorder {
+      display: flex;
+      gap: 4px;
+    }
+
+    .stage-reorder button {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #dcdfe6;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .stage-reorder button:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .stage-reorder button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    /* Preview modal */
+    .preview-container {
+      padding: 24px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .preview-container .preview-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .preview-container .preview-desc {
+      font-size: 14px;
+      color: #606266;
+      margin-bottom: 24px;
+    }
+
+    /* 预览：平铺课程列表（按学习顺序） */
+    .preview-courses-flat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-course-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f7fa;
+    }
+
+    .preview-course-row:last-child {
+      border-bottom: none;
+    }
+
+    .preview-course-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #f0f9eb;
+      color: #67c23a;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .preview-course-title {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #909399;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Back button */
+    .back-btn {
+      cursor: pointer;
+      color: #409eff;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .back-btn:hover {
+      text-decoration: underline;
+    }
+
+    /* Course selection list in route form */
+    .sel-course-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #f0f2f5;
+      transition: background 0.2s;
+    }
+
+    .sel-course-item:hover {
+      background: #f5f7fa;
+    }
+
+    .sel-course-item:last-child {
+      border-bottom: none;
+    }
+
+    .sel-course-order {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #409eff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .sel-course-bvid {
+      font-family: monospace;
+      font-size: 11px;
+      background: #fb7299;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .sel-course-title {
+      flex: 1;
+      font-size: 13px;
+      color: #303133;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sel-course-meta {
+      font-size: 12px;
+      color: #909399;
+      white-space: nowrap;
+    }
+
+    .sel-course-actions {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .sel-course-actions button {
+      width: 26px;
+      height: 26px;
+      border: 1px solid #dcdfe6;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .sel-course-actions button:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .sel-course-actions button:active {
+      background: #ecf5ff;
+    }
+
+    #subjectCourseList label:hover {
+      background: #f5f7fa !important;
+    }
+
+    #subjectCourseList input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #409eff;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .routes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item active">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">学习路线</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="page-header" id="mainPageHeader">
+          <h2 style="font-size:16px;">学习路线列表</h2>
+          <button class="btn btn-primary" onclick="showRouteForm()">+ 新建路线</button>
+        </div>
+
+        <div id="routeListContainer"></div>
+        <div id="routeDetailContainer"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // Helper: 按 route.courseIds 的顺序取课程详情
+    // ============================
+    function getRouteCourses(route) {
+      if (!route || !route.courseIds || !route.courseIds.length) return [];
+      return getCoursesByIds(route.courseIds);
+    }
+
+    // ============================
+    // Enhanced Route mock data — derive display from linked subject
+    // ============================
+    (function enhanceRouteData() {
+      MockData.routes.forEach(function(route) {
+        var subj = getSubjectById(route.subjectId);
+        route.subjectName = subj ? subj.name : '';
+        route.suitableFor = route.suitableFor || getDefaultSuitable(route.subjectId);
+        route.icon = route.icon || (subj ? subj.icon : '📚');
+        route.color = route.color || (subj ? subj.color.replace('#','') : '667eea');
+
+        var totals = computeRouteTotals(route);
+        route.totalCourses = totals.totalCourses;
+        route.totalDuration = totals.totalDuration;
+      });
+    })();
+
+    function getSubjectById(id) {
+      if (!MockData.subjects) return null;
+      for (var i = 0; i < MockData.subjects.length; i++) {
+        if (MockData.subjects[i].id === id) return MockData.subjects[i];
+      }
+      return null;
+    }
+
+    function getDefaultSuitable(subjectId) {
+      var map = {
+        'subj001': '大专及以上学历，逻辑思维较强，有编程基础更佳',
+        'subj006': '本科及以上学历，数学/计算机相关专业优先',
+        'subj007': '大专及以上学历，细心认真',
+        'subj008': '大专及以上学历，熟悉Linux优先',
+        'subj009': '本科及以上学历，嵌入式/电子相关专业优先',
+        'subj010': '大专及以上学历，对AI应用感兴趣',
+        'subj011': '大专及以上学历，对UI/视觉设计感兴趣',
+        'subj012': '大专及以上学历，有编程语言基础'
+      };
+      return map[subjectId] || '大专及以上学历';
+    }
+
+    function computeRouteTotals(route) {
+      var courses = getRouteCourses(route);
+      var totalDuration = 0;
+      courses.forEach(function(c) {
+        totalDuration += c.durationMin || 0;
+      });
+      return { totalCourses: courses.length, totalDuration: totalDuration };
+    }
+
+    function formatDuration(minutes) {
+      if (!minutes || minutes <= 0) return '0 小时';
+      var hours = Math.floor(minutes / 60);
+      var mins = minutes % 60;
+      if (hours > 0 && mins > 0) {
+        return hours + ' 小时 ' + mins + ' 分钟';
+      } else if (hours > 0) {
+        return hours + ' 小时';
+      }
+      return mins + ' 分钟';
+    }
+
+    function formatPlayCount(count) {
+      if (!count) return '0';
+      if (count >= 10000) {
+        return (count / 10000).toFixed(1) + '万';
+      }
+      return count.toString();
+    }
+
+    // ============================
+    // Global state
+    // ============================
+    let currentRouteId = null;
+    let routeStatuses = {}; // routeId -> 'active'|'disabled'
+
+    // ============================
+    // Subject-based color map (route card header CSS classes)
+    // ============================
+    const directionColors = {
+      'subj001': 'blue',
+      'subj006': 'pink',
+      'subj007': 'green',
+      'subj008': 'teal',
+      'subj009': 'blue',
+      'subj010': 'purple',
+      'subj011': 'orange',
+      'subj012': 'teal'
+    };
+
+    function getRouteSubject(route) {
+      return getSubjectById(route.subjectId) || null;
+    }
+
+    function getRouteSubjectIcon(route) {
+      var s = getRouteSubject(route);
+      return s ? s.icon : '📚';
+    }
+
+    function getRouteSubjectName(route) {
+      var s = getRouteSubject(route);
+      return s ? s.name : route.direction || '';
+    }
+
+    // ============================
+    // Render functions
+    // ============================
+
+    function getRouteStatus(routeId) {
+      if (routeStatuses[routeId] === undefined) {
+        routeStatuses[routeId] = 'active';
+      }
+      return routeStatuses[routeId];
+    }
+
+    function toggleRouteStatus(routeId) {
+      var current = getRouteStatus(routeId);
+      var newStatus = current === 'active' ? 'disabled' : 'active';
+      routeStatuses[routeId] = newStatus;
+      showToast(newStatus === 'active' ? '路线已启用' : '路线已禁用', 'success');
+      renderRoutes();
+    }
+
+    function renderRoutes() {
+      const container = document.getElementById('routeListContainer');
+      const detailContainer = document.getElementById('routeDetailContainer');
+      detailContainer.innerHTML = '';
+      detailContainer.classList.remove('show');
+
+      const routes = MockData.routes;
+      if (!routes || routes.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🗺️</div>
+            <p>暂无学习路线，点击上方"新建路线"创建一条</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="routes-grid">';
+      routes.forEach(route => {
+        var subject = getRouteSubject(route);
+        var color = directionColors[route.subjectId] || 'blue';
+        var status = getRouteStatus(route.id);
+        var isDisabled = status === 'disabled';
+        var totals = computeRouteTotals(route);
+        var courseCount = totals.totalCourses;
+        var totalDur = totals.totalDuration;
+        var subjectIcon = subject ? subject.icon : '📚';
+        var subjectName = subject ? subject.name : (route.direction || '未关联');
+
+        html += `
+          <div class="route-card ${isDisabled ? 'disabled' : ''}">
+            <div class="route-header ${color}">
+              <h3 class="route-title" onclick="showRouteDetail('${route.id}')" title="点击查看详情">
+                ${subjectIcon} ${route.name}
+                <span class="route-status-badge ${status}">${status === 'active' ? '已启用' : '已禁用'}</span>
+              </h3>
+              <div class="route-actions">
+                <button title="预览" onclick="showPreview('${route.id}')">👁️</button>
+                <button title="编辑" onclick="editRoute('${route.id}')">✏️</button>
+                <button title="删除" onclick="deleteRoute('${route.id}')">🗑️</button>
+              </div>
+            </div>
+            <div class="route-body">
+              <div class="route-direction">关联学科：${subjectName}</div>
+              <div class="route-meta-tags">
+                <span class="tag tag-education">🎓 ${route.suitableFor || '无学历要求'}</span>
+                <span class="tag tag-course">📚 共 ${courseCount} 门B站课程</span>
+                <span class="tag tag-duration">⏱ 总计 ${formatDuration(totalDur)}</span>
+              </div>
+              <p class="route-desc">${route.description || '暂无描述'}</p>
+              <div class="route-stats">
+                <div class="route-stat">
+                  <div class="route-stat-value">${courseCount}</div>
+                  <div class="route-stat-label">课程数</div>
+                </div>
+                <div class="route-stat">
+                  <div class="route-stat-value">${totalDur > 0 ? formatDuration(totalDur) : '-'}</div>
+                  <div class="route-stat-label">总时长</div>
+                </div>
+                <div class="route-stat">
+                  <button class="status-toggle ${status}" onclick="toggleRouteStatus('${route.id}')">
+                    ${status === 'active' ? '🟢 已启用' : '⭕ 已禁用'}
+                  </button>
+                </div>
+              </div>
+              <div class="courses-preview">
+                ${renderCoursePreview(route.courseIds, 4)}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // 卡片上的课程顺序预览：按学习顺序展示前 limit 门
+    function renderCoursePreview(courseIds, limit) {
+      var ids = courseIds || [];
+      if (ids.length === 0) {
+        return '<div style="font-size:12px;color:#909399;padding:8px 0;">暂无课程</div>';
+      }
+      var shown = ids.slice(0, limit || ids.length);
+      var html = shown.map(function(id, idx) {
+        var course = getCourseById(id);
+        return `
+          <div class="course-preview-item">
+            <div class="course-preview-num">${idx + 1}</div>
+            <span class="course-preview-name">${course ? escapeHtml(course.title) : '未知课程'}</span>
+          </div>
+        `;
+      }).join('');
+      if (ids.length > shown.length) {
+        html += '<div class="course-preview-more">… 共 ' + ids.length + ' 门课程，点击标题查看完整顺序</div>';
+      }
+      return html;
+    }
+
+    // ============================
+    // Route Detail
+    // ============================
+
+    function showRouteDetail(routeId) {
+      const route = MockData.routes.find(r => r.id === routeId);
+      if (!route) return;
+
+      currentRouteId = routeId;
+
+      const listContainer = document.getElementById('routeListContainer');
+      const detailContainer = document.getElementById('routeDetailContainer');
+      const header = document.getElementById('mainPageHeader');
+
+      header.innerHTML = `
+        <h2 style="font-size:16px;">
+          <span class="back-btn" onclick="backToRouteList()">← 返回列表</span>
+          <span style="margin-left:12px;">${route.name} - 课程管理</span>
+        </h2>
+        <button class="btn btn-primary" onclick="showCourseForm('${routeId}')">+ 从课程库添加</button>
+      `;
+
+      renderRouteDetail(route);
+
+      listContainer.style.display = 'none';
+    }
+
+    function backToRouteList() {
+      currentRouteId = null;
+      document.getElementById('routeListContainer').style.display = '';
+      document.getElementById('routeDetailContainer').innerHTML = '';
+      document.querySelector('.page-header').innerHTML = `
+        <h2 style="font-size:16px;">学习路线列表</h2>
+        <button class="btn btn-primary" onclick="showRouteForm()">+ 新建路线</button>
+      `;
+      renderRoutes();
+    }
+
+    function renderRouteDetail(route) {
+      const container = document.getElementById('routeDetailContainer');
+      const totals = computeRouteTotals(route);
+      const totalCourses = totals.totalCourses;
+      const totalDur = totals.totalDuration;
+      var subj = getRouteSubject(route);
+      var subjIcon = subj ? subj.icon : '📚';
+      var subjName = subj ? subj.name : (route.direction || '未关联');
+
+      let html = `
+        <div class="card" style="margin-bottom:20px;padding:24px;">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <h3 style="font-size:18px;font-weight:600;">${subjIcon} ${route.name}</h3>
+            <span class="badge badge-primary">${subjName}</span>
+            <span class="badge ${getRouteStatus(route.id) === 'active' ? 'badge-success' : 'badge-info'}">
+              ${getRouteStatus(route.id) === 'active' ? '已启用' : '已禁用'}
+            </span>
+          </div>
+          <p style="font-size:14px;color:#606266;">${route.description}</p>
+          <!-- Stats bar -->
+          <div class="detail-stats-bar">
+            <div class="detail-stat-item">
+              <div class="stat-icon green">📹</div>
+              <div class="stat-info">
+                <div class="stat-number">${totalCourses}</div>
+                <div class="stat-label">课程数</div>
+              </div>
+            </div>
+            <div class="detail-stat-item">
+              <div class="stat-icon orange">⏱</div>
+              <div class="stat-info">
+                <div class="stat-number">${totalDur > 0 ? Math.round(totalDur / 60) : 0}h</div>
+                <div class="stat-label">总时长</div>
+              </div>
+            </div>
+            <div class="detail-stat-item">
+              <div class="stat-icon purple">🎓</div>
+              <div class="stat-info">
+                <div class="stat-number" style="font-size:14px;font-weight:500;">${route.suitableFor || '不限'}</div>
+                <div class="stat-label">适合学历</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const courses = getRouteCourses(route);
+
+      if (courses.length === 0) {
+        html += `<div class="empty-state"><div class="empty-icon">📚</div><p>暂无课程，点击右上角"从课程库添加"</p></div>`;
+        container.innerHTML = html;
+        return;
+      }
+
+      html += '<div class="card"><div class="card-header"><span class="card-title">路线课程</span>' +
+        '<span style="font-size:12px;color:#909399;">按列表顺序学习，可用 ↑ ↓ 调整顺序</span></div><div class="detail-body">';
+
+      html += '<table class="course-table"><thead><tr><th>序号</th><th>BV号</th><th>课程名称</th><th>时长</th><th>播放量</th><th>排序</th><th>操作</th></tr></thead><tbody>' +
+        courses.map(function(course, cIdx) {
+          var bvid = course.bvid || '';
+          var courseTitle = escapeHtml(course.title || '');
+          var titleHtml = bvid
+            ? '<a href="https://www.bilibili.com/video/' + escapeHtml(bvid) + '" target="_blank" style="color:#409eff;text-decoration:none;" title="' + courseTitle + '">' + courseTitle + '</a>'
+            : courseTitle;
+          return '<tr>' +
+            '<td>' + (cIdx + 1) + '</td>' +
+            '<td>' + renderBvidBadge(course) + '</td>' +
+            '<td class="course-title-cell">' + titleHtml + '</td>' +
+            '<td class="duration-cell">' + formatDuration(course.durationMin) + '</td>' +
+            '<td class="play-count-cell">' + formatPlayCount(course.playCount) + '</td>' +
+            '<td class="sort-cell">' +
+              '<div class="stage-reorder">' +
+                '<button onclick="moveRouteCourse(\'' + route.id + '\',' + cIdx + ',-1)"' + (cIdx === 0 ? ' disabled' : '') + ' title="上移">↑</button>' +
+                '<button onclick="moveRouteCourse(\'' + route.id + '\',' + cIdx + ',1)"' + (cIdx === courses.length - 1 ? ' disabled' : '') + ' title="下移">↓</button>' +
+              '</div>' +
+            '</td>' +
+            '<td class="action-cell">' +
+              (bvid ? '<a href="https://www.bilibili.com/video/' + escapeHtml(bvid) + '" target="_blank" style="color:#409eff;text-decoration:none;font-size:12px;margin-right:8px;" title="去B站查看">B站查看</a>' : '') +
+              '<button class="del-course" onclick="deleteCourse(\'' + route.id + '\',\'' + course.id + '\')">移除</button>' +
+            '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+
+      html += '</div></div>';
+      container.innerHTML = html;
+    }
+
+    function renderBvidBadge(course) {
+      var bvid = course.bvid || '';
+      if (!bvid) return '<span class="bvid-badge" style="background:#dcdfe6;color:#909399;">无BV号</span>';
+      return '<a class="bvid-badge preview-link" href="https://www.bilibili.com/video/' + bvid + '" target="_blank" title="点击跳转B站">' + bvid + '</a>';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ============================
+    // 路线内课程排序：上移 / 下移
+    // ============================
+
+    function moveRouteCourse(routeId, idx, direction) {
+      const route = MockData.routes.find(r => r.id === routeId);
+      if (!route || !route.courseIds) return;
+
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= route.courseIds.length) return;
+
+      // Swap
+      const temp = route.courseIds[idx];
+      route.courseIds[idx] = route.courseIds[targetIdx];
+      route.courseIds[targetIdx] = temp;
+
+      renderRouteDetail(route);
+      showToast('课程顺序已更新', 'success');
+    }
+
+    // ============================
+    // Course Library Selector — pick from MockData.courses
+    // ============================
+
+    function showCourseForm(routeId) {
+      const route = MockData.routes.find(r => r.id === routeId);
+      if (!route) return;
+
+      var selectedIds = route.courseIds || [];
+      var routeSubject = getRouteSubject(route);
+      var subjectId = route.subjectId;
+
+      // Show subject-relevant courses first, then others
+      var relevantCourses = [];
+      var otherCourses = [];
+      MockData.courses.forEach(function(c) {
+        var belongs = c.subjectIds && c.subjectIds.indexOf(subjectId) !== -1;
+        if (belongs) {
+          relevantCourses.push(c);
+        } else {
+          otherCourses.push(c);
+        }
+      });
+
+      function buildCourseOptions(courses, showSubject) {
+        var html = '';
+        courses.forEach(function(c) {
+          var alreadySelected = selectedIds.indexOf(c.id) !== -1;
+          var disabled = alreadySelected ? 'disabled' : '';
+          var note = alreadySelected ? ' [已添加]' : '';
+          var subjNote = '';
+          if (showSubject) {
+            var snames = (c.subjectIds || []).map(function(sid) {
+              var s = getSubjectById(sid);
+              return s ? s.icon + s.name : '';
+            }).filter(Boolean).join(', ');
+            if (snames) subjNote = ' [' + snames + ']';
+          }
+          html += '<option value="' + c.id + '" ' + disabled + '>' +
+            c.bvid + ' — ' + escapeHtml(c.title) + ' (' + formatDuration(c.durationMin) + ', ' + formatPlayCount(c.playCount) + ' 播放)' +
+            subjNote + note + '</option>';
+        });
+        return html;
+      }
+
+      var relevantHtml = buildCourseOptions(relevantCourses, false);
+      var otherHtml = buildCourseOptions(otherCourses, true);
+
+      var searchInput = '<div class="form-group"><label>搜索课程</label><input type="text" id="courseSearchInput" placeholder="输入课程名称或BV号筛选..." oninput="filterCourseOptions()"></div>';
+
+      var subjectTag = routeSubject
+        ? '<span style="display:inline-block;background:#ecf5ff;color:#409eff;padding:2px 12px;border-radius:12px;font-size:13px;font-weight:500;">' + routeSubject.icon + ' ' + routeSubject.name + '</span>'
+        : '';
+
+      var bodyHtml = `
+        ${searchInput}
+        <div style="background:#f0f9eb;border-radius:8px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:13px;color:#606266;">🔗 关联链路：</span>
+          ${subjectTag}
+          <span style="color:#909399;">→</span>
+          <span style="font-size:13px;font-weight:500;color:#303133;">${escapeHtml(route.name)}</span>
+        </div>
+        <div class="form-group">
+          <label>${routeSubject ? routeSubject.icon + ' ' + routeSubject.name + ' 学科课程 (' + relevantCourses.length + ')' : '全部课程'}</label>
+          <select id="courseSelect" size="8" style="height:auto;min-height:150px;">
+            ${relevantCourses.length > 0 ? relevantHtml : '<option value="" disabled>该学科暂无关联课程</option>'}
+          </select>
+        </div>
+        ${otherCourses.length > 0 ? '<div class="form-group" style="margin-top:12px;"><label>📌 其他学科课程 (' + otherCourses.length + ')</label><select id="otherCourseSelect" size="5" style="height:auto;min-height:100px;">' + otherHtml + '</select><div style="font-size:12px;color:#909399;margin-top:4px;">这些课程未关联到本学科，但可以作为跨学科补充</div></div>' : ''}
+        <div style="font-size:12px;color:#909399;margin-bottom:12px;">💡 已添加的课程显示为灰色，选中后点击"添加"按钮；新添加的课程排在路线末尾，可在列表中用 ↑ ↓ 调整顺序</div>
+        <div style="background:#f9f9fb;border-radius:8px;padding:12px;">
+          <div style="font-size:13px;font-weight:500;color:#606266;margin-bottom:8px;">📋 本路线已选课程 (${selectedIds.length})</div>
+          <div id="selectedCoursePreview" style="font-size:12px;color:#909399;">
+            ${renderSelectedCoursesPreview(route)}
+          </div>
+        </div>
+      `;
+
+      var footerHtml = `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" onclick="addSelectedCourse('${routeId}')">+ 添加选中课程</button>
+        <button class="btn btn-success" onclick="this.closest('.modal-overlay').remove();var r=MockData.routes.find(function(rr){return rr.id==='${routeId}';});if(r)renderRouteDetail(r);" style="background:#67c23a;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;">✅ 完成添加</button>
+      `;
+
+      var overlay = showModal('从课程库添加课程 — ' + route.name, bodyHtml, footerHtml);
+      var modal = overlay.querySelector('.modal');
+      if (modal) modal.style.maxWidth = '800px';
+    }
+
+    function renderSelectedCoursesPreview(route) {
+      var courses = getRouteCourses(route);
+      if (courses.length === 0) return '<span>暂无关联课程</span>';
+      return '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        courses.map(function(course, idx) {
+          return '<span style="background:#ecf5ff;color:#409eff;padding:2px 10px;border-radius:4px;">' + (idx + 1) + '. ' + escapeHtml(course.title) + '</span>';
+        }).join('') +
+        '</div>';
+    }
+
+    function filterCourseOptions() {
+      var query = (document.getElementById('courseSearchInput').value || '').trim().toLowerCase();
+      ['courseSelect', 'otherCourseSelect'].forEach(function(selId) {
+        var select = document.getElementById(selId);
+        if (!select) return;
+        var options = select.options;
+        for (var i = 0; i < options.length; i++) {
+          var text = options[i].text.toLowerCase();
+          var match = !query || text.indexOf(query) !== -1;
+          options[i].style.display = match ? '' : 'none';
+        }
+      });
+    }
+
+    function addSelectedCourse(routeId) {
+      var select = document.getElementById('courseSelect');
+      var otherSelect = document.getElementById('otherCourseSelect');
+      var selectedValue = (select && select.value) || (otherSelect && otherSelect.value);
+      if (!selectedValue) {
+        showToast('请先选择一门课程', 'warning');
+        return;
+      }
+
+      const route = MockData.routes.find(r => r.id === routeId);
+      if (!route) return;
+
+      if (!route.courseIds) route.courseIds = [];
+      if (route.courseIds.indexOf(selectedValue) !== -1) {
+        showToast('该课程已添加，请勿重复添加', 'warning');
+        return;
+      }
+
+      route.courseIds.push(selectedValue);
+
+      // Refresh the selects — disable the added course
+      [select, otherSelect].forEach(function(sel) {
+        if (!sel) return;
+        var option = sel.querySelector('option[value="' + selectedValue + '"]');
+        if (option) {
+          option.disabled = true;
+          option.textContent += ' [已添加]';
+          option.selected = false;
+        }
+      });
+
+      // Update preview
+      var preview = document.getElementById('selectedCoursePreview');
+      if (preview) preview.innerHTML = renderSelectedCoursesPreview(route);
+
+      showToast('课程已添加', 'success');
+      // Update the route detail view
+      renderRouteDetail(route);
+    }
+
+    function deleteCourse(routeId, courseId) {
+      showConfirm('确定要从本路线移除该课程吗？', () => {
+        const route = MockData.routes.find(r => r.id === routeId);
+        if (!route) return;
+        if (route.courseIds) {
+          route.courseIds = route.courseIds.filter(function(id) {
+            return id !== courseId;
+          });
+        }
+        renderRouteDetail(route);
+        showToast('课程已移除', 'success');
+      });
+    }
+
+    // ============================
+    // Route CRUD — with course selection & ordering
+    // ============================
+
+    function showRouteForm(routeId) {
+      const isEdit = !!routeId;
+      let route = isEdit ? MockData.routes.find(r => r.id === routeId) : null;
+
+      // 路线课程：courseIds 本身即学习顺序
+      var existingCourseIds = (route && route.courseIds) ? route.courseIds.slice() : [];
+
+      // Build subject dropdown
+      var subjectsHtml = '';
+      if (MockData.subjects) {
+        MockData.subjects.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); }).forEach(function(s) {
+          var selected = route && route.subjectId === s.id ? 'selected' : '';
+          subjectsHtml += '<option value="' + s.id + '" ' + selected + '>' + s.icon + ' ' + s.name + '</option>';
+        });
+      }
+
+      const statusOptions = ['active', 'disabled'].map(function(s) {
+        var sel = route && getRouteStatus(route.id) === s ? 'selected' : '';
+        return '<option value="' + s + '" ' + sel + '>' + (s === 'active' ? '启用' : '禁用') + '</option>';
+      }).join('');
+
+      // Pre-render selected courses for edit mode
+      var preSelectedCoursesHtml = '';
+      if (isEdit && existingCourseIds.length > 0) {
+        existingCourseIds.forEach(function(cid, idx) {
+          for (var ci = 0; ci < MockData.courses.length; ci++) {
+            if (MockData.courses[ci].id === cid) {
+              var c = MockData.courses[ci];
+              preSelectedCoursesHtml += '<div class="sel-course-item" data-id="' + c.id + '" data-order="' + (idx + 1) + '">' +
+                '<span class="sel-course-order">' + (idx + 1) + '</span>' +
+                '<span class="sel-course-bvid">' + c.bvid + '</span>' +
+                '<span class="sel-course-title">' + escapeHtml(c.title) + '</span>' +
+                '<span class="sel-course-meta">' + formatDuration(c.durationMin) + '</span>' +
+                '<span class="sel-course-actions">' +
+                  '<button type="button" onclick="moveSelCourse(this, -1)" title="上移">↑</button>' +
+                  '<button type="button" onclick="moveSelCourse(this, 1)" title="下移">↓</button>' +
+                  '<button type="button" onclick="removeSelCourse(this)" title="移除" style="color:#f56c6c;">✕</button>' +
+                '</span>' +
+              '</div>';
+              break;
+            }
+          }
+        });
+      }
+
+      var bodyHtml = `
+        <div style="max-height:580px;overflow-y:auto;padding:0 4px;">
+          <!-- === Step 1: Basic Info === -->
+          <div style="background:#f5f7fa;border-radius:8px;padding:8px 14px;margin-bottom:16px;">
+            <span style="font-weight:600;color:#303133;font-size:14px;">📋 基本信息</span>
+          </div>
+          <div class="form-group">
+            <label>路线名称</label>
+            <input type="text" id="routeName" value="${route ? escapeHtml(route.name) : ''}" placeholder="例如：Java全栈开发工程师">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>关联学科</label>
+              <select id="routeSubject" onchange="onRouteSubjectChange()">${subjectsHtml}</select>
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <select id="routeStatus">${statusOptions}</select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>路线图标</label>
+            <input type="text" id="routeIcon" value="${route ? escapeHtml(route.icon || '') : ''}" placeholder="留空自动使用学科图标" maxlength="10">
+          </div>
+          <div class="form-group">
+            <label>适合学历</label>
+            <textarea id="routeSuitableFor" placeholder="例如：大专及以上学历，具备编程基础更佳" rows="2">${route ? escapeHtml(route.suitableFor || '') : ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label>路线描述</label>
+            <textarea id="routeDescription" placeholder="请输入路线描述" rows="2">${route ? escapeHtml(route.description) : ''}</textarea>
+          </div>
+
+          <!-- === Step 2: Route Courses === -->
+          <div style="background:#f5f7fa;border-radius:8px;padding:8px 14px;margin:16px 0;">
+            <span style="font-weight:600;color:#303133;font-size:14px;">📚 路线课程</span>
+            <span style="font-size:12px;color:#909399;margin-left:8px;">从学科课程中勾选本路线要学习的课程</span>
+          </div>
+
+          <!-- Subject courses checklist -->
+          <div id="subjectCourseList" style="border:1px solid #e4e7ed;border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;margin-bottom:12px;">
+            <div style="color:#909399;font-size:13px;text-align:center;padding:20px;">请先选择关联学科，加载该学科下的B站课程</div>
+          </div>
+
+          <!-- Selected courses (ordered) -->
+          <div style="background:#f0f9eb;border-radius:8px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;font-weight:500;color:#303133;">📚 已选课程 <span id="selCourseCount">${existingCourseIds.length}</span> 门</span>
+              <span style="font-size:12px;color:#909399;">↑↓ 点击箭头调整学习顺序</span>
+            </div>
+            <div id="selectedCoursesList">
+              ${preSelectedCoursesHtml || '<div style="font-size:13px;color:#909399;text-align:center;padding:20px;">还未选择课程，请在上方勾选</div>'}
+            </div>
+          </div>
+        </div>
+      `;
+
+      var footerHtml =
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-primary" onclick="saveRoute(\'' + (routeId || '') + '\')">' +
+        (isEdit ? '保存修改' : '创建路线') +
+        '</button>';
+
+      var overlay = showModal(isEdit ? '编辑路线' : '新建路线', bodyHtml, footerHtml);
+      var modal = overlay.querySelector('.modal');
+      if (modal) modal.style.maxWidth = '780px';
+
+      // Load the course checklist for the current subject
+      if (route && route.subjectId) {
+        loadSubjectCourses(route.subjectId, existingCourseIds);
+      }
+    }
+
+    // Called when subject dropdown changes
+    function onRouteSubjectChange() {
+      var sel = document.getElementById('routeSubject');
+      if (!sel) return;
+      var subjectId = sel.value;
+      if (subjectId) {
+        // 学科变了，已选课程保持不变，按已选状态重新渲染勾选列表
+        loadSubjectCourses(subjectId, collectSelectedCourseIds());
+      } else {
+        document.getElementById('subjectCourseList').innerHTML = '<div style="color:#909399;font-size:13px;text-align:center;padding:20px;">请先选择关联学科</div>';
+      }
+    }
+
+    // 读取已选课程列表中的课程 ID（按当前顺序）
+    function collectSelectedCourseIds() {
+      var list = document.getElementById('selectedCoursesList');
+      if (!list) return [];
+      return Array.prototype.slice.call(list.querySelectorAll('.sel-course-item'))
+        .map(function(el) { return el.getAttribute('data-id'); });
+    }
+
+    function loadSubjectCourses(subjectId, selectedIds) {
+      selectedIds = selectedIds || [];
+      var container = document.getElementById('subjectCourseList');
+      if (!container) return;
+      var subject = getSubjectById(subjectId);
+      if (!subject) {
+        container.innerHTML = '<div style="color:#909399;font-size:13px;text-align:center;padding:20px;">未找到该学科</div>';
+        return;
+      }
+
+      // Find courses for this subject
+      var subjectCourses = [];
+      MockData.courses.forEach(function(c) {
+        if (c.subjectIds && c.subjectIds.indexOf(subjectId) !== -1) {
+          subjectCourses.push(c);
+        }
+      });
+
+      if (subjectCourses.length === 0) {
+        container.innerHTML = '<div style="color:#909399;font-size:13px;text-align:center;padding:20px;">该学科暂无关联的B站课程，请先在「B站课程库」中添加</div>';
+        return;
+      }
+
+      // Build checklist
+      var html = '<div style="font-size:12px;color:#606266;margin-bottom:8px;">' + subject.icon + ' ' + subject.name + ' — 共 ' + subjectCourses.length + ' 门B站课程，勾选要加入本路线的课程：</div>';
+      subjectCourses.forEach(function(c, idx) {
+        var checked = selectedIds.indexOf(c.id) !== -1 ? 'checked' : '';
+        html += '<label style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background 0.2s;" '
+          + 'onmouseover="this.style.background=\'#f5f7fa\'" onmouseout="this.style.background=\'transparent\'">'
+          + '<input type="checkbox" value="' + c.id + '" ' + checked + ' onchange="toggleCourseSelection(this)">'
+          + '<span style="font-family:monospace;font-size:11px;background:#fb7299;color:white;padding:1px 6px;border-radius:3px;flex-shrink:0;">' + c.bvid + '</span>'
+          + '<span style="flex:1;font-size:13px;color:#303133;">' + escapeHtml(c.title) + '</span>'
+          + '<span style="font-size:12px;color:#909399;white-space:nowrap;">' + formatDuration(c.durationMin) + '</span>'
+          + '<span style="font-size:12px;color:#909399;white-space:nowrap;">' + formatPlayCount(c.playCount) + ' 播放</span>'
+          + '</label>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    function toggleCourseSelection(checkbox) {
+      var courseId = checkbox.value;
+      var checked = checkbox.checked;
+      var list = document.getElementById('selectedCoursesList');
+      var countSpan = document.getElementById('selCourseCount');
+
+      if (checked) {
+        // Find course data
+        var course = null;
+        for (var i = 0; i < MockData.courses.length; i++) {
+          if (MockData.courses[i].id === courseId) {
+            course = MockData.courses[i];
+            break;
+          }
+        }
+        if (!course) return;
+
+        // Check if already exists
+        var existing = list.querySelector('.sel-course-item[data-id="' + courseId + '"]');
+        if (existing) return;
+
+        // Add to selected list at the end
+        var order = list.children.length + 1;
+        var div = document.createElement('div');
+        div.className = 'sel-course-item';
+        div.setAttribute('data-id', course.id);
+        div.setAttribute('data-order', order);
+        div.innerHTML = ''
+          + '<span class="sel-course-order">' + order + '</span>'
+          + '<span class="sel-course-bvid">' + course.bvid + '</span>'
+          + '<span class="sel-course-title">' + escapeHtml(course.title) + '</span>'
+          + '<span class="sel-course-meta">' + formatDuration(course.durationMin) + '</span>'
+          + '<span class="sel-course-actions">'
+          + '<button type="button" onclick="moveSelCourse(this, -1)" title="上移">↑</button>'
+          + '<button type="button" onclick="moveSelCourse(this, 1)" title="下移">↓</button>'
+          + '<button type="button" onclick="removeSelCourse(this)" title="移除" style="color:#f56c6c;">✕</button>'
+          + '</span>';
+
+        // Remove empty placeholder
+        var placeholder = list.querySelector('div[style*="text-align:center"]');
+        if (placeholder) placeholder.remove();
+
+        list.appendChild(div);
+        refreshSelCourseOrders(list);
+      } else {
+        // Remove from selected list
+        var item = list.querySelector('.sel-course-item[data-id="' + courseId + '"]');
+        if (item) {
+          item.remove();
+          refreshSelCourseOrders(list);
+        }
+      }
+
+      // Update count
+      var count = list.querySelectorAll('.sel-course-item').length;
+      if (countSpan) countSpan.textContent = count;
+
+      if (count === 0) {
+        list.innerHTML = '<div style="font-size:13px;color:#909399;text-align:center;padding:20px;">还未选择课程，请在上方勾选</div>';
+      }
+    }
+
+    function moveSelCourse(btn, dir) {
+      var item = btn.closest('.sel-course-item');
+      if (!item) return;
+      var list = document.getElementById('selectedCoursesList');
+      var sibling = dir === -1 ? item.previousElementSibling : item.nextElementSibling;
+      if (!sibling || !sibling.classList || !sibling.classList.contains('sel-course-item')) return;
+
+      if (dir === -1) {
+        list.insertBefore(item, sibling);
+      } else {
+        list.insertBefore(sibling, item);
+      }
+      refreshSelCourseOrders(list);
+    }
+
+    function removeSelCourse(btn) {
+      var item = btn.closest('.sel-course-item');
+      if (!item) return;
+      var courseId = item.getAttribute('data-id');
+
+      // Uncheck the checkbox
+      var checkbox = document.querySelector('#subjectCourseList input[value="' + courseId + '"]');
+      if (checkbox) checkbox.checked = false;
+
+      item.remove();
+      var list = document.getElementById('selectedCoursesList');
+      refreshSelCourseOrders(list);
+
+      var count = list.querySelectorAll('.sel-course-item').length;
+      var countSpan = document.getElementById('selCourseCount');
+      if (countSpan) countSpan.textContent = count;
+
+      if (count === 0) {
+        list.innerHTML = '<div style="font-size:13px;color:#909399;text-align:center;padding:20px;">还未选择课程，请在上方勾选</div>';
+      }
+    }
+
+    function refreshSelCourseOrders(list) {
+      if (!list) list = document.getElementById('selectedCoursesList');
+      var items = list.querySelectorAll('.sel-course-item');
+      items.forEach(function(item, idx) {
+        item.setAttribute('data-order', idx + 1);
+        var orderSpan = item.querySelector('.sel-course-order');
+        if (orderSpan) orderSpan.textContent = idx + 1;
+      });
+    }
+
+    function saveRoute(routeId) {
+      const name = document.getElementById('routeName').value.trim();
+      if (!name) {
+        showToast('请输入路线名称', 'warning');
+        return;
+      }
+
+      const subjectId = document.getElementById('routeSubject').value;
+      const subject = getSubjectById(subjectId);
+      if (!subjectId) {
+        showToast('请选择关联学科', 'warning');
+        return;
+      }
+
+      const description = document.getElementById('routeDescription').value.trim();
+      const status = document.getElementById('routeStatus').value;
+      const suitableFor = document.getElementById('routeSuitableFor').value.trim();
+      const icon = document.getElementById('routeIcon').value.trim() || (subject ? subject.icon : '📚');
+
+      // Collect selected courses in order
+      var list = document.getElementById('selectedCoursesList');
+      var courseItems = list ? list.querySelectorAll('.sel-course-item') : [];
+      var orderedCourseIds = [];
+      courseItems.forEach(function(item) {
+        var id = item.getAttribute('data-id');
+        if (id) orderedCourseIds.push(id);
+      });
+
+      if (orderedCourseIds.length === 0) {
+        showToast('请至少选择一门课程', 'warning');
+        return;
+      }
+
+      if (routeId) {
+        // === EDIT existing route ===
+        const route = MockData.routes.find(r => r.id === routeId);
+        if (route) {
+          route.name = name;
+          route.subjectId = subjectId;
+          route.direction = subject ? subject.name : '';
+          route.description = description;
+          route.suitableFor = suitableFor;
+          route.icon = icon;
+          routeStatuses[routeId] = status;
+          route.courseIds = orderedCourseIds;
+        }
+        showToast('路线已更新', 'success');
+      } else {
+        // === CREATE new route ===
+        var newRoute = {
+          id: 'r' + String(Date.now()).slice(-6),
+          name: name,
+          subjectId: subjectId,
+          direction: subject ? subject.name : '',
+          description: description,
+          suitableFor: suitableFor,
+          icon: icon,
+          color: (subject ? subject.color.replace('#','') : '667eea'),
+          totalCourses: orderedCourseIds.length,
+          totalDuration: 0,
+          courseIds: orderedCourseIds
+        };
+        MockData.routes.push(newRoute);
+        routeStatuses[newRoute.id] = status;
+        showToast('路线已创建', 'success');
+      }
+
+      document.querySelector('.modal-overlay').remove();
+      renderRoutes();
+    }
+
+    function getCourseById(id) {
+      for (var i = 0; i < MockData.courses.length; i++) {
+        if (MockData.courses[i].id === id) return MockData.courses[i];
+      }
+      return null;
+    }
+
+    function editRoute(routeId) {
+      showRouteForm(routeId);
+    }
+
+    function deleteRoute(routeId) {
+      showConfirm('确定要删除此路线吗？此操作不可恢复。', () => {
+        const idx = MockData.routes.findIndex(r => r.id === routeId);
+        if (idx !== -1) {
+          MockData.routes.splice(idx, 1);
+          delete routeStatuses[routeId];
+        }
+        renderRoutes();
+        showToast('路线已删除', 'success');
+      });
+    }
+
+    // ============================
+    // Preview
+    // ============================
+
+    function showPreview(routeId) {
+      const route = MockData.routes.find(r => r.id === routeId);
+      if (!route) return;
+
+      const courses = getRouteCourses(route);
+      const totals = computeRouteTotals(route);
+
+      const coursesHtml = courses.length === 0
+        ? '<div style="text-align:center;padding:40px;color:#909399;">暂无课程</div>'
+        : '<div class="preview-courses-flat">' +
+          courses.map((c, idx) => {
+            var bvid = c.bvid || '';
+            var bvidHtml = bvid ? '<span class="bvid-badge" style="font-size:10px;vertical-align:middle;">' + bvid + '</span> ' : '';
+            return '<div class="preview-course-row">' +
+              '<span class="preview-course-num">' + (idx + 1) + '</span>' +
+              '<span class="preview-course-title">' + bvidHtml + escapeHtml(c.title || '') + '</span>' +
+              '<span style="color:#909399;font-size:12px;white-space:nowrap;">' + formatDuration(c.durationMin) + '</span>' +
+            '</div>';
+          }).join('') +
+          '</div>';
+
+      var pSubj = getRouteSubject(route);
+      var pIcon = route.icon || (pSubj ? pSubj.icon : '📚');
+      var pName = pSubj ? pSubj.name : (route.direction || '');
+      const bodyHtml = `
+        <div class="preview-container">
+          <div class="preview-title">${pIcon} ${route.name}</div>
+          <div class="preview-desc">${route.description || '暂无描述'}</div>
+          <div style="margin-bottom:20px;display:flex;gap:16px;font-size:13px;color:#606266;flex-wrap:wrap;">
+            <span>📂 关联学科：${pName}</span>
+            <span>🎓 ${route.suitableFor || '无学历要求'}</span>
+            <span>📹 共 ${totals.totalCourses} 门课程</span>
+            <span>⏱ 总计 ${formatDuration(totals.totalDuration)}</span>
+          </div>
+          ${coursesHtml}
+        </div>
+      `;
+
+      const footerHtml = `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">关闭预览</button>
+      `;
+
+      const overlay = showModal('路线预览 - 学员视角', bodyHtml, footerHtml);
+      const modal = overlay.querySelector('.modal');
+      modal.style.maxWidth = '700px';
+    }
+
+    // ============================
+    // Init
+    // ============================
+
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // Initialize route statuses
+    MockData.routes.forEach(r => {
+      if (routeStatuses[r.id] === undefined) {
+        routeStatuses[r.id] = 'active';
+      }
+    });
+
+    renderRoutes();
+
+    // Check if navigated from admin dashboard "创建新路线"
+    if (sessionStorage.getItem('adminRouteAction') === 'create') {
+      sessionStorage.removeItem('adminRouteAction');
+      setTimeout(function() { showRouteForm(); }, 300);
+    }
+  </script>
+</body>
+</html>

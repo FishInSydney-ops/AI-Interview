@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <style>
+    .profile-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 左侧用户信息卡 */
+    .user-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 32px;
+      text-align: center;
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .user-avatar-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      color: white;
+      font-weight: 700;
+      margin: 0 auto 16px;
+    }
+
+    .user-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .user-role {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(64, 158, 255, 0.1);
+      color: var(--primary-color);
+      border-radius: var(--radius-round);
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .user-stat {
+      text-align: center;
+    }
+
+    .user-stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .user-stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* 右侧内容区 */
+    .profile-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .content-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .content-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .content-body {
+      padding: 24px;
+    }
+
+    /* 表单样式 */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .form-item {
+      margin-bottom: 20px;
+    }
+
+    .form-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-item label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-regular);
+      margin-bottom: 8px;
+    }
+
+    .form-item input,
+    .form-item select {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .form-item input:focus,
+    .form-item select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+    }
+
+    .form-item .readonly {
+      background: var(--bg-color);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+
+    /* 头像上传 */
+    .avatar-upload {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: white;
+    }
+
+    .avatar-info h4 {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .avatar-info p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    /* 学习数据 */
+    .learning-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .learning-item {
+      text-align: center;
+      padding: 20px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+    }
+
+    .learning-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .learning-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .learning-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+
+    @media (max-width: 1024px) {
+      .profile-container {
+        grid-template-columns: 1fr;
+      }
+
+      .user-card {
+        position: static;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .learning-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="nav-container container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon brand-mark" aria-hidden="true"></span>
+        <span class="logo-text">云枢智学</span>
+      </a>
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="routes.html" class="nav-link">学习路线</a>
+        <a href="questions.html" class="nav-link">题库</a>
+        <a href="ai-config.html" class="nav-link">AI面试</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar">M</div>
+          <span class="user-name">黑马学员</span>
+          <div class="user-dropdown">
+            <a href="profile.html">个人中心</a>
+            <a href="wrong-book.html">我的错题</a>
+            <a href="interview-history.html">面试记录</a>
+            <div class="dropdown-divider"></div>
+            <a href="login.html" class="text-danger">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div class="container">
+        <div class="page-header-content">
+          <div>
+            <h1 class="page-title">个人中心</h1>
+            <p class="page-subtitle">管理你的个人信息和账户设置</p>
+          </div>
+          <div class="breadcrumb">
+            <a href="index.html">首页</a>
+            <span>/</span>
+            <span>个人中心</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-container">
+      <!-- 左侧用户卡片 -->
+      <div class="user-card">
+        <div class="user-avatar-large">M</div>
+        <h2 class="user-name">黑马学员</h2>
+        <span class="user-role">普通学员</span>
+        <div class="user-stats">
+          <div class="user-stat">
+            <div class="user-stat-value">156</div>
+            <div class="user-stat-label">做题数</div>
+          </div>
+          <div class="user-stat">
+            <div class="user-stat-value">12</div>
+            <div class="user-stat-label">面试数</div>
+          </div>
+          <div class="user-stat">
+            <div class="user-stat-value">47</div>
+            <div class="user-stat-label">错题数</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧内容 -->
+      <div class="profile-content">
+        <!-- 基本信息 -->
+        <div class="content-card">
+          <div class="content-header">
+            <h3 class="content-title">基本信息</h3>
+          </div>
+          <div class="content-body">
+            <div class="avatar-upload">
+              <div class="avatar-preview">M</div>
+              <div class="avatar-info">
+                <h4>修改头像</h4>
+                <p>支持 JPG、PNG 格式，建议尺寸 200x200</p>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('头像上传功能', 'info')">上传头像</button>
+              </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+              <div class="form-row">
+                <div class="form-item">
+                  <label>用户名</label>
+                  <input type="text" value="黑马学员" id="username">
+                </div>
+                <div class="form-item">
+                  <label>手机号</label>
+                  <input type="text" value="138****8888" class="readonly" readonly>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-item">
+                  <label>邮箱</label>
+                  <input type="email" value="student@itheima.com" id="email">
+                </div>
+                <div class="form-item">
+                  <label>性别</label>
+                  <select id="gender">
+                    <option value="male" selected>男</option>
+                    <option value="female">女</option>
+                    <option value="unknown">保密</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-item" style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveProfile()">保存修改</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 学习数据 -->
+        <div class="content-card">
+          <div class="content-header">
+            <h3 class="content-title">学习数据</h3>
+          </div>
+          <div class="content-body">
+            <div class="learning-grid">
+              <div class="learning-item">
+                <div class="learning-icon">📚</div>
+                <div class="learning-value">156</div>
+                <div class="learning-label">已完成题目</div>
+              </div>
+              <div class="learning-item">
+                <div class="learning-icon">✅</div>
+                <div class="learning-value">82%</div>
+                <div class="learning-label">正确率</div>
+              </div>
+              <div class="learning-item">
+                <div class="learning-icon">🤖</div>
+                <div class="learning-value">12</div>
+                <div class="learning-label">AI面试次数</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    function saveProfile() {
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const gender = document.getElementById('gender').value;
+
+      if (!username.trim()) {
+        showToast('请输入用户名', 'warning');
+        return;
+      }
+
+      showToast('个人信息保存成功', 'success');
+    }
+  </script>
+</body>
+</html>

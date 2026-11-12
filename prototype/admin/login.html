@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台登录 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      background: #1d1e2c;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    .login-wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+    /* 左侧品牌区 */
+    .brand-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      background: linear-gradient(135deg, #1d1e2c 0%, #2d2e4c 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .brand-section::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(102,126,234,0.08) 0%, transparent 60%);
+      animation: pulse 10s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    .brand-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      color: white;
+    }
+    .brand-logo {
+      width: 100px; height: 100px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 24px;
+      box-shadow: 0 8px 32px rgba(102,126,234,0.3);
+    }
+    .brand-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .brand-subtitle {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 40px;
+    }
+    .brand-features {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: left;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    .brand-feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .brand-feature .icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* 右侧登录表单 */
+    .form-section {
+      width: 460px;
+      min-width: 460px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      background: white;
+    }
+    .form-container {
+      width: 100%;
+      max-width: 360px;
+    }
+    .form-header {
+      margin-bottom: 32px;
+    }
+    .form-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #303133;
+      margin-bottom: 8px;
+    }
+    .form-header p {
+      font-size: 14px;
+      color: #909399;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+      margin-bottom: 8px;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: #c0c4cc;
+      pointer-events: none;
+    }
+    .form-group input {
+      width: 100%;
+      height: 44px;
+      padding: 0 16px 0 44px;
+      border: 1px solid #dcdfe6;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.25s;
+      background: #f5f7fa;
+    }
+    .form-group input:focus {
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+    .form-group input::placeholder {
+      color: #c0c4cc;
+    }
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .form-options label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #606266;
+      cursor: pointer;
+    }
+    .form-options label input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: #667eea;
+      cursor: pointer;
+    }
+    .form-options a {
+      font-size: 13px;
+      color: #667eea;
+      text-decoration: none;
+    }
+    .form-options a:hover {
+      text-decoration: underline;
+    }
+    .login-btn {
+      width: 100%;
+      height: 44px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+    }
+    .login-btn:active {
+      transform: translateY(0);
+    }
+    .login-error {
+      display: none;
+      padding: 12px 16px;
+      background: rgba(245,108,108,0.1);
+      border: 1px solid rgba(245,108,108,0.3);
+      border-radius: 8px;
+      color: #f56c6c;
+      font-size: 13px;
+      margin-bottom: 16px;
+      align-items: center;
+      gap: 8px;
+    }
+    .login-error.show {
+      display: flex;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .back-link a {
+      font-size: 13px;
+      color: #909399;
+      text-decoration: none;
+    }
+    .back-link a:hover {
+      color: #667eea;
+    }
+
+    @media (max-width: 900px) {
+      .brand-section { display: none; }
+      .form-section { width: 100%; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <!-- 左侧品牌 -->
+    <div class="brand-section">
+      <div class="brand-content">
+        <div class="brand-logo"><span class="brand-mark" aria-hidden="true"></span></div>
+        <div class="brand-title">云枢智学</div>
+        <div class="brand-subtitle">AI版 · 管理后台</div>
+        <div class="brand-features">
+          <div class="brand-feature">
+            <span class="icon">📚</span>
+            <span>题库管理 · 面试题库 · 学科管理</span>
+          </div>
+          <div class="brand-feature">
+            <span class="icon">👥</span>
+            <span>用户管理 · 角色权限 · 操作日志</span>
+          </div>
+          <div class="brand-feature">
+            <span class="icon">📊</span>
+            <span>数据看板 · 系统配置 · AI模型管理</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧登录表单 -->
+    <div class="form-section">
+      <div class="form-container">
+        <div class="form-header">
+          <h2>管理员登录</h2>
+          <p>请输入管理员账号和密码登录后台</p>
+        </div>
+
+        <div class="login-error" id="loginError">
+          <span>⚠️</span>
+          <span id="errorMsg">账号或密码错误，请重试</span>
+        </div>
+
+        <div class="form-group">
+          <label>管理员账号</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" placeholder="请输入管理员账号" value="admin" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>登录密码</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="请输入密码" value="123456" autocomplete="current-password">
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label>
+            <input type="checkbox" checked> 记住登录状态
+          </label>
+          <a href="#" onclick="showToast('请联系超级管理员重置密码', 'info')">忘记密码？</a>
+        </div>
+
+        <button class="login-btn" onclick="handleLogin()">登 录</button>
+
+        <div class="back-link">
+          <a href="../portal/index.html">← 返回学员前台</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    function handleLogin() {
+      var username = document.getElementById('username').value.trim();
+      var password = document.getElementById('password').value.trim();
+      var errorEl = document.getElementById('loginError');
+      var msgEl = document.getElementById('errorMsg');
+
+      if (!username) {
+        msgEl.textContent = '请输入管理员账号';
+        errorEl.classList.add('show');
+        document.getElementById('username').focus();
+        return;
+      }
+      if (!password) {
+        msgEl.textContent = '请输入登录密码';
+        errorEl.classList.add('show');
+        document.getElementById('password').focus();
+        return;
+      }
+
+      // 模拟验证：admin / 123456
+      if (username === 'admin' && password === '123456') {
+        errorEl.classList.remove('show');
+        showToast('登录成功，正在跳转...', 'success');
+        // 存储登录状态
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        setTimeout(function() {
+          window.location.href = 'index.html';
+        }, 1200);
+      } else {
+        msgEl.textContent = '账号或密码错误，请重试';
+        errorEl.classList.add('show');
+      }
+    }
+
+    // 回车键登录
+    document.getElementById('password').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleLogin();
+    });
+    document.getElementById('username').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    // 如果已登录，直接跳转
+    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

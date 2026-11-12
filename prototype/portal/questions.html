@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>题库 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <style>
+    /* 学科信息头 */
+    .view-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    .view-head-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .view-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+
+    .view-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .view-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .view-count {
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    /* 阶段列表 */
+    .stage-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stage-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 24px;
+      transition: var(--transition);
+    }
+
+    .stage-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .stage-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .stage-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+
+    .stage-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .stage-count {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .stage-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 空态 */
+    .empty-state {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 64px 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* 题目视图返回条 */
+    .catalog-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      font-size: 14px;
+      color: var(--text-regular);
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .back-btn:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .catalog-path {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .catalog-path strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* 题目列表 */
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .question-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .question-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .question-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .question-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .question-number {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .question-subject {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .question-badges {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
+    .question-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .meta-item .icon {
+      font-size: 16px;
+    }
+
+    .question-tags {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      background: var(--bg-color);
+      border-radius: var(--radius-round);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* 分页 */
+    .pagination-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="nav-container container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon brand-mark" aria-hidden="true"></span>
+        <span class="logo-text">云枢智学</span>
+      </a>
+
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="routes.html" class="nav-link">学习路线</a>
+        <a href="questions.html" class="nav-link active">题库</a>
+        <a href="ai-config.html" class="nav-link">AI面试</a>
+      </div>
+
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar">M</div>
+          <span class="user-name">黑马学员</span>
+          <div class="user-dropdown">
+            <a href="profile.html">个人中心</a>
+            <a href="wrong-book.html">我的错题</a>
+            <a href="interview-history.html">面试记录</a>
+            <div class="dropdown-divider"></div>
+            <a href="../admin/index.html">管理后台</a>
+            <a href="login.html" class="text-danger">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <div class="main-content">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="container">
+        <div class="page-header-content">
+          <div>
+            <h1 class="page-title">题库中心</h1>
+            <p class="page-subtitle">海量精选面试题，助你轻松备战</p>
+          </div>
+          <div class="breadcrumb">
+            <a href="index.html">首页</a>
+            <span>/</span>
+            <span>题库</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="container">
+      <div class="layout-sidebar">
+        <!-- 侧边栏：学科菜单 -->
+        <aside class="sidebar">
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">学科</h3>
+            <div class="sidebar-menu" id="subjectMenu">
+              <!-- 动态渲染 -->
+            </div>
+          </div>
+        </aside>
+
+        <!-- 主区域 -->
+        <div class="main-area">
+          <!-- 视图一：学科下的阶段列表 -->
+          <div id="stageView">
+            <div class="view-header">
+              <div class="view-head-left">
+                <span class="view-icon" id="subjectIcon">🤖</span>
+                <div>
+                  <div class="view-title" id="subjectName">AI应用与智能体开发</div>
+                  <div class="view-subtitle" id="subjectDesc"></div>
+                </div>
+              </div>
+              <span class="view-count" id="stageCount">共 0 个阶段</span>
+            </div>
+            <div class="stage-list" id="stageList">
+              <!-- 动态渲染 -->
+            </div>
+          </div>
+
+          <!-- 视图二：阶段下的题目列表 -->
+          <div id="questionView" hidden>
+            <div class="catalog-bar">
+              <button class="back-btn" onclick="backToStages()">‹ 返回阶段列表</button>
+              <span class="catalog-path" id="catalogPath"></span>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="toolbar">
+              <div class="toolbar-left">
+                <div class="filter-group" id="typeFilter">
+                  <button class="filter-btn active" data-type="all">全部</button>
+                  <button class="filter-btn" data-type="single">单选</button>
+                  <button class="filter-btn" data-type="multiple">多选</button>
+                  <button class="filter-btn" data-type="judge">判断</button>
+                  <button class="filter-btn" data-type="short">简答</button>
+                </div>
+              </div>
+              <div class="toolbar-right">
+                <div class="filter-group" id="difficultyFilter">
+                  <button class="filter-btn" data-difficulty="easy">简单</button>
+                  <button class="filter-btn" data-difficulty="medium">中等</button>
+                  <button class="filter-btn" data-difficulty="hard">困难</button>
+                </div>
+                <div class="search-box">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" placeholder="搜索题目关键词...">
+                </div>
+              </div>
+            </div>
+
+            <!-- 题目列表 -->
+            <div class="question-list" id="questionList">
+              <!-- 动态渲染 -->
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination-wrapper">
+              <div class="pagination-info">
+                共 <span id="totalCount">0</span> 道题目
+              </div>
+              <div class="pagination">
+                <div class="pagination-item">‹</div>
+                <div class="pagination-item active">1</div>
+                <div class="pagination-item">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // 当前选中的学科与阶段
+    const state = { subjectId: null, catalogId: null };
+
+    // 渲染左侧学科菜单（全部学科，无阶段的学科阶段数显示 0）
+    function renderSubjectMenu() {
+      const menu = document.getElementById('subjectMenu');
+      const subjects = MockData.subjects.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+
+      menu.innerHTML = subjects.map(subj => `
+        <div class="sidebar-menu-item" data-id="${subj.id}">
+          <span class="icon">${subj.icon}</span>
+          <span>${subj.name}</span>
+          <span class="count">${(subj.catalogs || []).length}</span>
+        </div>
+      `).join('');
+
+      menu.querySelectorAll('.sidebar-menu-item').forEach(item => {
+        item.addEventListener('click', () => selectSubject(item.dataset.id));
+      });
+    }
+
+    // 切换学科：回到阶段列表视图
+    function selectSubject(subjectId) {
+      state.subjectId = subjectId;
+      state.catalogId = null;
+
+      document.querySelectorAll('#subjectMenu .sidebar-menu-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.id === subjectId);
+      });
+
+      renderStageList();
+      showView('stage');
+    }
+
+    // 渲染选中学科下的阶段列表
+    function renderStageList() {
+      const subject = getSubjectById(state.subjectId);
+      const catalogs = getCatalogsBySubjectId(state.subjectId);
+
+      document.getElementById('subjectIcon').textContent = subject.icon;
+      document.getElementById('subjectName').textContent = subject.name;
+      document.getElementById('subjectDesc').textContent = subject.description || '';
+      document.getElementById('stageCount').textContent = `共 ${catalogs.length} 个阶段`;
+
+      const list = document.getElementById('stageList');
+      if (catalogs.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">该学科暂无阶段，题目正在录入中</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = catalogs.map(cat => `
+        <div class="stage-item">
+          <div class="stage-info">
+            <span class="stage-icon">${cat.icon}</span>
+            <div>
+              <div class="stage-name">${cat.name}</div>
+              <div class="stage-count">共 ${cat.count} 题</div>
+            </div>
+          </div>
+          <div class="stage-actions">
+            <button class="btn btn-secondary btn-sm" onclick="viewCatalogQuestions('${cat.id}')">查看题目</button>
+            <button class="btn btn-primary btn-sm" onclick="startPractice('${cat.id}')">开始练习</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 取阶段下的题目：优先按 catalogId 匹配；
+    // 兜底按阶段名匹配，用于 mock 数据里 catalogId 与阶段 id 不一致的历史题目（如 c003）
+    function getQuestionsByCatalog(catalogId) {
+      const byId = MockData.questions.filter(q => q.catalogId === catalogId);
+      if (byId.length > 0) return byId;
+
+      const found = findCatalogById(catalogId);
+      if (!found) return [];
+      return MockData.questions.filter(q => q.catalogName === found.catalog.name);
+    }
+
+    // 查看题目：切到该阶段的题目列表
+    function viewCatalogQuestions(catalogId) {
+      state.catalogId = catalogId;
+      const found = findCatalogById(catalogId);
+      const questions = getQuestionsByCatalog(catalogId);
+
+      document.getElementById('catalogPath').innerHTML =
+        `${found ? found.subject.name : ''} / <strong>${found ? found.catalog.name : ''}</strong>`;
+
+      renderQuestions(questions);
+      showView('question');
+    }
+
+    // 开始练习：携带阶段参数进入练习页
+    function startPractice(catalogId) {
+      location.href = 'practice.html?catalog=' + catalogId;
+    }
+
+    // 返回阶段列表
+    function backToStages() {
+      state.catalogId = null;
+      showView('stage');
+    }
+
+    // 视图切换
+    function showView(view) {
+      document.getElementById('stageView').hidden = view !== 'stage';
+      document.getElementById('questionView').hidden = view !== 'question';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 渲染题目列表
+    function renderQuestions(questions) {
+      const list = document.getElementById('questionList');
+      const typeMap = { single: '单选', multiple: '多选', judge: '判断', short: '简答' };
+      const difficultyMap = { easy: '简单', medium: '中等', hard: '困难' };
+      const difficultyClass = { easy: 'difficulty-easy', medium: 'difficulty-medium', hard: 'difficulty-hard' };
+
+      document.getElementById('totalCount').textContent = questions.length;
+
+      if (questions.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <div class="empty-text">该阶段暂无题目，题目正在录入中</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = questions.map((q, index) => `
+        <div class="question-card">
+          <div class="question-header">
+            <div>
+              <div class="question-number">第 ${index + 1} 题</div>
+              <div class="question-subject">${q.subject}</div>
+            </div>
+            <div class="question-badges">
+              <span class="badge badge-primary">${typeMap[q.type]}</span>
+              <span class="badge ${difficultyClass[q.difficulty]}">${difficultyMap[q.difficulty]}</span>
+            </div>
+          </div>
+          <div class="question-meta">
+            <div class="meta-item">
+              <span class="icon">📁</span>
+              <span>${q.catalogName}</span>
+            </div>
+            <div class="meta-item">
+              <span class="icon">👥</span>
+              <span>${Math.floor(Math.random() * 500 + 100)}人做过</span>
+            </div>
+            <div class="meta-item">
+              <span class="icon">✓</span>
+              <span>正确率 ${Math.floor(Math.random() * 30 + 60)}%</span>
+            </div>
+            <div class="question-tags">
+              ${q.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+          </div>
+          <div class="question-actions">
+            <button class="btn btn-secondary btn-sm" onclick="viewQuestion('${q.id}')">查看解析</button>
+            <button class="btn btn-primary btn-sm" onclick="practiceQuestion('${q.id}')">开始练习</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 查看题目解析
+    function viewQuestion(id) {
+      showToast('查看题目解析：' + id, 'info');
+    }
+
+    // 练习单题
+    function practiceQuestion(id) {
+      location.href = 'practice.html?q=' + id;
+    }
+
+    // 初始化：渲染学科菜单并默认选中第一个学科
+    renderSubjectMenu();
+    selectSubject(MockData.subjects.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0))[0].id);
+
+    // 类型筛选
+    document.getElementById('typeFilter').addEventListener('click', (e) => {
+      if (e.target.classList.contains('filter-btn')) {
+        document.querySelectorAll('#typeFilter .filter-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+      }
+    });
+
+    // 难度筛选
+    document.getElementById('difficultyFilter').addEventListener('click', (e) => {
+      if (e.target.classList.contains('filter-btn')) {
+        document.querySelectorAll('#difficultyFilter .filter-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>

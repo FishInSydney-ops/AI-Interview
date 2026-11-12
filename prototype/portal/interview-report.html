@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面试报告 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <style>
+    .report-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .report-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 40px;
+      margin-bottom: 24px;
+    }
+
+    .report-header {
+      text-align: center;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 32px;
+    }
+
+    .report-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .report-header p {
+      color: var(--text-secondary);
+    }
+
+    /* 总分展示 */
+    .score-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+      margin-bottom: 40px;
+    }
+
+    .score-circle {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+
+    .score-circle svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-circle-bg {
+      fill: none;
+      stroke: var(--border-light);
+      stroke-width: 10;
+    }
+
+    .score-circle-fill {
+      fill: none;
+      stroke: var(--primary-color);
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 408;
+      stroke-dashoffset: 60;
+      transition: stroke-dashoffset 1s ease;
+    }
+
+    .score-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .score-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .score-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .score-details {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .detail-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .detail-icon.blue { background: rgba(64, 158, 255, 0.1); }
+    .detail-icon.green { background: rgba(103, 194, 58, 0.1); }
+    .detail-icon.orange { background: rgba(230, 162, 60, 0.1); }
+
+    .detail-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .detail-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* 能力雷达图 */
+    .radar-section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    .radar-chart {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    /* 优缺点分析 */
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .analysis-card {
+      padding: 24px;
+      border-radius: var(--radius-md);
+    }
+
+    .analysis-card.strengths {
+      background: rgba(103, 194, 58, 0.1);
+      border: 1px solid rgba(103, 194, 58, 0.2);
+    }
+
+    .analysis-card.weaknesses {
+      background: rgba(245, 108, 108, 0.1);
+      border: 1px solid rgba(245, 108, 108, 0.2);
+    }
+
+    .analysis-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .analysis-card.strengths h3 { color: var(--success-color); }
+    .analysis-card.weaknesses h3 { color: var(--danger-color); }
+
+    .analysis-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .analysis-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-regular);
+    }
+
+    .analysis-item .icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* 待提升项：问题描述 + 一句指导性建议。报告只做文字建议，不带任何跨页跳转。 */
+    .weakness-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .weakness-advice {
+      margin-left: 24px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    /* 建议 */
+    .suggestions {
+      background: rgba(64, 158, 255, 0.1);
+      border: 1px solid rgba(64, 158, 255, 0.2);
+      border-radius: var(--radius-md);
+      padding: 24px;
+    }
+
+    .suggestions h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      color: var(--primary-color);
+      margin-bottom: 16px;
+    }
+
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-regular);
+    }
+
+    /* 能力提升建议卡片 */
+    .improvement-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .improvement-card {
+      background: white;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .improvement-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: var(--primary-color);
+    }
+
+    .improvement-card .card-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .improvement-card h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* 能力提升建议卡片：纯文案说明，学员自己决定下一步去哪 */
+    .improvement-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 0;
+      line-height: 1.5;
+    }
+
+    /* 操作按钮 */
+    .report-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    /* 额外操作按钮 */
+    .report-actions-extra {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .report-actions-extra .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--border-light);
+      background: white;
+      color: var(--text-regular);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .report-actions-extra .btn-action:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      box-shadow: 0 2px 6px rgba(64, 158, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .report-actions-extra .btn-action .action-icon {
+      font-size: 16px;
+    }
+
+    /* 得分趋势比较 */
+    .score-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .score-trend.trend-up {
+      background: rgba(103, 194, 58, 0.1);
+      color: var(--success-color);
+    }
+
+    .score-trend.trend-down {
+      background: rgba(245, 108, 108, 0.1);
+      color: var(--danger-color);
+    }
+
+    .score-trend.trend-same {
+      background: rgba(230, 162, 60, 0.1);
+      color: var(--warning-color);
+    }
+
+    @media (max-width: 640px) {
+      .score-section {
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .improvement-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .report-actions-extra {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="nav-container container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon brand-mark" aria-hidden="true"></span>
+        <span class="logo-text">云枢智学</span>
+      </a>
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="routes.html" class="nav-link">学习路线</a>
+        <a href="questions.html" class="nav-link">题库</a>
+        <a href="ai-config.html" class="nav-link active">AI面试</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar">M</div>
+          <span class="user-name">黑马学员</span>
+          <div class="user-dropdown">
+            <a href="profile.html">个人中心</a>
+            <a href="wrong-book.html">我的错题</a>
+            <a href="interview-history.html">面试记录</a>
+            <div class="dropdown-divider"></div>
+            <a href="../admin/index.html">管理后台</a>
+            <a href="login.html" class="text-danger">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="report-container">
+      <div class="report-card">
+        <div class="report-header">
+          <h1>📊 AI面试评估报告</h1>
+          <p id="reportMeta">AI应用与智能体开发 · 中等难度 · 2026-07-23 14:30</p>
+        </div>
+
+        <!-- 总分 -->
+        <div class="score-section">
+          <div class="score-circle">
+            <svg width="160" height="160">
+              <circle class="score-circle-bg" cx="80" cy="80" r="65"/>
+              <circle class="score-circle-fill" cx="80" cy="80" r="65"/>
+            </svg>
+            <div class="score-value">
+              <div class="score-number" id="totalScore">85</div>
+              <div class="score-label">综合评分</div>
+            </div>
+          </div>
+
+          <div class="score-details">
+            <div class="detail-item">
+              <div class="detail-icon blue">📝</div>
+              <div class="detail-info">
+                <h4>回答准确度</h4>
+                <p>88%</p>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-icon green">⏱️</div>
+              <div class="detail-info">
+                <h4>面试时长</h4>
+                <p>35分钟</p>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-icon orange">📊</div>
+              <div class="detail-info">
+                <h4>答题数量</h4>
+                <p>10题</p>
+              </div>
+            </div>
+            <!-- 得分趋势比较（由JS动态填充） -->
+            <div class="detail-item" id="scoreTrendContainer" style="display:none;">
+              <div class="detail-icon" style="background:rgba(230,162,60,0.1);">📈</div>
+              <div class="detail-info">
+                <h4>相比上次</h4>
+                <p id="scoreTrendText"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 能力分析 -->
+        <div class="radar-section">
+          <div class="section-title">
+            <span>🎯</span>
+            <span>能力分析</span>
+          </div>
+
+          <!-- 简化的雷达图展示 -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div style="text-align: center; padding: 16px; background: var(--bg-color); border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--success-color);">90</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">Java基础</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: var(--bg-color); border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--primary-color);">85</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">数据库</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: var(--bg-color); border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--primary-color);">82</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">框架应用</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: var(--bg-color); border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--warning-color);">78</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">分布式</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: var(--bg-color); border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--success-color);">88</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">项目经验</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: var(--bg-color); border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--primary-color);">80</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">系统设计</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 优缺点分析 -->
+        <div class="analysis-grid">
+          <div class="analysis-card strengths">
+            <h3>✓ 优点</h3>
+            <div class="analysis-list">
+              <div class="analysis-item">
+                <span class="icon">✅</span>
+                <span>Java基础知识扎实，对集合框架理解深入</span>
+              </div>
+              <div class="analysis-item">
+                <span class="icon">✅</span>
+                <span>有实际项目经验，能结合场景回答问题</span>
+              </div>
+              <div class="analysis-item">
+                <span class="icon">✅</span>
+                <span>对Redis分布式锁有较好的理解</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="analysis-card weaknesses">
+            <h3>✗ 待提升</h3>
+            <div class="analysis-list">
+              <!-- 每条待提升项 = 问题描述 + 一句「怎么补」。不给具体阶段，也不做跨页跳转。 -->
+              <div class="weakness-wrapper">
+                <div class="analysis-item">
+                  <span class="icon">⚠️</span>
+                  <span>对分布式系统CAP理论理解不够深入</span>
+                </div>
+                <div class="weakness-advice">建议先把 C / A / P 三者的取舍关系讲清楚，再结合你项目里的实际选择说明为什么这么选。</div>
+              </div>
+              <div class="weakness-wrapper">
+                <div class="analysis-item">
+                  <span class="icon">⚠️</span>
+                  <span>MySQL索引优化的实践经验不足</span>
+                </div>
+                <div class="weakness-advice">建议以「一条慢 SQL 从发现到改写」为主线准备一段自己的经验，重点讲执行计划怎么看。</div>
+              </div>
+              <div class="weakness-wrapper">
+                <div class="analysis-item">
+                  <span class="icon">⚠️</span>
+                  <span>系统设计能力需要加强</span>
+                </div>
+                <div class="weakness-advice">建议按「需求拆解 → 容量估算 → 选型取舍 → 瓶颈兜底」四步练习口头表达，先说框架再补细节。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 建议 -->
+        <div class="suggestions" style="margin-top: 24px;">
+          <h3>💡 改进建议</h3>
+          <div class="suggestion-list">
+            <div class="suggestion-item">
+              <span class="icon">1️⃣</span>
+              <span>建议深入学习分布式系统理论，特别是CAP、BASE理论及其在实际项目中的应用</span>
+            </div>
+            <div class="suggestion-item">
+              <span class="icon">2️⃣</span>
+              <span>可以通过实际案例学习MySQL索引优化，理解explain执行计划的各个字段含义</span>
+            </div>
+            <div class="suggestion-item">
+              <span class="icon">3️⃣</span>
+              <span>多阅读一些系统设计相关的书籍和案例，如《数据密集型应用系统设计》</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 能力提升建议卡片：只说明「往哪个方向补」，具体从哪条路进去由学员自己决定 -->
+        <div class="improvement-cards">
+          <div class="improvement-card">
+            <div class="card-icon">📝</div>
+            <h4>推荐题目</h4>
+            <p>上面待提升的知识点，可以在题库中心本方向下的对应阶段找到同类题，重点把得分低的那几类重做一遍。</p>
+          </div>
+          <div class="improvement-card">
+            <div class="card-icon">🗺️</div>
+            <h4>推荐课程</h4>
+            <p>按本次面试方向进入学习路线，优先补齐待提升项相关的课程，按顺序学比跳着学更稳。</p>
+          </div>
+          <div class="improvement-card">
+            <div class="card-icon">🤖</div>
+            <h4>推荐再次面试</h4>
+            <p>保持练习节奏，用同一方向、提高一档难度再练一场，两次报告对比着看进步更清楚。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="report-actions">
+        <button class="btn btn-secondary" onclick="location.href='interview-history.html'">
+          查看历史记录
+        </button>
+        <button class="btn btn-primary" onclick="location.href='ai-interview.html'">
+          再来一次
+        </button>
+      </div>
+
+      <!-- 额外操作按钮 -->
+      <div class="report-actions-extra">
+        <a href="interview-history.html" class="btn-action">
+          <span class="action-icon">📋</span>
+          查看面试回放
+        </a>
+        <button class="btn-action" onclick="downloadReport()">
+          <span class="action-icon">📊</span>
+          下载报告
+        </button>
+        <button class="btn-action" onclick="shareReport()">
+          <span class="action-icon">🔗</span>
+          分享报告
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // 动态数据填充
+    // ============================
+
+    // 当前面试报告对应的面试记录（默认使用最新完成的Java面试 i001）
+    const currentInterviewId = 'i001';
+
+    function initReport() {
+      // 1. 填充报告元信息
+      const current = MockData.interviews.find(function(i) { return i.id === currentInterviewId; });
+      if (current) {
+        var metaEl = document.getElementById('reportMeta');
+        if (metaEl) {
+          var dirLabel = current.direction + '后端开发';
+          var diffLabel = getDifficultyLabel(current.difficulty);
+          metaEl.textContent = dirLabel + ' · ' + diffLabel + '难度 · ' + current.startTime;
+        }
+        var scoreEl = document.getElementById('totalScore');
+        if (scoreEl) {
+          scoreEl.textContent = current.score;
+        }
+      }
+
+      // 2. 得分趋势比较：查找当前面试之前的最新同方向已完成面试
+      var previous = findPreviousInterview(currentInterviewId, current ? current.direction : 'Java');
+      if (previous && current) {
+        var diff = current.score - previous.score;
+        var trendText = '';
+        var trendClass = '';
+
+        if (diff > 0) {
+          trendText = '↑ 较上次提升' + diff + '分';
+          trendClass = 'trend-up';
+        } else if (diff < 0) {
+          trendText = '↓ 较上次下降' + Math.abs(diff) + '分';
+          trendClass = 'trend-down';
+        } else {
+          trendText = '→ 与上次持平';
+          trendClass = 'trend-same';
+        }
+
+        var trendContainer = document.getElementById('scoreTrendContainer');
+        var trendTextEl = document.getElementById('scoreTrendText');
+        if (trendContainer && trendTextEl) {
+          trendContainer.style.display = 'flex';
+          // 用外层detail-item排版趋势
+          trendContainer.innerHTML =
+            '<div class="detail-icon" style="background:rgba(230,162,60,0.1);">📈</div>' +
+            '<div class="detail-info">' +
+            '  <h4>相比上次</h4>' +
+            '  <p><span class="score-trend ' + trendClass + '">' + trendText + '</span></p>' +
+            '</div>';
+        }
+      }
+
+    }
+
+    /**
+     * 查找当前面试之前的、同方向的最新已完成面试
+     */
+    function findPreviousInterview(currentId, direction) {
+      var previous = null;
+      var currentTime = null;
+
+      // 先找到当前面试的时间
+      for (var i = 0; i < MockData.interviews.length; i++) {
+        if (MockData.interviews[i].id === currentId) {
+          currentTime = new Date(MockData.interviews[i].startTime).getTime();
+          break;
+        }
+      }
+
+      if (!currentTime) return null;
+
+      for (var j = 0; j < MockData.interviews.length; j++) {
+        var item = MockData.interviews[j];
+        if (item.id === currentId) continue;
+        if (item.status !== 'completed') continue;
+        if (item.score <= 0) continue;
+        // 只比较同方向的面试
+        if (item.direction !== direction) continue;
+
+        var itemTime = new Date(item.startTime).getTime();
+        if (itemTime < currentTime) {
+          if (!previous || itemTime > new Date(previous.startTime).getTime()) {
+            previous = item;
+          }
+        }
+      }
+
+      return previous;
+    }
+
+    /**
+     * 下载报告（演示用）
+     */
+    function downloadReport() {
+      showToast('📊 报告下载中，请稍候...', 'success');
+    }
+
+    /**
+     * 分享报告（演示用）
+     */
+    function shareReport() {
+      showToast('🔗 报告链接已复制到剪贴板！', 'success');
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initReport);
+  </script>
+</body>
+</html>

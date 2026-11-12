@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>操作日志 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-bar .filter-group label {
+      font-size: 13px;
+      color: #909399;
+      white-space: nowrap;
+    }
+
+    .search-input {
+      width: 220px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .filter-select {
+      padding: 10px 36px 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23909399' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    .date-input {
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .date-input:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    .table tbody tr {
+      cursor: pointer;
+    }
+
+    .table tbody tr:hover {
+      background: #f0f5ff;
+    }
+
+    .action-type-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .action-type-tag.login { background: rgba(64, 158, 255, 0.1); color: #409eff; }
+    .action-type-tag.create { background: rgba(103, 194, 58, 0.1); color: #67c23a; }
+    .action-type-tag.update { background: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+    .action-type-tag.delete { background: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+    .action-type-tag.import { background: rgba(114, 69, 209, 0.1); color: #7245d1; }
+    .action-type-tag.export { background: rgba(0, 180, 180, 0.1); color: #00b4b4; }
+    .action-type-tag.upload { background: rgba(250, 173, 20, 0.1); color: #faad14; }
+    .action-type-tag.other { background: rgba(144, 147, 153, 0.1); color: #909399; }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .page-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .page-btn.active {
+      background: #409eff;
+      border-color: #409eff;
+      color: white;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Log detail modal */
+    .detail-row {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #f2f2f2;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      width: 100px;
+      font-size: 13px;
+      color: #909399;
+      flex-shrink: 0;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #303133;
+      word-break: break-all;
+    }
+
+    .log-target-text {
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item active">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">操作日志</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="filter-bar">
+              <input type="text" class="search-input" id="searchKeyword" placeholder="搜索用户/操作/目标..." oninput="applyFilters()">
+              <select class="filter-select" id="filterAction" onchange="applyFilters()">
+                <option value="">全部操作</option>
+                <option value="登录">登录</option>
+                <option value="新增|创建|上传">新增/创建/上传</option>
+                <option value="修改|更新|编辑">修改/编辑</option>
+                <option value="删除">删除</option>
+                <option value="禁用|启用">禁用/启用</option>
+                <option value="其他">其他</option>
+              </select>
+              <div class="filter-group">
+                <label>日期：</label>
+                <input type="date" class="date-input" id="filterDateFrom" onchange="applyFilters()">
+                <span style="color:#909399;">至</span>
+                <input type="date" class="date-input" id="filterDateTo" onchange="applyFilters()">
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn btn-secondary" onclick="exportLogs()">导出日志</button>
+              <button class="btn btn-danger" onclick="clearLogs()">清空日志</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="logTable">
+              <thead>
+                <tr>
+                  <th>用户</th>
+                  <th>操作</th>
+                  <th>目标</th>
+                  <th>IP地址</th>
+                  <th>时间</th>
+                </tr>
+              </thead>
+              <tbody id="logTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="pagination" id="paginationSection">
+            <div class="pagination-info" id="paginationInfo">共 0 条记录</div>
+            <div class="pagination-btns" id="paginationBtns"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ========== 日志数据状态 ==========
+    var pageSize = 5;
+    var currentPage = 1;
+    var filteredLogs = [];
+
+    // 操作类型归类
+    function getActionTypeClass(action) {
+      var map = {
+        '登录': 'login',
+        '新增': 'create',
+        '创建': 'create',
+        '上传': 'upload',
+        '修改': 'update',
+        '更新': 'update',
+        '编辑': 'update',
+        '删除': 'delete',
+        '禁用': 'update',
+        '启用': 'update',
+        '导入': 'import',
+        '导出': 'export'
+      };
+      for (var key in map) {
+        if (action.indexOf(key) !== -1) return map[key];
+      }
+      return 'other';
+    }
+
+    // 判断操作是否匹配筛选条件
+    function matchAction(action, filterValue) {
+      if (!filterValue) return true;
+      if (filterValue === '其他') {
+        var known = ['登录', '新增', '创建', '上传', '修改', '更新', '编辑', '删除', '禁用', '启用', '导入', '导出'];
+        return !known.some(function(k) { return action.indexOf(k) !== -1; });
+      }
+      var keywords = filterValue.split('|');
+      return keywords.some(function(kw) { return action.indexOf(kw) !== -1; });
+    }
+
+    // 应用筛选
+    function applyFilters() {
+      var keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+      var actionFilter = document.getElementById('filterAction').value;
+      var dateFrom = document.getElementById('filterDateFrom').value;
+      var dateTo = document.getElementById('filterDateTo').value;
+
+      filteredLogs = MockData.adminLogs.filter(function(log) {
+        // 关键词筛选（用户/操作/目标）
+        if (keyword) {
+          var match = log.user.toLowerCase().indexOf(keyword) !== -1 ||
+                      log.action.toLowerCase().indexOf(keyword) !== -1 ||
+                      log.target.toLowerCase().indexOf(keyword) !== -1;
+          if (!match) return false;
+        }
+        // 操作类型筛选
+        if (actionFilter && !matchAction(log.action, actionFilter)) return false;
+        // 日期范围筛选
+        if (dateFrom && log.time < dateFrom) return false;
+        if (dateTo && log.time > dateTo + ' 23:59:59') return false;
+        return true;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    // 渲染表格
+    function renderTable() {
+      var tbody = document.getElementById('logTableBody');
+      var total = filteredLogs.length;
+      var totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      var start = (currentPage - 1) * pageSize;
+      var end = Math.min(start + pageSize, total);
+      var pageData = filteredLogs.slice(start, end);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px 0;color:#909399;">暂无匹配的日志记录</td></tr>';
+      } else {
+        tbody.innerHTML = pageData.map(function(log) {
+          var actionClass = getActionTypeClass(log.action);
+          return [
+            '<tr onclick="showLogDetail(\'' + log.id + '\')">',
+              '<td><div style="display:flex;align-items:center;gap:10px;"><div class="user-avatar" style="width:32px;height:32px;font-size:12px;background:linear-gradient(135deg,#667eea,#764ba2);">' + log.user.charAt(0) + '</div><span>' + log.user + '</span></div></td>',
+              '<td><span class="action-type-tag ' + actionClass + '">' + log.action + '</span></td>',
+              '<td><span class="log-target-text" title="' + log.target + '">' + log.target + '</span></td>',
+              '<td><code style="font-size:12px;color:#909399;">' + log.ip + '</code></td>',
+              '<td style="font-size:13px;color:#909399;">' + log.time + '</td>',
+            '</tr>'
+          ].join('');
+        }).join('');
+      }
+
+      // 更新分页
+      document.getElementById('paginationInfo').textContent = '共 ' + total + ' 条记录，第 ' + (total > 0 ? currentPage : 0) + '/' + totalPages + ' 页';
+      renderPagination(totalPages);
+    }
+
+    // 渲染分页
+    function renderPagination(totalPages) {
+      var container = document.getElementById('paginationBtns');
+
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      var btns = [];
+
+      // 上一页
+      btns.push(
+        '<button class="page-btn" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>‹</button>'
+      );
+
+      // 页码
+      var maxVisible = 5;
+      var half = Math.floor(maxVisible / 2);
+      var startPage = Math.max(1, currentPage - half);
+      var endPage = Math.min(totalPages, startPage + maxVisible - 1);
+      if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      if (startPage > 1) {
+        btns.push('<button class="page-btn" onclick="goPage(1)">1</button>');
+        if (startPage > 2) btns.push('<span style="color:#909399;font-size:13px;">...</span>');
+      }
+
+      for (var i = startPage; i <= endPage; i++) {
+        btns.push(
+          '<button class="page-btn ' + (i === currentPage ? 'active' : '') + '" onclick="goPage(' + i + ')">' + i + '</button>'
+        );
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) btns.push('<span style="color:#909399;font-size:13px;">...</span>');
+        btns.push('<button class="page-btn" onclick="goPage(' + totalPages + ')">' + totalPages + '</button>');
+      }
+
+      // 下一页
+      btns.push(
+        '<button class="page-btn" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>›</button>'
+      );
+
+      container.innerHTML = btns.join('');
+    }
+
+    function goPage(page) {
+      var totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    // 日志详情
+    function showLogDetail(logId) {
+      var log = MockData.adminLogs.find(function(l) { return l.id === logId; });
+      if (!log) return;
+
+      var actionClass = getActionTypeClass(log.action);
+
+      var bodyHtml = [
+        '<div class="detail-row"><div class="detail-label">操作用户</div><div class="detail-value">' + log.user + '</div></div>',
+        '<div class="detail-row"><div class="detail-label">操作类型</div><div class="detail-value"><span class="action-type-tag ' + actionClass + '">' + log.action + '</span></div></div>',
+        '<div class="detail-row"><div class="detail-label">操作对象</div><div class="detail-value">' + log.target + '</div></div>',
+        '<div class="detail-row"><div class="detail-label">IP地址</div><div class="detail-value"><code style="background:#f5f7fa;padding:4px 8px;border-radius:4px;font-size:13px;">' + log.ip + '</code></div></div>',
+        '<div class="detail-row"><div class="detail-label">操作时间</div><div class="detail-value">' + log.time + '</div></div>',
+        '<div class="detail-row"><div class="detail-label">日志ID</div><div class="detail-value"><code style="background:#f5f7fa;padding:4px 8px;border-radius:4px;font-size:12px;">' + log.id + '</code></div></div>'
+      ].join('');
+
+      showModal('日志详情', bodyHtml);
+    }
+
+    // 导出日志
+    function exportLogs() {
+      showToast('日志导出任务已创建，文件将通过邮件发送至 admin@itheima.com', 'success');
+    }
+
+    // 清空日志
+    function clearLogs() {
+      if (MockData.adminLogs.length === 0) {
+        showToast('日志已为空，无需清空', 'info');
+        return;
+      }
+
+      showConfirm('确定要清空所有操作日志吗？此操作不可恢复！', function() {
+        MockData.adminLogs = [];
+        applyFilters();
+        showToast('操作日志已全部清空', 'success');
+      });
+    }
+
+    // 初始化
+    applyFilters();
+  </script>
+</body>
+</html>

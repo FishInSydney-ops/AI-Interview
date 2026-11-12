@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>题库管理 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      width: 240px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #409eff;
+    }
+
+    .filter-select {
+      padding: 10px 36px 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23909399' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    .question-subject {
+      max-width: 300px;
+      font-weight: 500;
+      line-height: 1.5;
+      cursor: pointer;
+      color: #409eff;
+      transition: color 0.2s;
+    }
+
+    .question-subject:hover {
+      color: #337ecc;
+      text-decoration: underline;
+    }
+
+    .type-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .type-tag.single { background: rgba(64, 158, 255, 0.1); color: #409eff; }
+    .type-tag.multiple { background: rgba(103, 194, 58, 0.1); color: #67c23a; }
+    .type-tag.judge { background: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+    .type-tag.short { background: rgba(144, 147, 153, 0.1); color: #909399; }
+
+    .type-tag-text {
+      font-size: 12px;
+    }
+
+    .difficulty-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .difficulty-tag.easy { background: rgba(103, 194, 58, 0.1); color: #67c23a; }
+    .difficulty-tag.medium { background: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+    .difficulty-tag.hard { background: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+
+    .status-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .status-tag.published { background: rgba(103, 194, 58, 0.1); color: #67c23a; }
+    .status-tag.pending { background: rgba(230, 162, 60, 0.1); color: #e6a23c; }
+    .status-tag.draft { background: rgba(144, 147, 153, 0.1); color: #909399; }
+    .status-tag.unpublished { background: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+    .status-tag.rejected { background: rgba(245, 108, 108, 0.1); color: #f56c6c; }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .page-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .page-btn.active {
+      background: #409eff;
+      border-color: #409eff;
+      color: white;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* 批量操作栏 */
+    .batch-bar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: rgba(64, 158, 255, 0.05);
+      border-bottom: 1px solid rgba(64, 158, 255, 0.15);
+    }
+
+    .batch-bar.show {
+      display: flex;
+    }
+
+    .batch-bar .selected-count {
+      font-size: 14px;
+      color: #606266;
+      margin-right: 8px;
+    }
+
+    .batch-bar .selected-count strong {
+      color: #409eff;
+    }
+
+    /* 选项管理 */
+    .options-container {
+      margin-top: 8px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .option-row .option-idx {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #606266;
+      flex-shrink: 0;
+    }
+
+    .option-row .option-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .option-row .option-input:focus {
+      border-color: #409eff;
+    }
+
+    .option-row .option-correct {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .option-row .option-remove {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: #f56c6c;
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .option-row .option-remove:hover {
+      background: rgba(245, 108, 108, 0.1);
+    }
+
+    .option-add-btn {
+      padding: 6px 14px;
+      border: 1px dashed #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      color: #909399;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .option-add-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    /* 详情模态框 */
+    .detail-section {
+      margin-bottom: 20px;
+    }
+
+    .detail-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-section .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+
+    .detail-question-content {
+      font-size: 16px;
+      color: #303133;
+      line-height: 1.8;
+      padding: 12px 16px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+
+    .detail-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      border: 1px solid #e4e7ed;
+      transition: all 0.2s;
+    }
+
+    .detail-option.correct {
+      border-color: #67c23a;
+      background: rgba(103, 194, 58, 0.05);
+    }
+
+    .detail-option .option-label {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #606266;
+      flex-shrink: 0;
+    }
+
+    .detail-option.correct .option-label {
+      background: #67c23a;
+      color: white;
+    }
+
+    .detail-option .option-content {
+      flex: 1;
+      font-size: 14px;
+      color: #303133;
+    }
+
+    .detail-option .correct-badge {
+      font-size: 12px;
+      color: #67c23a;
+      font-weight: 500;
+    }
+
+    .detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .detail-tag {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      background: rgba(64, 158, 255, 0.1);
+      color: #409eff;
+    }
+
+    .detail-analysis {
+      padding: 12px 16px;
+      background: rgba(230, 162, 60, 0.05);
+      border: 1px solid rgba(230, 162, 60, 0.2);
+      border-radius: 8px;
+      font-size: 14px;
+      color: #606266;
+      line-height: 1.8;
+    }
+
+    .detail-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .detail-stat-item {
+      text-align: center;
+      padding: 12px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+
+    .detail-stat-item .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .detail-stat-item .stat-label {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+
+    .detail-stat-item .stat-value.green { color: #67c23a; }
+    .detail-stat-item .stat-value.blue { color: #409eff; }
+    .detail-stat-item .stat-value.orange { color: #e6a23c; }
+
+    /* 标签输入 */
+    .tags-input-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      min-height: 42px;
+      cursor: text;
+      transition: border-color 0.2s;
+    }
+
+    .tags-input-wrapper:focus-within {
+      border-color: #409eff;
+    }
+
+    .tags-input-wrapper .tag-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(64, 158, 255, 0.1);
+      color: #409eff;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .tags-input-wrapper .tag-item .tag-remove {
+      cursor: pointer;
+      font-weight: 600;
+      margin-left: 2px;
+    }
+
+    .tags-input-wrapper .tag-item .tag-remove:hover {
+      color: #f56c6c;
+    }
+
+    .tags-input-wrapper .tag-input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 80px;
+      font-size: 14px;
+      padding: 2px 0;
+    }
+
+    /* 题目统计顶部条 */
+    .question-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .question-stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .question-stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .question-stat-icon.blue { background: rgba(64, 158, 255, 0.1); }
+    .question-stat-icon.green { background: rgba(103, 194, 58, 0.1); }
+    .question-stat-icon.orange { background: rgba(230, 162, 60, 0.1); }
+    .question-stat-icon.purple { background: rgba(114, 69, 209, 0.1); }
+
+    .question-stat-info h3 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .question-stat-info p {
+      font-size: 13px;
+      color: #909399;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .question-stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item active">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">题库管理</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <!-- 统计卡片 -->
+        <div class="question-stats-bar" id="statsBar"></div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="toolbar">
+              <input type="text" class="search-input" id="searchInput" placeholder="搜索题目关键词..." oninput="debouncedSearch()">
+              <select class="filter-select" id="filterCatalog" onchange="applyFilters()">
+                <option value="">全部阶段</option>
+              </select>
+              <select class="filter-select" id="filterType" onchange="applyFilters()">
+                <option value="">全部类型</option>
+                <option value="single">单选题</option>
+                <option value="multiple">多选题</option>
+                <option value="judge">判断题</option>
+                <option value="short">简答题</option>
+              </select>
+              <select class="filter-select" id="filterDifficulty" onchange="applyFilters()">
+                <option value="">全部难度</option>
+                <option value="easy">简单</option>
+                <option value="medium">中等</option>
+                <option value="hard">困难</option>
+              </select>
+              <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+                <option value="">全部状态</option>
+                <option value="published">已上架</option>
+                <option value="unpublished">已下架</option>
+                <option value="pending">待审核</option>
+                <option value="rejected">已驳回</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn btn-secondary" onclick="showImportModal()">📥 导入Excel</button>
+              <button class="btn btn-secondary" onclick="exportExcel()">📤 导出Excel</button>
+              <button class="btn btn-primary" onclick="showAddModal()">+ 新增题目</button>
+            </div>
+          </div>
+
+          <!-- 批量操作栏 -->
+          <div class="batch-bar" id="batchBar">
+            <span class="selected-count">已选择 <strong id="selectedCount">0</strong> 项</span>
+            <button class="btn btn-secondary btn-sm" onclick="batchOperation('publish')">批量上架</button>
+            <button class="btn btn-secondary btn-sm" onclick="batchOperation('unpublish')">批量下架</button>
+            <button class="btn btn-danger btn-sm" onclick="batchDelete()">批量删除</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:40px;">
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                  </th>
+                  <th style="width:50px;">ID</th>
+                  <th>题目</th>
+                  <th style="width:100px;">阶段</th>
+                  <th style="width:80px;">类型</th>
+                  <th style="width:70px;">难度</th>
+                  <th style="width:80px;">状态</th>
+                  <th style="width:100px;">创建时间</th>
+                  <th style="width:300px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="questionTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info">
+              <span>共 <strong id="totalRecords">0</strong> 条记录</span>
+              <span style="margin-left:20px;">已选择 <strong id="selectedCountBottom">0</strong> 项</span>
+            </div>
+            <div class="pagination-btns" id="paginationBtns"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // 状态管理
+    // ============================
+    let currentPage = 1;
+    let pageSize = 10;
+    let filteredData = [];
+    let selectedIds = new Set();
+    let editingQuestion = null;
+    let tempOptions = [];
+    let tempTags = [];
+
+    // ============================
+    // 初始化
+    // ============================
+    document.addEventListener('DOMContentLoaded', function() {
+      initFilters();
+      renderStats();
+      renderTable();
+    });
+
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ============================
+    // 统计数据
+    // ============================
+    function renderStats() {
+      const all = MockData.questions;
+      const total = all.length;
+      const published = all.filter(q => q.status === 'published').length;
+      const pending = all.filter(q => q.status === 'pending').length;
+      const singleCount = all.filter(q => q.type === 'single').length;
+      const multipleCount = all.filter(q => q.type === 'multiple').length;
+      const judgeCount = all.filter(q => q.type === 'judge').length;
+      const shortCount = all.filter(q => q.type === 'short').length;
+
+      document.getElementById('statsBar').innerHTML = `
+        <div class="question-stat-card">
+          <div class="question-stat-icon blue">📚</div>
+          <div class="question-stat-info">
+            <h3>${total}</h3>
+            <p>题目总数</p>
+          </div>
+        </div>
+        <div class="question-stat-card">
+          <div class="question-stat-icon green">✅</div>
+          <div class="question-stat-info">
+            <h3>${published}</h3>
+            <p>已上架</p>
+          </div>
+        </div>
+        <div class="question-stat-card">
+          <div class="question-stat-icon orange">⏳</div>
+          <div class="question-stat-info">
+            <h3>${pending}</h3>
+            <p>待审核</p>
+          </div>
+        </div>
+        <div class="question-stat-card">
+          <div class="question-stat-icon" style="background:rgba(64,158,255,0.1);">🔘</div>
+          <div class="question-stat-info">
+            <h3>${singleCount}</h3>
+            <p>单选题</p>
+          </div>
+        </div>
+        <div class="question-stat-card">
+          <div class="question-stat-icon" style="background:rgba(230,162,60,0.1);">☑️</div>
+          <div class="question-stat-info">
+            <h3>${multipleCount}</h3>
+            <p>多选题</p>
+          </div>
+        </div>
+        <div class="question-stat-card">
+          <div class="question-stat-icon" style="background:rgba(103,194,58,0.1);">⚖️</div>
+          <div class="question-stat-info">
+            <h3>${judgeCount}</h3>
+            <p>判断题</p>
+          </div>
+        </div>
+        <div class="question-stat-card">
+          <div class="question-stat-icon" style="background:rgba(114,69,209,0.1);">✍️</div>
+          <div class="question-stat-info">
+            <h3>${shortCount}</h3>
+            <p>简答题</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================
+    // 筛选器初始化
+    // ============================
+    function initFilters() {
+      const catalogSelect = document.getElementById('filterCatalog');
+      // 按学科分组展示阶段（按 sort 排序）
+      const sortedSubjects = MockData.subjects.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+      sortedSubjects.forEach(subj => {
+        const catalogs = (subj.catalogs || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+        if (catalogs.length === 0) return;
+        if (catalogs.length === 1) {
+          const opt = document.createElement('option');
+          opt.value = catalogs[0].id;
+          opt.textContent = catalogs[0].name;
+          catalogSelect.appendChild(opt);
+        } else {
+          const group = document.createElement('optgroup');
+          group.label = subj.name;
+          catalogs.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            group.appendChild(opt);
+          });
+          catalogSelect.appendChild(group);
+        }
+      });
+    }
+
+    function getFilteredData() {
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      const catalog = document.getElementById('filterCatalog').value;
+      const type = document.getElementById('filterType').value;
+      const difficulty = document.getElementById('filterDifficulty').value;
+      const status = document.getElementById('filterStatus').value;
+
+      return MockData.questions.filter(q => {
+        if (keyword && !q.subject.toLowerCase().includes(keyword)) return false;
+        if (catalog && q.catalogId !== catalog) return false;
+        if (type && q.type !== type) return false;
+        if (difficulty && q.difficulty !== difficulty) return false;
+        if (status && q.status !== status) return false;
+        return true;
+      });
+    }
+
+    function applyFilters() {
+      currentPage = 1;
+      selectedIds.clear();
+      renderTable();
+    }
+
+    function debouncedSearch() {
+      clearTimeout(window._searchTimer);
+      window._searchTimer = setTimeout(applyFilters, 300);
+    }
+
+    // ============================
+    // 表格渲染
+    // ============================
+    function renderTable() {
+      filteredData = getFilteredData();
+      const total = filteredData.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start = (currentPage - 1) * pageSize;
+      const end = Math.min(start + pageSize, total);
+      const pageData = filteredData.slice(start, end);
+
+      // 更新选择状态
+      selectedIds.forEach(id => {
+        if (!pageData.find(q => q.id === id)) selectedIds.delete(id);
+      });
+
+      const tbody = document.getElementById('questionTableBody');
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align:center;padding:60px 0;color:#909399;">
+              <div style="font-size:48px;margin-bottom:12px;">📭</div>
+              <div style="font-size:15px;">暂无匹配的题目，试试调整筛选条件</div>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = pageData.map(q => `
+          <tr>
+            <td><input type="checkbox" class="question-checkbox" data-id="${q.id}" ${selectedIds.has(q.id) ? 'checked' : ''} onchange="toggleSelection(${q.id}, this.checked)"></td>
+            <td style="font-size:12px;color:#909399;">${q.id}</td>
+            <td class="question-subject" onclick="showDetailModal(${q.id})">${q.subject}</td>
+            <td>${q.catalogName}</td>
+            <td>${getTypeTag(q.type)}</td>
+            <td>${getDifficultyTag(q.difficulty)}</td>
+            <td>${getStatusTag(q.status)}</td>
+            <td style="font-size:13px;color:#909399;">${getCreateTime(q)}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-secondary btn-sm" onclick="showDetailModal(${q.id})">查看</button>
+                ${q.status === 'pending' ? '<button class="btn btn-secondary btn-sm" style="color:#67c23a;" onclick="reviewQuestion(' + q.id + ', \'approve\')">通过</button><button class="btn btn-secondary btn-sm" style="color:#f56c6c;" onclick="reviewQuestion(' + q.id + ', \'reject\')">不通过</button><button class="btn btn-secondary btn-sm" onclick="showEditModal(' + q.id + ')">编辑</button><button class="btn btn-secondary btn-sm" style="color:#f56c6c;" onclick="deleteQuestion(' + q.id + ')">删除</button>' : ''}
+                ${q.status === 'published' ? '<button class="btn btn-secondary btn-sm" style="color:#e6a23c;" onclick="takeDown(' + q.id + ')">下架</button>' : ''}
+                ${q.status === 'unpublished' ? '<button class="btn btn-secondary btn-sm" style="color:#67c23a;" onclick="republish(' + q.id + ')">上架</button><button class="btn btn-secondary btn-sm" onclick="showEditModal(' + q.id + ')">编辑</button><button class="btn btn-secondary btn-sm" style="color:#f56c6c;" onclick="deleteQuestion(' + q.id + ')">删除</button>' : ''}
+                ${q.status === 'rejected' ? '<button class="btn btn-secondary btn-sm" style="color:#409eff;" onclick="resubmit(' + q.id + ')">重新提交</button><button class="btn btn-secondary btn-sm" onclick="showEditModal(' + q.id + ')">编辑</button><button class="btn btn-secondary btn-sm" style="color:#f56c6c;" onclick="deleteQuestion(' + q.id + ')">删除</button>' : ''}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // 更新全选状态
+      const checkboxes = document.querySelectorAll('.question-checkbox');
+      const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+      document.getElementById('selectAll').checked = allChecked;
+
+      // 更新数量和分页
+      document.getElementById('totalRecords').textContent = total;
+      updateBatchBar();
+      renderPagination(totalPages);
+    }
+
+    function getCreateTime(q) {
+      if (q.createTime) return q.createTime;
+      // 从id生成一个模拟创建时间 -- use stable offset based on id
+      const idNum = typeof q.id === 'number' ? q.id : (parseInt(q.id) || 1);
+      const base = new Date('2026-06-15');
+      base.setDate(base.getDate() + idNum % 20);
+      return formatDate(base, 'YYYY-MM-DD');
+    }
+
+    function getTypeTag(type) {
+      const map = { single: '单选', multiple: '多选', judge: '判断', short: '简答' };
+      return `<span class="type-tag ${type}">${map[type] || type}</span>`;
+    }
+
+    function getDifficultyTag(diff) {
+      const map = { easy: '简单', medium: '中等', hard: '困难' };
+      return `<span class="difficulty-tag ${diff}">${map[diff] || diff}</span>`;
+    }
+
+    function getStatusTag(status) {
+      const map = { published: '已上架', unpublished: '已下架', pending: '待审核', draft: '草稿', rejected: '已驳回' };
+      const cls = status === 'published' ? 'published' : status === 'unpublished' ? 'unpublished' : status === 'pending' ? 'pending' : status === 'rejected' ? 'rejected' : 'draft';
+      return `<span class="status-tag ${cls}">${map[status] || status}</span>`;
+    }
+
+    // ============================
+    // 分页
+    // ============================
+    function renderPagination(totalPages) {
+      const container = document.getElementById('paginationBtns');
+      let html = '';
+
+      html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>&#8249;</button>`;
+
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, currentPage + 2);
+
+      if (startPage > 1) {
+        html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<button class="page-btn" disabled>...</button>`;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<button class="page-btn" disabled>...</button>`;
+        html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+      }
+
+      html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>&#8250;</button>`;
+
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    // ============================
+    // 选择与批量操作
+    // ============================
+    function toggleSelectAll(el) {
+      const checkboxes = document.querySelectorAll('.question-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = el.checked;
+        if (el.checked) selectedIds.add(cb.dataset.id);
+        else selectedIds.delete(cb.dataset.id);
+      });
+      updateBatchBar();
+    }
+
+    function toggleSelection(id, checked) {
+      if (checked) selectedIds.add(id);
+      else selectedIds.delete(id);
+      updateBatchBar();
+    }
+
+    function updateBatchBar() {
+      const count = selectedIds.size;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('selectedCountBottom').textContent = count;
+      const bar = document.getElementById('batchBar');
+      bar.classList.toggle('show', count > 0);
+    }
+
+    function batchOperation(action) {
+      if (selectedIds.size === 0) return;
+      const label = action === 'publish' ? '上架' : '下架';
+      showConfirm(`确定要${label}选中的 ${selectedIds.size} 个题目吗？`, function() {
+        selectedIds.forEach(id => {
+          const q = MockData.questions.find(item => item.id === id);
+          if (q) q.status = action === 'publish' ? 'published' : 'unpublished';
+        });
+        selectedIds.clear();
+        showToast(`批量${label}成功`, 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    function batchDelete() {
+      if (selectedIds.size === 0) return;
+      showConfirm(`确定要删除选中的 ${selectedIds.size} 个题目吗？此操作不可恢复。`, function() {
+        selectedIds.forEach(id => {
+          const idx = MockData.questions.findIndex(q => q.id === id);
+          if (idx !== -1) MockData.questions.splice(idx, 1);
+        });
+        selectedIds.clear();
+        showToast('批量删除成功', 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    // ============================
+    // 题目删除
+    // ============================
+    function deleteQuestion(id) {
+      showConfirm('确定要删除这个题目吗？此操作不可恢复。', function() {
+        const idx = MockData.questions.findIndex(q => q.id === id);
+        if (idx !== -1) MockData.questions.splice(idx, 1);
+        selectedIds.delete(id);
+        showToast('删除成功', 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    // ============================
+    // 审核
+    // ============================
+    function reviewQuestion(id, action) {
+      const q = MockData.questions.find(item => item.id === id);
+      if (!q) return;
+
+      if (action === 'approve') {
+        showConfirm('审核通过该题目并上架？', function() {
+          q.status = 'published';
+          showToast('审核通过，题目已上架', 'success');
+          renderTable();
+          renderStats();
+        });
+      } else {
+        showConfirm('确定审核不通过该题目？题目将被标记为"已驳回"。', function() {
+          q.status = 'rejected';
+          showToast('审核不通过，题目已驳回', 'warning');
+          renderTable();
+          renderStats();
+        });
+      }
+    }
+
+    // 下架
+    function takeDown(id) {
+      const q = MockData.questions.find(item => item.id === id);
+      if (!q) return;
+      showConfirm('确定要下架该题目？下架后可重新编辑或上架。', function() {
+        q.status = 'unpublished';
+        showToast('题目已下架', 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    // 重新上架（已下架 → 已上架）
+    function republish(id) {
+      const q = MockData.questions.find(item => item.id === id);
+      if (!q) return;
+      showConfirm('确定要重新上架该题目？', function() {
+        q.status = 'pending';
+        showToast('已重新提交审核', 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    // 重新提交（已驳回 → 待审核）
+    function resubmit(id) {
+      const q = MockData.questions.find(item => item.id === id);
+      if (!q) return;
+      showConfirm('确定要重新提交审核？', function() {
+        q.status = 'pending';
+        showToast('已重新提交审核', 'success');
+        renderTable();
+        renderStats();
+      });
+    }
+
+    // ============================
+    // 新增 & 编辑 Modal
+    // ============================
+    function showAddModal() {
+      editingQuestion = null;
+      tempOptions = [];
+      tempTags = [];
+      document.getElementById('selectAll').checked = false;
+
+      const overlay = showModal('新增题目', buildFormHtml(null), `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+      `);
+
+      setTimeout(() => initForm(null), 50);
+    }
+
+    function showEditModal(id) {
+      const q = MockData.questions.find(item => item.id === id);
+      if (!q) return;
+      editingQuestion = q;
+      tempOptions = JSON.parse(JSON.stringify(q.options || []));
+      tempTags = JSON.parse(JSON.stringify(q.tags || []));
+
+      const overlay = showModal('编辑题目', buildFormHtml(q), `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+      `);
+
+      setTimeout(() => initForm(q), 50);
+    }
+
+    function buildFormHtml(q) {
+      return `
+        <div class="form-group">
+          <label class="form-label">题目内容 <span style="color:#f56c6c;">*</span></label>
+          <textarea class="form-input" id="formSubject" rows="3" placeholder="请输入题目内容">${q ? q.subject : ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">阶段 <span style="color:#f56c6c;">*</span></label>
+          <select class="form-input" id="formCatalog" onchange="onTypeOrCatalogChange()">
+            <option value="">请选择阶段</option>
+            ${MockData.subjects.slice().sort((a,b) => (a.sort||0)-(b.sort||0)).map(s => {
+              const sortedCats = (s.catalogs||[]).slice().sort((a,b) => (a.sort||0)-(b.sort||0));
+              return sortedCats.length === 1
+              ? `<option value="${sortedCats[0].id}" ${q && q.catalogId === sortedCats[0].id ? 'selected' : ''}>${sortedCats[0].name}</option>`
+              : sortedCats.length > 1
+                ? `<optgroup label="${s.name}">${sortedCats.map(c => `<option value="${c.id}" ${q && q.catalogId === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}</optgroup>`
+                : '';
+            }).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">类型 <span style="color:#f56c6c;">*</span></label>
+          <select class="form-input" id="formType" onchange="onTypeOrCatalogChange()">
+            <option value="">请选择类型</option>
+            <option value="single" ${q && q.type === 'single' ? 'selected' : ''}>单选题</option>
+            <option value="multiple" ${q && q.type === 'multiple' ? 'selected' : ''}>多选题</option>
+            <option value="judge" ${q && q.type === 'judge' ? 'selected' : ''}>判断题</option>
+            <option value="short" ${q && q.type === 'short' ? 'selected' : ''}>简答题</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">难度 <span style="color:#f56c6c;">*</span></label>
+          <select class="form-input" id="formDifficulty">
+            <option value="">请选择难度</option>
+            <option value="easy" ${q && q.difficulty === 'easy' ? 'selected' : ''}>简单</option>
+            <option value="medium" ${q && q.difficulty === 'medium' ? 'selected' : ''}>中等</option>
+            <option value="hard" ${q && q.difficulty === 'hard' ? 'selected' : ''}>困难</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">标签</label>
+          <div class="tags-input-wrapper" id="tagsWrapper" onclick="document.getElementById('tagInputField').focus()">
+            <div id="tagsContainer"></div>
+            <input type="text" class="tag-input" id="tagInputField" placeholder="输入标签后按回车添加" onkeydown="handleTagKeydown(event)">
+          </div>
+        </div>
+        <div class="form-group" id="optionsGroup">
+          <label class="form-label">选项管理</label>
+          <div class="options-container" id="optionsContainer"></div>
+          <button type="button" class="option-add-btn" id="addOptionBtn" onclick="addOption()">+ 添加选项</button>
+        </div>
+        <div class="form-group" id="judgeOptionsGroup" style="display:none;">
+          <label class="form-label">正确答案 <span style="color:#f56c6c;">*</span></label>
+          <div style="display:flex;gap:20px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="judgeAnswer" value="true" ${q && q.options && q.options.length === 2 && q.options[0].correct ? 'checked' : ''}> 正确
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="judgeAnswer" value="false" ${q && q.options && q.options.length === 2 && q.options[1].correct ? 'checked' : ''}> 错误
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">解析</label>
+          <textarea class="form-input" id="formAnalysis" rows="3" placeholder="请输入题目解析">${q ? q.analysis || '' : ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">状态</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+            ${getStatusTag(q ? q.status : 'pending')}
+            <span style="font-size:12px;color:#909399;">状态由审核与上架/下架按钮流转，此处不可修改</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function initForm(q) {
+      tempTags = q ? [...(q.tags || [])] : [];
+      renderTags();
+
+      const type = q ? q.type : '';
+      if (type === 'judge') {
+        tempOptions = [
+          { id: 'a', content: '正确', correct: document.querySelector('input[name="judgeAnswer"]:checked')?.value === 'true' },
+          { id: 'b', content: '错误', correct: document.querySelector('input[name="judgeAnswer"]:checked')?.value === 'false' }
+        ];
+        document.getElementById('optionsGroup').style.display = 'none';
+        document.getElementById('judgeOptionsGroup').style.display = 'block';
+      } else if (type === 'short') {
+        tempOptions = [];
+        document.getElementById('optionsGroup').style.display = 'none';
+        document.getElementById('judgeOptionsGroup').style.display = 'none';
+      } else {
+        if (!q || tempOptions.length === 0) tempOptions = [];
+        else tempOptions = JSON.parse(JSON.stringify(q.options || []));
+        document.getElementById('optionsGroup').style.display = 'block';
+        document.getElementById('judgeOptionsGroup').style.display = 'none';
+        renderOptions();
+      }
+    }
+
+    function onTypeOrCatalogChange() {
+      const type = document.getElementById('formType').value;
+      const optionsGroup = document.getElementById('optionsGroup');
+      const judgeGroup = document.getElementById('judgeOptionsGroup');
+      const addBtn = document.getElementById('addOptionBtn');
+
+      if (type === 'judge') {
+        optionsGroup.style.display = 'none';
+        judgeGroup.style.display = 'block';
+        tempOptions = [
+          { id: 'a', content: '正确', correct: true },
+          { id: 'b', content: '错误', correct: false }
+        ];
+      } else if (type === 'short') {
+        optionsGroup.style.display = 'none';
+        judgeGroup.style.display = 'none';
+        tempOptions = [];
+      } else if (type === 'single' || type === 'multiple') {
+        optionsGroup.style.display = 'block';
+        judgeGroup.style.display = 'none';
+        if (tempOptions.length === 0) {
+          addDefaultOptions();
+        }
+        renderOptions();
+      } else {
+        optionsGroup.style.display = 'none';
+        judgeGroup.style.display = 'none';
+      }
+    }
+
+    function addDefaultOptions() {
+      tempOptions = [
+        { id: 'a', content: '', correct: false },
+        { id: 'b', content: '', correct: false },
+        { id: 'c', content: '', correct: false },
+        { id: 'd', content: '', correct: false }
+      ];
+    }
+
+    function renderOptions() {
+      const container = document.getElementById('optionsContainer');
+      const type = document.getElementById('formType').value;
+      const isMultiple = type === 'multiple';
+      const inputType = isMultiple ? 'checkbox' : 'radio';
+
+      container.innerHTML = tempOptions.map((opt, idx) => `
+        <div class="option-row">
+          <span class="option-idx">${String.fromCharCode(97 + idx)}</span>
+          <input type="text" class="option-input" value="${opt.content}" placeholder="选项 ${String.fromCharCode(97 + idx)}" oninput="updateOption(${idx}, 'content', this.value)">
+          <input type="${inputType}" name="optionCorrect" class="option-correct" ${opt.correct ? 'checked' : ''} onchange="updateOptionCorrect(${idx}, this.checked, '${inputType}')">
+          <span style="font-size:12px;color:#909399;flex-shrink:0;">${isMultiple ? '多选' : '正确'}</span>
+          <button type="button" class="option-remove" onclick="removeOption(${idx})" ${tempOptions.length <= 2 ? 'style="visibility:hidden;"' : ''}>×</button>
+        </div>
+      `).join('');
+    }
+
+    function updateOption(idx, field, value) {
+      if (tempOptions[idx]) tempOptions[idx][field] = value;
+    }
+
+    function updateOptionCorrect(idx, checked, inputType) {
+      if (inputType === 'radio') {
+        tempOptions.forEach((opt, i) => opt.correct = i === idx);
+      } else {
+        tempOptions[idx].correct = checked;
+      }
+    }
+
+    function addOption() {
+      const newId = String.fromCharCode(97 + tempOptions.length);
+      tempOptions.push({ id: newId, content: '', correct: false });
+      renderOptions();
+    }
+
+    function removeOption(idx) {
+      if (tempOptions.length <= 2) return;
+      tempOptions.splice(idx, 1);
+      renderOptions();
+    }
+
+    // 标签管理
+    function renderTags() {
+      const container = document.getElementById('tagsContainer');
+      if (!container) return;
+      container.innerHTML = tempTags.map((tag, idx) => `
+        <span class="tag-item">
+          ${tag}
+          <span class="tag-remove" onclick="removeTag(${idx})">×</span>
+        </span>
+      `).join('');
+    }
+
+    function handleTagKeydown(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const input = document.getElementById('tagInputField');
+        const val = input.value.trim();
+        if (val && !tempTags.includes(val)) {
+          tempTags.push(val);
+          input.value = '';
+          renderTags();
+        }
+      }
+    }
+
+    function removeTag(idx) {
+      tempTags.splice(idx, 1);
+      renderTags();
+    }
+
+    function saveQuestion() {
+      const subject = document.getElementById('formSubject').value.trim();
+      const catalogId = document.getElementById('formCatalog').value;
+      const type = document.getElementById('formType').value;
+      const difficulty = document.getElementById('formDifficulty').value;
+      const analysis = document.getElementById('formAnalysis').value.trim();
+
+      if (!subject) { showToast('请输入题目内容', 'warning'); return; }
+      if (!catalogId) { showToast('请选择阶段', 'warning'); return; }
+      if (!type) { showToast('请选择类型', 'warning'); return; }
+      if (!difficulty) { showToast('请选择难度', 'warning'); return; }
+
+      const found = findCatalogById(catalogId);
+      const catalogName = found ? found.catalog.name : '';
+
+      // Validate options for single/multiple/judge
+      if (type === 'single' || type === 'multiple') {
+        const validOptions = tempOptions.filter(o => o.content.trim());
+        if (validOptions.length < 2) { showToast('请至少填写2个选项', 'warning'); return; }
+        const hasCorrect = tempOptions.some(o => o.correct);
+        if (!hasCorrect) { showToast('请设置正确答案', 'warning'); return; }
+      }
+
+      if (type === 'judge') {
+        const answer = document.querySelector('input[name="judgeAnswer"]:checked');
+        if (!answer) { showToast('请选择正确答案', 'warning'); return; }
+        tempOptions = [
+          { id: 'a', content: '正确', correct: answer.value === 'true' },
+          { id: 'b', content: '错误', correct: answer.value === 'false' }
+        ];
+      }
+
+      if (type === 'short') {
+        tempOptions = [];
+      }
+
+      const questionData = {
+        subject: subject,
+        catalogId: catalogId,
+        catalogName: catalogName,
+        type: type,
+        difficulty: difficulty,
+        tags: [...tempTags],
+        options: JSON.parse(JSON.stringify(tempOptions)),
+        analysis: analysis
+      };
+
+      if (editingQuestion) {
+        // 编辑：状态不属于表单字段，只能通过审核/上架/下架按钮流转
+        Object.assign(editingQuestion, questionData);
+        showToast('保存成功', 'success');
+      } else {
+        // 新增 - 一律进入待审核，需人工审核后才会展示给学员
+        questionData.status = 'pending';
+        const maxId = MockData.questions.reduce((max, q) => Math.max(max, typeof q.id === 'number' ? q.id : parseInt(q.id) || 0), 0);
+        questionData.id = maxId + 1;
+        MockData.questions.push(questionData);
+        showToast('新增成功', 'success');
+      }
+
+      document.querySelector('.modal-overlay')?.remove();
+      renderTable();
+      renderStats();
+    }
+
+    // ============================
+    // 题目详情 Modal
+    // ============================
+    function showDetailModal(id) {
+      const q = MockData.questions.find(item => item.id === id);
+      if (!q) return;
+
+      const typeLabels = { single: '单选题', multiple: '多选题', judge: '判断题', short: '简答题' };
+      const diffLabels = { easy: '简单', medium: '中等', hard: '困难' };
+
+      let optionsHtml = '';
+      if (q.type === 'single' || q.type === 'multiple') {
+        const optionLabels = 'abcdefghij'.split('');
+        optionsHtml = (q.options || []).map((opt, idx) => `
+          <div class="detail-option ${opt.correct ? 'correct' : ''}">
+            <span class="option-label">${optionLabels[idx]}</span>
+            <span class="option-content">${opt.content}</span>
+            ${opt.correct ? '<span class="correct-badge">✓ 正确答案</span>' : ''}
+          </div>
+        `).join('');
+      } else if (q.type === 'judge') {
+        const correct = q.options ? q.options.find(o => o.correct) : null;
+        optionsHtml = `
+          <div style="display:flex;gap:16px;margin-top:8px;">
+            <div class="detail-option ${correct && correct.content === '正确' ? 'correct' : ''}" style="flex:1;">
+              <span class="option-label">A</span>
+              <span class="option-content">正确</span>
+              ${correct && correct.content === '正确' ? '<span class="correct-badge">✓ 正确答案</span>' : ''}
+            </div>
+            <div class="detail-option ${correct && correct.content === '错误' ? 'correct' : ''}" style="flex:1;">
+              <span class="option-label">B</span>
+              <span class="option-content">错误</span>
+              ${correct && correct.content === '错误' ? '<span class="correct-badge">✓ 正确答案</span>' : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      const tagsHtml = (q.tags || []).map(t => `<span class="detail-tag">${t}</span>`).join('');
+
+      const analysisHtml = q.analysis ? `
+        <div class="detail-section">
+          <div class="section-title">📖 解析</div>
+          <div class="detail-analysis">${q.analysis}</div>
+        </div>
+      ` : '';
+
+      // 模拟统计数据
+      const simAnswered = Math.floor(Math.random() * 200) + 50;
+      const simCorrect = Math.floor(simAnswered * (0.5 + Math.random() * 0.4));
+      const simRate = Math.round((simCorrect / simAnswered) * 100);
+
+      const bodyHtml = `
+        <div class="detail-section">
+          <div class="section-title">题目信息</div>
+          <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+            <span>📂 ${q.catalogName}</span>
+            <span>📝 ${typeLabels[q.type] || q.type}</span>
+            <span>🏷 ${diffLabels[q.difficulty] || q.difficulty}</span>
+            <span>${getStatusTag(q.status)}</span>
+          </div>
+          <div class="detail-question-content">${q.subject}</div>
+        </div>
+        ${optionsHtml ? `
+        <div class="detail-section">
+          <div class="section-title">📋 选项</div>
+          ${optionsHtml}
+        </div>` : ''}
+        ${tagsHtml ? `
+        <div class="detail-section">
+          <div class="section-title">🏷 标签</div>
+          <div class="detail-tags">${tagsHtml}</div>
+        </div>` : ''}
+        ${analysisHtml}
+        <div class="detail-section">
+          <div class="section-title">📊 答题统计</div>
+          <div class="detail-stats">
+            <div class="detail-stat-item">
+              <div class="stat-value blue">${simAnswered}</div>
+              <div class="stat-label">答题次数</div>
+            </div>
+            <div class="detail-stat-item">
+              <div class="stat-value green">${simCorrect}</div>
+              <div class="stat-label">正确次数</div>
+            </div>
+            <div class="detail-stat-item">
+              <div class="stat-value orange">${simRate}%</div>
+              <div class="stat-label">正确率</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 根据状态决定底部操作按钮
+      let footerBtns = '';
+      if (q.status === 'pending') {
+        footerBtns = `
+          <button class="btn btn-primary" style="background:#67c23a;border-color:#67c23a;" onclick="reviewFromDetail(${id}, 'approve')">✓ 审核通过</button>
+          <button class="btn btn-primary" style="background:#f56c6c;border-color:#f56c6c;" onclick="reviewFromDetail(${id}, 'reject')">✕ 审核不通过</button>
+          <button class="btn btn-secondary" onclick="editFromDetail(${id})">编辑</button>
+          <button class="btn btn-secondary" style="color:#f56c6c;" onclick="deleteFromDetail(${id})">删除</button>
+        `;
+      } else if (q.status === 'published') {
+        footerBtns = `
+          <button class="btn btn-primary" style="background:#e6a23c;border-color:#e6a23c;" onclick="takeDownFromDetail(${id})">下架</button>
+        `;
+      } else if (q.status === 'unpublished') {
+        footerBtns = `
+          <button class="btn btn-primary" style="background:#67c23a;border-color:#67c23a;" onclick="republishFromDetail(${id})">上架</button>
+          <button class="btn btn-secondary" onclick="editFromDetail(${id})">编辑</button>
+          <button class="btn btn-secondary" style="color:#f56c6c;" onclick="deleteFromDetail(${id})">删除</button>
+        `;
+      } else if (q.status === 'rejected') {
+        footerBtns = `
+          <button class="btn btn-primary" style="background:#409eff;border-color:#409eff;" onclick="resubmitFromDetail(${id})">重新提交</button>
+          <button class="btn btn-secondary" onclick="editFromDetail(${id})">编辑</button>
+          <button class="btn btn-secondary" style="color:#f56c6c;" onclick="deleteFromDetail(${id})">删除</button>
+        `;
+      }
+
+      showModal('题目详情', bodyHtml, `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">关闭</button>
+        ${footerBtns}
+      `);
+    }
+
+    function editFromDetail(id) {
+      document.querySelector('.modal-overlay')?.remove();
+      setTimeout(() => showEditModal(id), 100);
+    }
+
+    function reviewFromDetail(id, action) {
+      document.querySelector('.modal-overlay')?.remove();
+      setTimeout(() => reviewQuestion(id, action), 100);
+    }
+
+    function takeDownFromDetail(id) {
+      document.querySelector('.modal-overlay')?.remove();
+      setTimeout(() => takeDown(id), 100);
+    }
+
+    function republishFromDetail(id) {
+      document.querySelector('.modal-overlay')?.remove();
+      setTimeout(() => republish(id), 100);
+    }
+
+    function resubmitFromDetail(id) {
+      document.querySelector('.modal-overlay')?.remove();
+      setTimeout(() => resubmit(id), 100);
+    }
+
+    function deleteFromDetail(id) {
+      document.querySelector('.modal-overlay')?.remove();
+      setTimeout(() => deleteQuestion(id), 100);
+    }
+
+    // ============================
+    // 导入 Excel
+    // ============================
+    function showImportModal() {
+      const bodyHtml = `
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:16px;">📄</div>
+          <p style="font-size:14px;color:#606266;margin-bottom:20px;">支持 .xlsx, .xls 格式，单次最多导入500道题目</p>
+          <div style="border:2px dashed #dcdfe6;border-radius:12px;padding:40px 20px;background:#fafafa;cursor:pointer;transition:all 0.2s;"
+               onmouseover="this.style.borderColor='#409eff';this.style.background='rgba(64,158,255,0.03)'"
+               onmouseout="this.style.borderColor='#dcdfe6';this.style.background='#fafafa'"
+               onclick="document.getElementById('fileInput').click()">
+            <div style="font-size:36px;margin-bottom:12px;">📥</div>
+            <p style="font-size:15px;color:#409eff;font-weight:500;">点击上传文件</p>
+            <p style="font-size:12px;color:#909399;margin-top:6px;">或拖拽文件到此处</p>
+          </div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleFileSelect(this)">
+          <div id="importPreview" style="display:none;margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(103,194,58,0.08);border-radius:8px;border:1px solid rgba(103,194,58,0.2);">
+              <span style="font-size:24px;">✅</span>
+              <div style="flex:1;text-align:left;">
+                <div style="font-size:14px;font-weight:500;color:#67c23a;" id="importFileName">文件名称.xlsx</div>
+                <div style="font-size:12px;color:#909399;" id="importFileSize">0 KB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:12px 16px;background:rgba(64,158,255,0.05);border-radius:8px;border:1px solid rgba(64,158,255,0.15);">
+          <p style="font-size:13px;color:#606266;margin-bottom:8px;font-weight:500;">📌 导入说明</p>
+          <ul style="font-size:12px;color:#909399;line-height:1.8;padding-left:20px;list-style:disc;">
+            <li>Excel文件需包含表头：题目、阶段、类型、难度、选项A、选项B、选项C、选项D、正确答案、解析</li>
+            <li>类型填写：单选/多选/判断/简答</li>
+            <li>难度填写：简单/中等/困难</li>
+            <li><a href="javascript:void(0)" style="color:#409eff;" onclick="showToast('已下载导入模板', 'success')">下载导入模板</a></li>
+          </ul>
+        </div>
+      `;
+
+      showModal('导入题目', bodyHtml, `
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" id="importConfirmBtn" onclick="confirmImport()" disabled>开始导入</button>
+      `);
+    }
+
+    let selectedFile = null;
+
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      selectedFile = file;
+
+      const preview = document.getElementById('importPreview');
+      preview.style.display = 'block';
+      document.getElementById('importFileName').textContent = file.name;
+      document.getElementById('importFileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+      document.getElementById('importConfirmBtn').disabled = false;
+    }
+
+    function confirmImport() {
+      if (!selectedFile) {
+        showToast('请先选择文件', 'warning');
+        return;
+      }
+      showToast('导入成功！共导入 12 道题目', 'success');
+      document.querySelector('.modal-overlay')?.remove();
+      selectedFile = null;
+      renderTable();
+      renderStats();
+    }
+
+    // ============================
+    // 导出 Excel
+    // ============================
+    function exportExcel() {
+      showToast('导出成功！共导出 ' + MockData.questions.length + ' 道题目', 'success');
+    }
+  </script>
+</body>
+</html>

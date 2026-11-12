@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学科管理 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    /* ===== 页面标题栏 ===== */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    /* ===== 学科卡片网格 ===== */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 24px;
+    }
+
+    /* ===== 新增学科卡片（网格最后一张） ===== */
+    .add-subject-card {
+      min-height: 220px;
+      border: 2px dashed #dcdfe6;
+      border-radius: 14px;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #909399;
+      font-family: inherit;
+      transition: all 0.25s ease;
+    }
+
+    .add-subject-card:hover {
+      border-color: #409eff;
+      color: #409eff;
+      background: rgba(64, 158, 255, 0.04);
+    }
+
+    .add-subject-card .plus-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      line-height: 1;
+      transition: all 0.25s ease;
+    }
+
+    .add-subject-card:hover .plus-icon {
+      background: rgba(64, 158, 255, 0.12);
+    }
+
+    .add-subject-card .add-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .add-subject-card .add-hint {
+      font-size: 12px;
+      color: #c0c4cc;
+    }
+
+    .subject-card {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .subject-card:hover {
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* 卡片顶部色带 */
+    .subject-card-accent {
+      height: 6px;
+      width: 100%;
+    }
+
+    /* 卡片头部 */
+    .subject-card-header {
+      padding: 20px 24px 0 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .subject-card-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .subject-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .subject-meta {
+      flex: 1;
+    }
+
+    .subject-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #303133;
+      margin-bottom: 4px;
+    }
+
+    .subject-desc {
+      font-size: 13px;
+      color: #909399;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .subject-card-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .subject-card-actions .btn-icon {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f5f7fa;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #909399;
+      transition: all 0.2s;
+    }
+
+    .subject-card-actions .btn-icon:hover {
+      background: #e8eaed;
+      color: #303133;
+    }
+
+    .subject-card-actions .btn-icon.danger:hover {
+      background: rgba(245, 108, 108, 0.1);
+      color: #f56c6c;
+    }
+
+    /* 卡片统计 */
+    .subject-card-stats {
+      display: flex;
+      gap: 24px;
+      padding: 16px 24px;
+      margin-top: 12px;
+    }
+
+    .subject-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #909399;
+    }
+
+    .subject-stat-value {
+      font-weight: 700;
+      color: #606266;
+    }
+
+    /* 阶段列表区域 */
+    .subject-card-body {
+      padding: 0 24px 20px 24px;
+      flex: 1;
+    }
+
+    .catalogs-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #909399;
+      padding: 12px 0 8px 0;
+      border-top: 1px solid #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .catalogs-section-title .count {
+      background: #f0f2f5;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #909399;
+    }
+
+    .catalog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .catalog-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #f8f9fb;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+
+    .catalog-item:hover {
+      background: #f0f2f5;
+    }
+
+    .catalog-item-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .catalog-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .catalog-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+    }
+
+    .catalog-item-count {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    .sort-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #909399;
+      background: #f4f4f5;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .sort-badge-sm {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      color: #909399;
+      background: #f4f4f5;
+      padding: 0px 4px;
+      border-radius: 3px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .catalog-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 状态开关 */
+    .status-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .status-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .status-switch .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #dcdfe6;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .status-switch .slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 2px;
+      top: 2px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .status-switch input:checked + .slider {
+      background: #67c23a;
+    }
+
+    .status-switch input:checked + .slider::before {
+      transform: translateX(16px);
+    }
+
+    .catalog-sm-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #909399;
+      transition: all 0.15s;
+    }
+
+    .catalog-sm-btn:hover {
+      background: #e8eaed;
+      color: #303133;
+    }
+
+    .catalog-sm-btn.danger:hover {
+      background: rgba(245, 108, 108, 0.1);
+      color: #f56c6c;
+    }
+
+    /* 添加阶段按钮 */
+    .add-catalog-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 10px;
+      border: 1.5px dashed #dcdfe6;
+      border-radius: 10px;
+      background: transparent;
+      color: #909399;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .add-catalog-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+      background: rgba(64, 158, 255, 0.04);
+    }
+
+    /* 空阶段提示 */
+    .empty-catalogs {
+      text-align: center;
+      padding: 20px 0 4px 0;
+      color: #c0c4cc;
+      font-size: 13px;
+    }
+
+    /* 弹窗表单样式 */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #303133;
+      margin-bottom: 6px;
+    }
+
+    .form-group .form-control {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-group .form-control:focus {
+      border-color: #409eff;
+    }
+
+    .form-group .form-hint {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+
+    .form-group textarea.form-control {
+      height: auto;
+      min-height: 72px;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+
+    /* 颜色选择行 */
+    .color-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.selected {
+      border-color: #303133;
+      transform: scale(1.15);
+    }
+
+    /* 内联编辑 */
+    .inline-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .inline-edit-row input {
+      flex: 1;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid #409eff;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .inline-edit-row .btn {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 0;
+      color: #909399;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state .empty-text {
+      font-size: 14px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 860px) {
+      .subjects-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item active">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- ===== 主内容 ===== -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">学科管理</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <!-- ===== 统计卡片 ===== -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-icon blue">🎓</div>
+            <div class="stat-info">
+              <h3 id="statTotalSubjects">9</h3>
+              <p>总学科数</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📂</div>
+            <div class="stat-info">
+              <h3 id="statSubjectsWithCatalogs">3</h3>
+              <p>有阶段的学科</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">📁</div>
+            <div class="stat-info">
+              <h3 id="statTotalCatalogs">8</h3>
+              <p>阶段总数</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">📝</div>
+            <div class="stat-info">
+              <h3 id="statTotalQuestions">1,499</h3>
+              <p>题目总数</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 学科卡片网格 ===== -->
+        <div class="subjects-grid" id="subjectsGrid">
+          <!-- 由 JS 动态渲染，最后一张卡片为「新增学科」入口 -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================================================
+    // 登录检查
+    // ============================================================
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+
+    // ============================================================
+    // 辅助变量
+    // ============================================================
+    // 说明：本页 UI 中的「阶段」对应数据字段 MockData.subjects[].catalogs
+    // （该字段被 questions.html、index.html 等页面共用，故代码内沿用 catalog 命名）
+    var nextSubjectId = 10;
+    var nextCatalogId = 20;
+
+    // 学科卡片可选颜色
+    var subjectColors = [
+      '#667eea', '#4facfe', '#43e97b', '#fa709a',
+      '#a18cd1', '#ff758c', '#20c997', '#f093fb',
+      '#f5576c', '#4facfe', '#667eea', '#ff9a9e'
+    ];
+
+    // ============================================================
+    // 数据操作
+    // ============================================================
+
+    function getSubjectsData() {
+      return MockData.subjects;
+    }
+
+    /**
+     * 统计某个学科下关联的题目数量
+     */
+    function getQuestionCountForCatalog(catalogId) {
+      var count = 0;
+      for (var i = 0; i < MockData.questions.length; i++) {
+        if (MockData.questions[i].catalogId === catalogId) count++;
+      }
+      return count;
+    }
+
+    /**
+     * 统计某个学科所有阶段的题目总数
+     */
+    function getSubjectQuestionCount(subjectId) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return 0;
+      var total = 0;
+      (subject.catalogs || []).forEach(function(c) {
+        total += c.count || 0;
+      });
+      return total;
+    }
+
+    // ============================================================
+    // 渲染
+    // ============================================================
+
+    function renderAll() {
+      var subjects = getSubjectsData();
+
+      renderStats(subjects);
+      renderGrid(subjects);
+    }
+
+    function renderStats(subjects) {
+      var totalSubjects = subjects.length;
+      var subjectsWithCatalogs = subjects.filter(function(s) {
+        return s.catalogs && s.catalogs.length > 0;
+      }).length;
+      var totalCatalogs = 0;
+      var totalQuestions = 0;
+      subjects.forEach(function(s) {
+        (s.catalogs || []).forEach(function(c) {
+          totalCatalogs++;
+          totalQuestions += c.count || 0;
+        });
+      });
+
+      document.getElementById('statTotalSubjects').textContent = totalSubjects;
+      document.getElementById('statSubjectsWithCatalogs').textContent = subjectsWithCatalogs;
+      document.getElementById('statTotalCatalogs').textContent = totalCatalogs;
+      document.getElementById('statTotalQuestions').textContent = totalQuestions.toLocaleString();
+    }
+
+    function renderGrid(subjects) {
+      var grid = document.getElementById('subjectsGrid');
+
+      // 按 sort 排序
+      var sorted = subjects.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); });
+
+      var html = '';
+      sorted.forEach(function(subject, idx) {
+        var color = subject.color || '#667eea';
+        var catalogs = subject.catalogs || [];
+        var sortedCatalogs = catalogs.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); });
+        var catalogCount = sortedCatalogs.length;
+        var totalQuestions = 0;
+        sortedCatalogs.forEach(function(c) { totalQuestions += c.count || 0; });
+
+        // 卡片
+        html += '<div class="subject-card" data-subject-id="' + subject.id + '">';
+        // 色带
+        html += '  <div class="subject-card-accent" style="background: linear-gradient(135deg, ' + color + ', ' + adjustColor(color, -20) + ');"></div>';
+
+        // 卡片头部
+        html += '  <div class="subject-card-header">';
+        html += '    <div class="subject-card-info">';
+        html += '      <div class="subject-icon" style="background: ' + hexToRgba(color, 0.12) + ';">' + subject.icon + '</div>';
+        html += '      <div class="subject-meta">';
+        html += '        <div class="subject-name">' + escapeHtml(subject.name) + ' <span class="sort-badge" title="排序号">第' + (subject.sort || (idx + 1)) + '位</span></div>';
+        html += '        <div class="subject-desc">' + escapeHtml(subject.description) + '</div>';
+        html += '      </div>';
+        html += '    </div>';
+        html += '    <div class="subject-card-actions">';
+        html += '      <button class="btn-icon" title="上移" onclick="moveSubject(\'' + subject.id + '\', -1)">⬆️</button>';
+        html += '      <button class="btn-icon" title="下移" onclick="moveSubject(\'' + subject.id + '\', 1)">⬇️</button>';
+        html += '      <button class="btn-icon" title="编辑学科" onclick="openEditSubjectModal(\'' + subject.id + '\')">✏️</button>';
+        html += '      <button class="btn-icon danger" title="删除学科" onclick="deleteSubject(\'' + subject.id + '\')">🗑️</button>';
+        html += '    </div>';
+        html += '  </div>';
+
+        // 统计
+        html += '  <div class="subject-card-stats">';
+        html += '    <div class="subject-stat">🎬 课程 <span class="subject-stat-value">' + subject.courseCount + '</span></div>';
+        html += '    <div class="subject-stat">🗺️ 路线 <span class="subject-stat-value">' + subject.routeCount + '</span></div>';
+        html += '    <div class="subject-stat">📝 题目 <span class="subject-stat-value">' + totalQuestions.toLocaleString() + '</span></div>';
+        html += '  </div>';
+
+        // 阶段列表
+        html += '  <div class="subject-card-body">';
+        html += '    <div class="catalogs-section-title">';
+        html += '      <span>阶段</span>';
+        html += '      <span class="count">' + catalogCount + '</span>';
+        html += '    </div>';
+
+        if (sortedCatalogs.length === 0) {
+          html += '    <div class="empty-catalogs">暂无阶段，点击下方按钮添加</div>';
+        } else {
+          html += '    <div class="catalog-list" id="catalogList_' + subject.id + '">';
+          sortedCatalogs.forEach(function(cat) {
+            html += renderCatalogItem(subject.id, cat);
+          });
+          html += '    </div>';
+        }
+
+        html += '    <button class="add-catalog-btn" onclick="showAddCatalogInline(\'' + subject.id + '\')">+ 添加阶段</button>';
+        html += '  </div>';
+
+        html += '</div>';
+      });
+
+      // 网格最后一张卡片：新增学科入口
+      html += '<button type="button" class="add-subject-card" onclick="openAddSubjectModal()">';
+      html += '  <span class="plus-icon">＋</span>';
+      html += '  <span class="add-label">新增学科</span>';
+      html += '  <span class="add-hint">点击创建新学科</span>';
+      html += '</button>';
+
+      grid.innerHTML = html;
+    }
+
+    function renderCatalogItem(subjectId, cat) {
+      var html = '';
+      html += '<div class="catalog-item" data-catalog-id="' + cat.id + '" id="catalogItem_' + cat.id + '">';
+      html += '  <span class="catalog-item-icon">' + (cat.icon || '📁') + '</span>';
+      html += '  <div class="catalog-item-info">';
+      html += '    <div class="catalog-item-name">' + escapeHtml(cat.name) + ' <span class="sort-badge-sm" title="排序号">' + (cat.sort || 0) + '</span></div>';
+      html += '    <div class="catalog-item-count">' + (cat.count || 0) + ' 道题目</div>';
+      html += '  </div>';
+      html += '  <div class="catalog-item-actions">';
+      html += '    <button class="catalog-sm-btn" title="上移" onclick="moveCatalog(\'' + subjectId + '\', \'' + cat.id + '\', -1)">⬆️</button>';
+      html += '    <button class="catalog-sm-btn" title="下移" onclick="moveCatalog(\'' + subjectId + '\', \'' + cat.id + '\', 1)">⬇️</button>';
+      html += '    <label class="status-switch" title="启用/禁用">';
+      html += '      <input type="checkbox" ' + (cat.disabled !== true ? 'checked' : '') + ' onchange="toggleCatalogStatus(\'' + subjectId + '\', \'' + cat.id + '\', this.checked)">';
+      html += '      <span class="slider"></span>';
+      html += '    </label>';
+      html += '    <button class="catalog-sm-btn" title="编辑" onclick="showEditCatalogInline(\'' + subjectId + '\', \'' + cat.id + '\')">✏️</button>';
+      html += '    <button class="catalog-sm-btn danger" title="删除" onclick="deleteCatalog(\'' + subjectId + '\', \'' + cat.id + '\')">🗑️</button>';
+      html += '  </div>';
+      html += '</div>';
+      return html;
+    }
+
+    // ============================================================
+    // 学科 CRUD
+    // ============================================================
+
+    function openAddSubjectModal() {
+      var bodyHtml = buildSubjectFormHtml(null);
+      var footerHtml = '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>'
+        + '<button class="btn btn-primary" id="subjectFormSubmitBtn">确认新增</button>';
+
+      var overlay = showModal('新增学科', bodyHtml, footerHtml);
+
+      // 颜色选择交互
+      initColorPicker(overlay, null);
+
+      overlay.querySelector('#subjectFormSubmitBtn').addEventListener('click', function() {
+        handleSubjectFormSubmit(overlay, null);
+      });
+      overlay.querySelector('.modal-body').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') handleSubjectFormSubmit(overlay, null);
+      });
+    }
+
+    function openEditSubjectModal(subjectId) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+
+      var bodyHtml = buildSubjectFormHtml(subject);
+      var footerHtml = '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>'
+        + '<button class="btn btn-primary" id="subjectFormSubmitBtn">保存修改</button>';
+
+      var overlay = showModal('编辑学科', bodyHtml, footerHtml);
+
+      initColorPicker(overlay, subject.color);
+
+      overlay.querySelector('#subjectFormSubmitBtn').addEventListener('click', function() {
+        handleSubjectFormSubmit(overlay, subject);
+      });
+      overlay.querySelector('.modal-body').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') handleSubjectFormSubmit(overlay, subject);
+      });
+    }
+
+    function buildSubjectFormHtml(subject) {
+      var isEdit = subject !== null;
+      var nameVal = isEdit ? escapeHtml(subject.name) : '';
+      var descVal = isEdit ? escapeHtml(subject.description) : '';
+      var iconVal = isEdit ? subject.icon : '';
+      var colorVal = isEdit ? subject.color : subjectColors[0];
+      var sortVal = isEdit ? (subject.sort || 0) : (MockData.subjects.length + 1);
+      var courseCountVal = isEdit ? subject.courseCount : 0;
+      var routeCountVal = isEdit ? subject.routeCount : 1;
+
+      var colorOptionsHtml = '';
+      subjectColors.forEach(function(c) {
+        var sel = (c === colorVal) ? ' selected' : '';
+        colorOptionsHtml += '<div class="color-option' + sel + '" style="background:' + c + ';" data-color="' + c + '" onclick="selectColor(this, \'' + c + '\')"></div>';
+      });
+
+      return ''
+        + '<div class="form-group">'
+        + '  <label>学科名称</label>'
+        + '  <input type="text" class="form-control" id="formSubjectName" value="' + nameVal + '" placeholder="请输入学科名称" maxlength="20" required>'
+        + '</div>'
+        + '<div class="form-group">'
+        + '  <label>学科图标（Emoji）</label>'
+        + '  <input type="text" class="form-control" id="formSubjectIcon" value="' + iconVal + '" placeholder="例如：☕、🌐、🐍" maxlength="10">'
+        + '  <div class="form-hint">请输入一个 Emoji 作为学科图标</div>'
+        + '</div>'
+        + '<div class="form-group">'
+        + '  <label>学科描述</label>'
+        + '  <textarea class="form-control" id="formSubjectDesc" placeholder="请输入学科描述" maxlength="100">' + descVal + '</textarea>'
+        + '</div>'
+        + '<div class="form-group">'
+        + '  <label>排序号</label>'
+        + '  <input type="number" class="form-control" id="formSubjectSort" value="' + sortVal + '" min="1" max="999" placeholder="数字越小越靠前">'
+        + '  <div class="form-hint">数字越小排序越靠前</div>'
+        + '</div>'
+        + '<div class="form-group">'
+        + '  <label>主题颜色</label>'
+        + '  <div class="color-options" id="colorOptions">' + colorOptionsHtml + '</div>'
+        + '  <input type="hidden" id="formSubjectColor" value="' + colorVal + '">'
+        + '</div>';
+    }
+
+    function initColorPicker(overlay, selectedColor) {
+      // color picker is already set up via onclick
+    }
+
+    function selectColor(el, color) {
+      // Remove previous selection
+      var parent = el.closest('.color-options');
+      var options = parent.querySelectorAll('.color-option');
+      options.forEach(function(opt) { opt.classList.remove('selected'); });
+      el.classList.add('selected');
+      document.getElementById('formSubjectColor').value = color;
+    }
+
+    function handleSubjectFormSubmit(overlay, existing) {
+      var name = document.getElementById('formSubjectName').value.trim();
+      var icon = document.getElementById('formSubjectIcon').value.trim();
+      var desc = document.getElementById('formSubjectDesc').value.trim();
+      var color = document.getElementById('formSubjectColor').value;
+      var sort = parseInt(document.getElementById('formSubjectSort').value) || 1;
+
+      if (!name) {
+        showToast('请输入学科名称', 'error');
+        document.getElementById('formSubjectName').focus();
+        return;
+      }
+      if (!icon) {
+        showToast('请输入学科图标', 'error');
+        document.getElementById('formSubjectIcon').focus();
+        return;
+      }
+      if (!desc) {
+        showToast('请输入学科描述', 'error');
+        document.getElementById('formSubjectDesc').focus();
+        return;
+      }
+
+      if (existing) {
+        existing.name = name;
+        existing.icon = icon;
+        existing.description = desc;
+        existing.color = color;
+        existing.sort = sort;
+        overlay.remove();
+        renderAll();
+        showToast('学科 "' + name + '" 已更新', 'success');
+      } else {
+        var newSubject = {
+          id: 'subj' + String(nextSubjectId++).padStart(3, '0'),
+          name: name,
+          icon: icon,
+          description: desc,
+          color: color,
+          sort: sort,
+          routeCount: 0,
+          courseCount: 0,
+          catalogs: []
+        };
+        MockData.subjects.push(newSubject);
+        overlay.remove();
+        renderAll();
+        showToast('学科 "' + name + '" 已新增', 'success');
+      }
+    }
+
+    function deleteSubject(subjectId) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+
+      var catalogCount = (subject.catalogs || []).length;
+      var totalQuestions = 0;
+      (subject.catalogs || []).forEach(function(c) { totalQuestions += c.count || 0; });
+
+      if (catalogCount > 0 && totalQuestions > 0) {
+        showConfirm(
+          '学科 "' + subject.name + '" 下有 <strong>' + catalogCount + '</strong> 个阶段和 <strong>' + totalQuestions.toLocaleString() + '</strong> 道题目。删除后相关阶段和题目数据将失去归属。确定要删除吗？',
+          function() { doDeleteSubject(subject); }
+        );
+      } else if (catalogCount > 0) {
+        showConfirm(
+          '学科 "' + subject.name + '" 下有 <strong>' + catalogCount + '</strong> 个阶段。删除后阶段将被移除。确定要删除吗？',
+          function() { doDeleteSubject(subject); }
+        );
+      } else {
+        showConfirm(
+          '确定要删除学科 "' + subject.name + '" 吗？此操作不可撤销。',
+          function() { doDeleteSubject(subject); }
+        );
+      }
+    }
+
+    function doDeleteSubject(subject) {
+      var idx = -1;
+      for (var i = 0; i < MockData.subjects.length; i++) {
+        if (MockData.subjects[i].id === subject.id) { idx = i; break; }
+      }
+      if (idx === -1) return;
+      MockData.subjects.splice(idx, 1);
+      renderAll();
+      showToast('学科 "' + subject.name + '" 已删除', 'success');
+    }
+
+    // ============================================================
+    // 阶段 CRUD（行内操作）
+    // ============================================================
+
+    function toggleCatalogStatus(subjectId, catalogId, checked) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+      var catalogs = subject.catalogs || [];
+      for (var i = 0; i < catalogs.length; i++) {
+        if (catalogs[i].id === catalogId) {
+          catalogs[i].disabled = !checked;
+          break;
+        }
+      }
+      showToast('阶段已' + (checked ? '启用' : '禁用'), checked ? 'success' : 'warning');
+    }
+
+    function showAddCatalogInline(subjectId) {
+      // Check if an inline edit form already exists
+      var existingForm = document.querySelector('.catalog-inline-form');
+      if (existingForm) existingForm.remove();
+
+      var listContainer = document.getElementById('catalogList_' + subjectId);
+      // If list container doesn't exist (empty catalogs), create it
+      if (!listContainer) {
+        var bodyContainer = document.querySelector('[data-subject-id="' + subjectId + '"] .subject-card-body');
+        var sectionTitle = bodyContainer.querySelector('.catalogs-section-title');
+        // Remove empty catalogs hint
+        var emptyHint = bodyContainer.querySelector('.empty-catalogs');
+        if (emptyHint) emptyHint.remove();
+
+        listContainer = document.createElement('div');
+        listContainer.className = 'catalog-list';
+        listContainer.id = 'catalogList_' + subjectId;
+        sectionTitle.insertAdjacentElement('afterend', listContainer);
+      }
+
+      // 计算新阶段的默认排序号
+      var subject = getSubjectById(subjectId);
+      var existingSorts = (subject && subject.catalogs || []).map(function(c) { return c.sort || 0; });
+      var nextSort = existingSorts.length > 0 ? Math.max.apply(null, existingSorts) + 1 : 1;
+
+      var formHtml = ''
+        + '<div class="catalog-item catalog-inline-form" style="background: #ecf5ff;">'
+        + '  <input type="text" id="newCatalogIcon" placeholder="图标" style="width:48px;height:32px;text-align:center;border:1px solid #dcdfe6;border-radius:6px;font-size:16px;outline:none;" maxlength="10">'
+        + '  <input type="text" id="newCatalogName" placeholder="阶段名称" style="flex:1;height:32px;padding:0 10px;border:1px solid #dcdfe6;border-radius:6px;font-size:13px;outline:none;">'
+        + '  <input type="number" id="newCatalogSort" value="' + nextSort + '" min="1" max="999" placeholder="排序" style="width:56px;height:32px;text-align:center;border:1px solid #dcdfe6;border-radius:6px;font-size:12px;outline:none;" title="排序号">'
+        + '  <div style="display:flex;gap:6px;flex-shrink:0;">'
+        + '    <button class="btn btn-sm btn-primary" onclick="submitAddCatalog(\'' + subjectId + '\')">确定</button>'
+        + '    <button class="btn btn-sm btn-secondary" onclick="cancelInlineForm()">取消</button>'
+        + '  </div>'
+        + '</div>';
+
+      listContainer.insertAdjacentHTML('beforeend', formHtml);
+
+      document.getElementById('newCatalogName').focus();
+      // Enter to submit
+      document.getElementById('newCatalogName').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') submitAddCatalog(subjectId);
+      });
+      document.getElementById('newCatalogIcon').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') submitAddCatalog(subjectId);
+      });
+    }
+
+    function submitAddCatalog(subjectId) {
+      var icon = document.getElementById('newCatalogIcon').value.trim();
+      var name = document.getElementById('newCatalogName').value.trim();
+      var sort = parseInt(document.getElementById('newCatalogSort').value) || 1;
+
+      if (!name) {
+        showToast('请输入阶段名称', 'error');
+        document.getElementById('newCatalogName').focus();
+        return;
+      }
+      if (!icon) {
+        icon = '📁';
+      }
+
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+
+      if (!subject.catalogs) subject.catalogs = [];
+
+      var newCatalog = {
+        id: 'c' + String(nextCatalogId++).padStart(3, '0'),
+        name: name,
+        icon: icon,
+        count: 0,
+        sort: sort
+      };
+
+      subject.catalogs.push(newCatalog);
+      renderAll();
+      showToast('阶段 "' + name + '" 已添加', 'success');
+    }
+
+    function cancelInlineForm() {
+      var form = document.querySelector('.catalog-inline-form');
+      if (form) form.remove();
+      // If the catalog list is now empty, re-check
+      renderAll();
+    }
+
+    function showEditCatalogInline(subjectId, catalogId) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+      var catalogs = subject.catalogs || [];
+      var cat = null;
+      for (var i = 0; i < catalogs.length; i++) {
+        if (catalogs[i].id === catalogId) { cat = catalogs[i]; break; }
+      }
+      if (!cat) return;
+
+      // Remove any other inline forms
+      var existingForm = document.querySelector('.catalog-inline-form');
+      if (existingForm) existingForm.remove();
+
+      var itemEl = document.getElementById('catalogItem_' + catalogId);
+      if (!itemEl) return;
+
+      var editHtml = ''
+        + '<div class="catalog-item catalog-inline-form" style="background: #fdf6ec;">'
+        + '  <input type="text" id="editCatalogIcon" value="' + (cat.icon || '') + '" placeholder="图标" style="width:48px;height:32px;text-align:center;border:1px solid #dcdfe6;border-radius:6px;font-size:16px;outline:none;" maxlength="10">'
+        + '  <input type="text" id="editCatalogName" value="' + escapeHtml(cat.name) + '" placeholder="阶段名称" style="flex:1;height:32px;padding:0 10px;border:1px solid #dcdfe6;border-radius:6px;font-size:13px;outline:none;">'
+        + '  <input type="number" id="editCatalogSort" value="' + (cat.sort || 0) + '" min="1" max="999" placeholder="排序" style="width:56px;height:32px;text-align:center;border:1px solid #dcdfe6;border-radius:6px;font-size:12px;outline:none;" title="排序号">'
+        + '  <div style="display:flex;gap:6px;flex-shrink:0;">'
+        + '    <button class="btn btn-sm btn-primary" onclick="submitEditCatalog(\'' + subjectId + '\', \'' + catalogId + '\')">保存</button>'
+        + '    <button class="btn btn-sm btn-secondary" onclick="renderAll()">取消</button>'
+        + '  </div>'
+        + '</div>';
+
+      itemEl.insertAdjacentHTML('beforebegin', editHtml);
+      itemEl.style.display = 'none';
+
+      document.getElementById('editCatalogName').focus();
+      document.getElementById('editCatalogName').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') submitEditCatalog(subjectId, catalogId);
+      });
+    }
+
+    function submitEditCatalog(subjectId, catalogId) {
+      var icon = document.getElementById('editCatalogIcon').value.trim();
+      var name = document.getElementById('editCatalogName').value.trim();
+      var sort = parseInt(document.getElementById('editCatalogSort').value) || 1;
+
+      if (!name) {
+        showToast('请输入阶段名称', 'error');
+        document.getElementById('editCatalogName').focus();
+        return;
+      }
+      if (!icon) icon = '📁';
+
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+      var catalogs = subject.catalogs || [];
+      for (var i = 0; i < catalogs.length; i++) {
+        if (catalogs[i].id === catalogId) {
+          catalogs[i].name = name;
+          catalogs[i].icon = icon;
+          catalogs[i].sort = sort;
+          break;
+        }
+      }
+
+      renderAll();
+      showToast('阶段 "' + name + '" 已更新', 'success');
+    }
+
+    function deleteCatalog(subjectId, catalogId) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+      var catalogs = subject.catalogs || [];
+      var cat = null;
+      for (var i = 0; i < catalogs.length; i++) {
+        if (catalogs[i].id === catalogId) { cat = catalogs[i]; break; }
+      }
+      if (!cat) return;
+
+      // Count questions linked to this catalog
+      var questionCount = 0;
+      for (var j = 0; j < MockData.questions.length; j++) {
+        if (MockData.questions[j].catalogId === catalogId) questionCount++;
+      }
+
+      if (questionCount > 0) {
+        showConfirm(
+          '阶段 "' + cat.name + '" 下有 <strong>' + questionCount + '</strong> 道关联题目，删除后题目将失去阶段归属。确定要删除吗？',
+          function() { doDeleteCatalog(subject, catalogId); }
+        );
+      } else {
+        showConfirm(
+          '确定要删除阶段 "' + cat.name + '" 吗？此操作不可撤销。',
+          function() { doDeleteCatalog(subject, catalogId); }
+        );
+      }
+    }
+
+    function doDeleteCatalog(subject, catalogId) {
+      var catalogs = subject.catalogs || [];
+      for (var i = 0; i < catalogs.length; i++) {
+        if (catalogs[i].id === catalogId) {
+          var name = catalogs[i].name;
+          catalogs.splice(i, 1);
+          renderAll();
+          showToast('阶段 "' + name + '" 已删除', 'success');
+          return;
+        }
+      }
+    }
+
+    // ============================================================
+    // 排序
+    // ============================================================
+
+    function moveSubject(subjectId, direction) {
+      var subjects = MockData.subjects;
+      // 找到当前 subject 在按 sort 排序后的位置
+      var sorted = subjects.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); });
+      var sortedIdx = -1;
+      for (var i = 0; i < sorted.length; i++) {
+        if (sorted[i].id === subjectId) { sortedIdx = i; break; }
+      }
+      if (sortedIdx === -1) return;
+      var targetIdx = sortedIdx + direction;
+      if (targetIdx < 0 || targetIdx >= sorted.length) return;
+
+      // 交换 sort 值
+      var tmpSort = sorted[sortedIdx].sort || (sortedIdx + 1);
+      sorted[sortedIdx].sort = sorted[targetIdx].sort || (targetIdx + 1);
+      sorted[targetIdx].sort = tmpSort;
+
+      renderAll();
+    }
+
+    function moveCatalog(subjectId, catalogId, direction) {
+      var subject = getSubjectById(subjectId);
+      if (!subject) return;
+      var catalogs = subject.catalogs || [];
+      // 按 sort 排序后的索引
+      var sorted = catalogs.slice().sort(function(a, b) { return (a.sort || 0) - (b.sort || 0); });
+      var sortedIdx = -1;
+      for (var i = 0; i < sorted.length; i++) {
+        if (sorted[i].id === catalogId) { sortedIdx = i; break; }
+      }
+      if (sortedIdx === -1) return;
+      var targetIdx = sortedIdx + direction;
+      if (targetIdx < 0 || targetIdx >= sorted.length) return;
+
+      // 交换 sort 值
+      var tmpSort = sorted[sortedIdx].sort || (sortedIdx + 1);
+      sorted[sortedIdx].sort = sorted[targetIdx].sort || (targetIdx + 1);
+      sorted[targetIdx].sort = tmpSort;
+
+      renderAll();
+    }
+
+    // ============================================================
+    // 工具函数
+    // ============================================================
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function hexToRgba(hex, alpha) {
+      if (!hex) return 'rgba(102,126,234,' + alpha + ')';
+      hex = hex.replace('#', '');
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      var r = parseInt(hex.substring(0, 2), 16);
+      var g = parseInt(hex.substring(2, 4), 16);
+      var b = parseInt(hex.substring(4, 6), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+    }
+
+    function adjustColor(hex, amount) {
+      if (!hex) return '#5566cc';
+      hex = hex.replace('#', '');
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      var r = Math.max(0, Math.min(255, parseInt(hex.substring(0, 2), 16) + amount));
+      var g = Math.max(0, Math.min(255, parseInt(hex.substring(2, 4), 16) + amount));
+      var b = Math.max(0, Math.min(255, parseInt(hex.substring(4, 6), 16) + amount));
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    // ============================================================
+    // 侧边栏、下拉菜单
+    // ============================================================
+
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ============================================================
+    // 初始化
+    // ============================================================
+
+    renderAll();
+  </script>
+</body>
+</html>

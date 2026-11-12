@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>错题本 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <style>
+    /* ============================
+       增强统计数据行
+       ============================ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .stat-card .stat-number {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .stat-card .stat-number.small {
+      font-size: 22px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .stat-card.top-hits {
+      grid-column: span 1;
+      text-align: left;
+      padding: 20px;
+    }
+
+    .stat-card.top-hits .stat-number {
+      font-size: 15px;
+      margin-bottom: 0;
+      text-align: left;
+    }
+
+    .stat-card.top-hits .stat-label {
+      margin-bottom: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .top-hit-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .top-hit-item:last-child {
+      border-bottom: none;
+    }
+
+    .top-hit-item .hit-subject {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-regular);
+      margin-right: 8px;
+    }
+
+    .top-hit-item .hit-count {
+      flex-shrink: 0;
+      background: var(--bg-color);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      color: var(--danger-color);
+      font-weight: 600;
+    }
+
+    /* ============================
+       筛选栏增强
+       ============================ */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .filter-bar .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-select {
+      padding: 7px 30px 7px 12px;
+      font-size: 13px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-round);
+      background: white;
+      color: var(--text-regular);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23909399' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: var(--transition);
+    }
+
+    .filter-select:hover,
+    .filter-select:focus {
+      border-color: var(--primary-color);
+    }
+
+    /* 分段控制器 (模式切换) */
+    .segmented-control {
+      display: inline-flex;
+      background: var(--bg-color);
+      border-radius: var(--radius-round);
+      padding: 3px;
+      border: 1px solid var(--border-color);
+    }
+
+    .segmented-control .seg-option {
+      padding: 6px 18px;
+      border-radius: var(--radius-round);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .segmented-control .seg-option:hover {
+      color: var(--primary-color);
+    }
+
+    .segmented-control .seg-option.active {
+      background: white;
+      color: var(--primary-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* ============================
+       错题卡片增强
+       ============================ */
+    .wrong-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .wrong-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--danger-color);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .wrong-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 颜色编码 */
+    .wrong-card.level-high {
+      border-left-color: var(--danger-color);
+      background: linear-gradient(to right, rgba(245,108,108,0.03), white 10%);
+    }
+
+    .wrong-card.level-medium {
+      border-left-color: var(--warning-color);
+      background: linear-gradient(to right, rgba(230,162,60,0.03), white 10%);
+    }
+
+    .wrong-card.level-low {
+      border-left-color: var(--success-color);
+      background: linear-gradient(to right, rgba(103,194,58,0.03), white 10%);
+    }
+
+    .wrong-card.mastered-card {
+      border-left-color: var(--success-color);
+      opacity: 0.65;
+    }
+
+    .wrong-card .checkbox-wrapper {
+      position: absolute;
+      top: 20px;
+      left: 16px;
+      z-index: 2;
+    }
+
+    .wrong-card .checkbox-wrapper input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--primary-color);
+    }
+
+    .wrong-card .card-body {
+      padding-left: 30px;
+    }
+
+    .wrong-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .wrong-question {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .wrong-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      margin-left: 16px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .wrong-meta span {
+      white-space: nowrap;
+    }
+
+    .wrong-answer {
+      padding: 14px 16px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+    }
+
+    .answer-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .answer-content {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .answer-content.your-answer {
+      color: var(--danger-color);
+    }
+
+    .answer-content.correct-answer {
+      color: var(--success-color);
+    }
+
+    .wrong-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* 进度指示器 */
+    .progress-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+    }
+
+    .progress-indicator .progress-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border-light);
+      border-radius: 3px;
+      overflow: hidden;
+      max-width: 120px;
+    }
+
+    .progress-indicator .progress-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-indicator .progress-bar-fill.fill-low {
+      background: var(--danger-color);
+    }
+
+    .progress-indicator .progress-bar-fill.fill-medium {
+      background: var(--warning-color);
+    }
+
+    .progress-indicator .progress-bar-fill.fill-high {
+      background: var(--success-color);
+    }
+
+    .progress-indicator .progress-text {
+      color: var(--text-secondary);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .wrong-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .wrong-count-badge.badge-high {
+      background: rgba(245,108,108,0.15);
+      color: var(--danger-color);
+    }
+
+    .wrong-count-badge.badge-medium {
+      background: rgba(230,162,60,0.15);
+      color: var(--warning-color);
+    }
+
+    .wrong-count-badge.badge-low {
+      background: rgba(103,194,58,0.15);
+      color: var(--success-color);
+    }
+
+    /* ============================
+       重做模式面板
+       ============================ */
+    .retry-panel {
+      display: none;
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .retry-panel.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .retry-progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .retry-progress-header .retry-progress-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .retry-progress-header .retry-counter {
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--bg-color);
+      padding: 4px 14px;
+      border-radius: var(--radius-round);
+    }
+
+    .retry-question-subject {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .retry-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .retry-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-color);
+      border-radius: var(--radius-md);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .retry-option:hover {
+      border-color: var(--primary-light);
+      background: rgba(64,158,255,0.04);
+    }
+
+    .retry-option.selected {
+      border-color: var(--primary-color);
+      background: rgba(64,158,255,0.06);
+    }
+
+    .retry-option.correct {
+      border-color: var(--success-color);
+      background: rgba(103,194,58,0.08);
+    }
+
+    .retry-option.wrong {
+      border-color: var(--danger-color);
+      background: rgba(245,108,108,0.08);
+    }
+
+    .retry-option .option-marker {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+
+    .retry-option.selected .option-marker {
+      border-color: var(--primary-color);
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .retry-option.correct .option-marker {
+      border-color: var(--success-color);
+      background: var(--success-color);
+      color: white;
+    }
+
+    .retry-option.wrong .option-marker {
+      border-color: var(--danger-color);
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .retry-option .option-content {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .retry-option .option-feedback-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .retry-feedback {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .retry-feedback.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .retry-feedback.feedback-correct {
+      background: rgba(103,194,58,0.1);
+      border: 1px solid rgba(103,194,58,0.3);
+      color: #529b2e;
+    }
+
+    .retry-feedback.feedback-wrong {
+      background: rgba(245,108,108,0.1);
+      border: 1px solid rgba(245,108,108,0.3);
+      color: #c45656;
+    }
+
+    .retry-feedback .feedback-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .retry-feedback .feedback-analysis {
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .retry-navigation {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .retry-nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .retry-exit-btn {
+      color: var(--text-secondary);
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .retry-exit-btn:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    /* ============================
+       批量操作栏
+       ============================ */
+    .batch-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+      padding: 16px 24px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 999;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .batch-bar.show {
+      display: flex;
+      transform: translateY(0);
+      animation: slideUp 0.3s ease;
+    }
+
+    .batch-bar .batch-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .batch-bar .batch-info .batch-count {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .batch-bar .batch-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* ============================
+       浏览/重做模式内容切换
+       ============================ */
+    .browse-content {
+      display: block;
+    }
+
+    .browse-content.hidden {
+      display: none;
+    }
+
+    .retry-content {
+      display: none;
+    }
+
+    .retry-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* ============================
+       响应式
+       ============================ */
+    @media (max-width: 1024px) {
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .stat-card.top-hits {
+        grid-column: span 3;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-card.top-hits {
+        grid-column: span 2;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-bar .filter-group {
+        justify-content: center;
+      }
+
+      .wrong-header {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .wrong-meta {
+        margin-left: 0;
+        justify-content: flex-start;
+      }
+
+      .wrong-card {
+        padding: 16px;
+      }
+
+      .wrong-card .card-body {
+        padding-left: 0;
+        margin-top: 10px;
+      }
+
+      .wrong-card .checkbox-wrapper {
+        position: relative;
+        top: auto;
+        left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .retry-panel {
+        padding: 20px 16px;
+      }
+
+      .retry-navigation {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .retry-nav-buttons {
+        justify-content: center;
+      }
+
+      .batch-bar {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 16px;
+      }
+
+      .batch-bar .batch-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .batch-bar .batch-actions .btn {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .stat-card {
+        padding: 14px 10px;
+      }
+
+      .stat-card .stat-number {
+        font-size: 24px;
+      }
+
+      .stat-card.top-hits {
+        grid-column: span 2;
+      }
+
+      .retry-questions-progress {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="nav-container container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon brand-mark" aria-hidden="true"></span>
+        <span class="logo-text">云枢智学</span>
+      </a>
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="routes.html" class="nav-link">学习路线</a>
+        <a href="questions.html" class="nav-link">题库</a>
+        <a href="ai-config.html" class="nav-link">AI面试</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar">M</div>
+          <span class="user-name">黑马学员</span>
+          <div class="user-dropdown">
+            <a href="profile.html">个人中心</a>
+            <a href="wrong-book.html">我的错题</a>
+            <a href="interview-history.html">面试记录</a>
+            <div class="dropdown-divider"></div>
+            <a href="../admin/index.html">管理后台</a>
+            <a href="login.html" class="text-danger">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="container">
+        <div class="page-header-content">
+          <div>
+            <h1 class="page-title">我的错题本</h1>
+            <p class="page-subtitle">记录错题，针对性复习，攻克薄弱点</p>
+          </div>
+          <div class="breadcrumb">
+            <a href="index.html">首页</a>
+            <span>/</span>
+            <span>错题本</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding: 40px 20px;">
+      <!-- 模式切换 -->
+      <div style="margin-bottom:24px;">
+        <div class="segmented-control" id="modeToggle">
+          <button class="seg-option active" data-mode="browse">浏览模式</button>
+          <button class="seg-option" data-mode="retry">重做模式</button>
+        </div>
+      </div>
+
+      <!-- 浏览模式内容 -->
+      <div class="browse-content" id="browseContent">
+        <!-- 错题列表 -->
+        <div class="wrong-list" id="wrongList">
+          <!-- 由 JS 动态渲染 -->
+        </div>
+        <!-- 分页 -->
+        <div class="pagination" style="margin-top: 32px;" id="pagination">
+          <div class="pagination-item" data-page="prev">‹</div>
+          <div class="pagination-item active" data-page="1">1</div>
+          <div class="pagination-item" data-page="2">2</div>
+          <div class="pagination-item" data-page="3">3</div>
+          <div class="pagination-item" data-page="next">›</div>
+        </div>
+      </div>
+
+      <!-- 重做模式内容 -->
+      <div class="retry-content" id="retryContent">
+        <div class="retry-panel active" id="retryPanel">
+          <div class="retry-progress-header">
+            <div class="retry-progress-label">错题重做练习</div>
+            <div class="retry-counter" id="retryProgressText">第 1/6 题</div>
+          </div>
+          <div class="retry-question-subject" id="retryQuestionSubject"></div>
+          <div class="retry-options" id="retryOptions"></div>
+          <div class="retry-feedback" id="retryFeedback"></div>
+          <div class="retry-navigation">
+            <button class="retry-exit-btn" onclick="exitRetryMode()">退出练习</button>
+            <div class="retry-nav-buttons">
+              <button class="btn btn-secondary" id="prevQuestionBtn" onclick="navigateRetry(-1)">上一题</button>
+              <button class="btn btn-primary" id="submitRetryBtn" onclick="submitRetryAnswer()">提交答案</button>
+              <button class="btn btn-primary" id="nextQuestionBtn" onclick="navigateRetry(1)">下一题</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批量操作栏 -->
+  <div class="batch-bar" id="batchBar">
+    <div class="batch-info">
+      已选择 <span class="batch-count" id="selectedCount">0</span> 项
+    </div>
+    <div class="batch-actions">
+      <button class="btn btn-success btn-sm" onclick="batchMarkMastered()">批量标记已掌握</button>
+      <button class="btn btn-danger btn-sm" onclick="batchRemove()">批量移除</button>
+      <button class="btn btn-secondary btn-sm" onclick="clearSelection()">取消选择</button>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // 状态管理
+    // ============================
+    const state = {
+      mode: 'browse', // 'browse' | 'retry'
+      currentRetryIndex: 0,
+      categoryFilter: '全部',
+      dateFilter: '全部',
+      sortBy: 'time',
+      statusFilter: 'all',
+      selectedIds: new Set(),
+      // retryProgress: { wrongQuestionId: correctCount }
+      retryProgress: {},
+      // 记录每道题当前 retry 是否已提交过正确答案（用于防重复计数）
+      retryAnsweredCorrect: {},
+      // 当前 retry 问题是否已提交答案（锁定选项）
+      retrySubmitted: false,
+      // 当前 retry 选择的选项 IDs
+      retrySelectedOptions: [],
+      // 当前 retry 提交后的结果
+      retryResult: null,
+      // 原始错题数据
+      wrongQuestions: []
+    };
+
+    // 字母映射
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    // ============================
+    // 初始化
+    // ============================
+    function init() {
+      // 深拷贝 mock 数据，给每项添加 retryCorrectCount
+      state.wrongQuestions = MockData.wrongQuestions.map(q => ({
+        ...q,
+        retryCorrectCount: 0,
+        _checked: false
+      }));
+      // 初始化 retryProgress
+      state.wrongQuestions.forEach(q => {
+        state.retryProgress[q.id] = 0;
+      });
+
+      renderStats();
+      renderTopHits();
+      renderWrongList();
+      bindEvents();
+    }
+
+    // ============================
+    // 统计信息
+    // ============================
+    function renderStats() {
+      const all = state.wrongQuestions;
+      const pending = all.filter(q => q.status === 'pending');
+      const mastered = all.filter(q => q.status === 'mastered');
+      const total = all.length;
+      const pendingCount = pending.length;
+      const masteredCount = mastered.length;
+      const rate = total > 0 ? Math.round((masteredCount / total) * 100) : 0;
+
+      var el;
+      el = document.getElementById('statTotal'); if (el) el.textContent = total;
+      el = document.getElementById('statPending'); if (el) el.textContent = pendingCount;
+      el = document.getElementById('statMastered'); if (el) el.textContent = masteredCount;
+      el = document.getElementById('statRate'); if (el) el.textContent = rate + '%';
+    }
+
+    function renderTopHits() {
+      var container = document.getElementById('topHitsList');
+      if (!container) return;
+      const sorted = [...state.wrongQuestions]
+        .filter(q => q.status === 'pending')
+        .sort((a, b) => b.wrongCount - a.wrongCount)
+        .slice(0, 3);
+
+      if (sorted.length === 0) {
+        container.innerHTML = '<div class="top-hit-item"><span class="hit-subject" style="color:var(--text-placeholder);">暂无高频错题</span></div>';
+        return;
+      }
+
+      container.innerHTML = sorted.map((q, i) => `
+        <div class="top-hit-item">
+          <span class="hit-subject" title="${escapeHtml(q.subject)}">${i + 1}. ${escapeHtml(truncateText(q.subject, 28))}</span>
+          <span class="hit-count">${q.wrongCount}次</span>
+        </div>
+      `).join('');
+    }
+
+    // ============================
+    // 筛选和排序
+    // ============================
+    function getFilteredQuestions() {
+      let list = [...state.wrongQuestions];
+
+      // 状态筛选
+      if (state.statusFilter === 'pending') {
+        list = list.filter(q => q.status === 'pending');
+      } else if (state.statusFilter === 'mastered') {
+        list = list.filter(q => q.status === 'mastered');
+      }
+
+      // 分类筛选
+      if (state.categoryFilter !== '全部') {
+        list = list.filter(q => q.catalogName === state.categoryFilter);
+      }
+
+      // 日期筛选
+      if (state.dateFilter !== '全部') {
+        const now = new Date();
+        let cutoff;
+        if (state.dateFilter === 'week') {
+          cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        } else if (state.dateFilter === 'month') {
+          cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+        if (cutoff) {
+          list = list.filter(q => new Date(q.lastWrongTime) >= cutoff);
+        }
+      }
+
+      // 排序
+      if (state.sortBy === 'time') {
+        list.sort((a, b) => new Date(b.lastWrongTime) - new Date(a.lastWrongTime));
+      } else if (state.sortBy === 'count') {
+        list.sort((a, b) => b.wrongCount - a.wrongCount);
+      }
+
+      return list;
+    }
+
+    // ============================
+    // 渲染错题列表
+    // ============================
+    function renderWrongList() {
+      const list = getFilteredQuestions();
+      const container = document.getElementById('wrongList');
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:60px 20px;color:var(--text-secondary);">
+            <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+            <p style="font-size:16px;font-weight:500;margin-bottom:8px;">暂无错题</p>
+            <p style="font-size:13px;">继续加油，目前没有符合条件的错题记录</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(q => {
+        const level = q.wrongCount >= 3 ? 'high' : q.wrongCount >= 2 ? 'medium' : 'low';
+        const isMastered = q.status === 'mastered';
+        const cardClass = isMastered ? 'wrong-card mastered-card' : `wrong-card level-${level}`;
+        const checked = state.selectedIds.has(q.id) ? 'checked' : '';
+        const progress = Math.min(state.retryProgress[q.id] || 0, 3);
+        const progressPercent = (progress / 3) * 100;
+        const fillClass = progress >= 3 ? 'fill-high' : progress >= 2 ? 'fill-medium' : 'fill-low';
+        const wrongBadgeClass = level === 'high' ? 'badge-high' : level === 'medium' ? 'badge-medium' : 'badge-low';
+        const wrongLabel = level === 'high' ? '高频易错' : level === 'medium' ? '多次错误' : '偶尔错误';
+
+        return `
+          <div class="${cardClass}" data-id="${q.id}" data-status="${q.status}" data-catalog="${q.catalogName}" data-date="${q.lastWrongTime}" data-count="${q.wrongCount}">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" class="card-checkbox" data-id="${q.id}" ${checked} onchange="toggleSelection('${q.id}', this.checked)">
+            </div>
+            <div class="card-body">
+              <!-- 进度指示器 -->
+              <div class="progress-indicator">
+                <span class="wrong-count-badge ${wrongBadgeClass}">❌ ${q.wrongCount}次 · ${wrongLabel}</span>
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill ${fillClass}" style="width:${progressPercent}%"></div>
+                </div>
+                <span class="progress-text">已纠正 ${progress}/3 次</span>
+              </div>
+
+              <div class="wrong-header">
+                <div class="wrong-question">
+                  ${isMastered ? '✅ ' : ''}${escapeHtml(q.subject)}
+                </div>
+                <div class="wrong-meta">
+                  <span>📁 ${q.catalogName}</span>
+                  <span>📅 ${q.lastWrongTime}</span>
+                  <span class="wrong-count-badge ${wrongBadgeClass}">❌ ${q.wrongCount}次</span>
+                </div>
+              </div>
+
+              <div class="wrong-answer">
+                <div class="answer-label">你的答案</div>
+                <div class="answer-content your-answer">${escapeHtml(q.yourAnswer)}</div>
+              </div>
+              <div class="wrong-answer">
+                <div class="answer-label">正确答案</div>
+                <div class="answer-content correct-answer">${escapeHtml(q.correctAnswer)}</div>
+              </div>
+              <div class="wrong-actions">
+                <button class="btn btn-primary btn-sm" onclick="retrySingleQuestion('${q.id}')">重新做题</button>
+                ${!isMastered ? `<button class="btn btn-secondary btn-sm" onclick="markMastered(this, '${q.id}')">标记已掌握</button>` : ''}
+                <button class="btn btn-secondary btn-sm" onclick="removeWrong(this, '${q.id}')">移除错题</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============================
+    // 模式切换
+    // ============================
+    function switchMode(mode) {
+      state.mode = mode;
+
+      document.querySelectorAll('#modeToggle .seg-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+
+      const browseContent = document.getElementById('browseContent');
+      const retryContent = document.getElementById('retryContent');
+      const batchBar = document.getElementById('batchBar');
+
+      if (mode === 'browse') {
+        browseContent.classList.remove('hidden');
+        retryContent.classList.remove('active');
+        batchBar.classList.remove('show');
+        renderWrongList();
+      } else {
+        browseContent.classList.add('hidden');
+        retryContent.classList.add('active');
+        batchBar.classList.remove('show');
+        state.selectedIds.clear();
+        startRetrySession();
+      }
+    }
+
+    // ============================
+    // 重做模式
+    // ============================
+    function startRetrySession() {
+      // 用待复习的题目作为重做列表
+      const retryList = state.wrongQuestions.filter(q => q.status === 'pending');
+      if (retryList.length === 0) {
+        document.getElementById('retryPanel').innerHTML = `
+          <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+            <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+            <p style="font-size:16px;font-weight:500;margin-bottom:8px;">没有待复习的错题</p>
+            <p style="font-size:13px;">所有错题都已完成复习，真棒！</p>
+            <button class="btn btn-primary mt-20" onclick="exitRetryMode()">返回浏览</button>
+          </div>
+        `;
+        return;
+      }
+
+      state.currentRetryIndex = 0;
+      state.retrySubmitted = false;
+      state.retrySelectedOptions = [];
+      state.retryResult = null;
+
+      // 重建 retry panel 保证干净状态
+      const panel = document.getElementById('retryPanel');
+      panel.innerHTML = `
+        <div class="retry-progress-header">
+          <div class="retry-progress-label">错题重做练习</div>
+          <div class="retry-counter" id="retryProgressText">第 1/${retryList.length} 题</div>
+        </div>
+        <div class="retry-question-subject" id="retryQuestionSubject"></div>
+        <div class="retry-options" id="retryOptions"></div>
+        <div class="retry-feedback" id="retryFeedback"></div>
+        <div class="retry-navigation">
+          <button class="retry-exit-btn" onclick="exitRetryMode()">退出练习</button>
+          <div class="retry-nav-buttons">
+            <button class="btn btn-secondary" id="prevQuestionBtn" onclick="navigateRetry(-1)">上一题</button>
+            <button class="btn btn-primary" id="submitRetryBtn" onclick="submitRetryAnswer()">提交答案</button>
+            <button class="btn btn-primary" id="nextQuestionBtn" onclick="navigateRetry(1)">下一题</button>
+          </div>
+        </div>
+      `;
+
+      showRetryQuestion(retryList);
+    }
+
+    function showRetryQuestion(retryList) {
+      const idx = state.currentRetryIndex;
+      const q = retryList[idx];
+
+      if (!q) return;
+
+      // 更新进度文本
+      document.getElementById('retryProgressText').textContent = `第 ${idx + 1}/${retryList.length} 题`;
+
+      // 找到原题 options
+      const originalQ = MockData.questions.find(oq => oq.id === q.questionId);
+      const options = originalQ && originalQ.options ? originalQ.options : [];
+
+      // 显示题目
+      document.getElementById('retryQuestionSubject').textContent = q.subject;
+
+      // 重置状态
+      state.retrySubmitted = false;
+      state.retrySelectedOptions = [];
+      state.retryResult = null;
+
+      // 渲染选项
+      const optionsContainer = document.getElementById('retryOptions');
+
+      if (options.length === 0) {
+        // 简答题等无选项的题目，显示简单确认
+        optionsContainer.innerHTML = `
+          <div style="text-align:center;padding:20px;color:var(--text-secondary);">
+            <p style="margin-bottom:16px;">此题暂无可选的答题选项，请自行复习</p>
+            <div style="background:var(--bg-color);padding:16px;border-radius:var(--radius-md);text-align:left;">
+              <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;">正确答案：</div>
+              <div style="font-size:14px;color:var(--success-color);font-weight:500;">${escapeHtml(q.correctAnswer)}</div>
+            </div>
+          </div>
+        `;
+        // 无选项题目，隐藏提交按钮，用"下一题"跳转
+        document.getElementById('submitRetryBtn').style.display = 'none';
+        state.retrySubmitted = true;
+      } else {
+        document.getElementById('submitRetryBtn').style.display = 'inline-flex';
+
+        const isSingle = originalQ.type === 'single' || originalQ.type === 'judge';
+
+        optionsContainer.innerHTML = options.map((opt, i) => `
+          <div class="retry-option" data-opt-id="${opt.id}" onclick="selectRetryOption('${opt.id}', ${isSingle})">
+            <div class="option-marker">${LETTERS[i] || i}</div>
+            <div class="option-content">${escapeHtml(opt.content)}</div>
+            <div class="option-feedback-icon"></div>
+          </div>
+        `).join('');
+      }
+
+      // 隐藏反馈
+      document.getElementById('retryFeedback').classList.remove('show');
+      document.getElementById('retryFeedback').className = 'retry-feedback';
+
+      // 更新按钮状态
+      updateRetryNavButtons(retryList.length);
+    }
+
+    function selectRetryOption(optId, isSingle) {
+      if (state.retrySubmitted) return;
+
+      const options = document.querySelectorAll('#retryOptions .retry-option');
+
+      if (isSingle) {
+        options.forEach(o => o.classList.remove('selected'));
+        const el = document.querySelector(`.retry-option[data-opt-id="${optId}"]`);
+        if (el) el.classList.add('selected');
+        state.retrySelectedOptions = [optId];
+      } else {
+        const el = document.querySelector(`.retry-option[data-opt-id="${optId}"]`);
+        if (el) {
+          el.classList.toggle('selected');
+          const idx = state.retrySelectedOptions.indexOf(optId);
+          if (idx >= 0) {
+            state.retrySelectedOptions.splice(idx, 1);
+          } else {
+            state.retrySelectedOptions.push(optId);
+          }
+        }
+      }
+    }
+
+    function submitRetryAnswer() {
+      if (state.retrySubmitted) return;
+
+      const retryList = state.wrongQuestions.filter(q => q.status === 'pending');
+      const q = retryList[state.currentRetryIndex];
+      if (!q) return;
+
+      const originalQ = MockData.questions.find(oq => oq.id === q.questionId);
+      const options = originalQ && originalQ.options ? originalQ.options : [];
+
+      if (options.length === 0) return;
+
+      if (state.retrySelectedOptions.length === 0) {
+        showToast('请先选择一个答案', 'warning');
+        return;
+      }
+
+      // 检查答案
+      const correctIds = options.filter(opt => opt.correct).map(opt => opt.id);
+      const isCorrect = correctIds.length === state.retrySelectedOptions.length &&
+        correctIds.every(id => state.retrySelectedOptions.includes(id));
+
+      // 标记选项
+      const optElements = document.querySelectorAll('#retryOptions .retry-option');
+      optElements.forEach(el => {
+        const optId = el.dataset.optId;
+        if (correctIds.includes(optId)) {
+          el.classList.add('correct');
+        } else if (state.retrySelectedOptions.includes(optId) && !correctIds.includes(optId)) {
+          el.classList.add('wrong');
+        }
+      });
+
+      // 显示反馈
+      const feedback = document.getElementById('retryFeedback');
+      if (isCorrect) {
+        feedback.className = 'retry-feedback feedback-correct show';
+        feedback.innerHTML = `
+          <div class="feedback-title">✅ 回答正确！</div>
+          <div>太棒了，继续加油！</div>
+          ${originalQ.analysis ? `<div class="feedback-analysis">💡 ${escapeHtml(originalQ.analysis)}</div>` : ''}
+        `;
+
+        // 更新进度
+        state.retryProgress[q.id] = (state.retryProgress[q.id] || 0) + 1;
+        q.retryCorrectCount = (q.retryCorrectCount || 0) + 1;
+
+        // 如果纠正次数 >= 3，自动标记为已掌握
+        if (state.retryProgress[q.id] >= 3) {
+          q.status = 'mastered';
+          // 更新 MockData
+          const mockQ = MockData.wrongQuestions.find(mq => mq.id === q.id);
+          if (mockQ) mockQ.status = 'mastered';
+          MockData.wrongStats.pending = state.wrongQuestions.filter(wq => wq.status === 'pending').length;
+          MockData.wrongStats.mastered = state.wrongQuestions.filter(wq => wq.status === 'mastered').length;
+          MockData.wrongStats.masteryRate = Math.round((MockData.wrongStats.mastered / MockData.wrongStats.total) * 100);
+          renderStats();
+          renderTopHits();
+
+          showToast('已掌握此题目！', 'success');
+        }
+      } else {
+        feedback.className = 'retry-feedback feedback-wrong show';
+        feedback.innerHTML = `
+          <div class="feedback-title">❌ 回答错误</div>
+          <div>正确答案：${q.correctAnswer}</div>
+          ${originalQ.analysis ? `<div class="feedback-analysis">💡 ${escapeHtml(originalQ.analysis)}</div>` : ''}
+        `;
+      }
+
+      state.retrySubmitted = true;
+      state.retryResult = { isCorrect };
+
+      // 重新渲染列表（更新进度条）
+      renderWrongList();
+      updateRetryNavButtons(retryList.length);
+    }
+
+    function navigateRetry(direction) {
+      const retryList = state.wrongQuestions.filter(q => q.status === 'pending');
+      if (retryList.length === 0) return;
+
+      const newIdx = state.currentRetryIndex + direction;
+      if (newIdx < 0 || newIdx >= retryList.length) {
+        showToast(direction < 0 ? '已是第一题' : '已是最后一题', 'info');
+        return;
+      }
+
+      state.currentRetryIndex = newIdx;
+      state.retrySubmitted = false;
+      state.retrySelectedOptions = [];
+      state.retryResult = null;
+      showRetryQuestion(retryList);
+    }
+
+    function updateRetryNavButtons(total) {
+      const prevBtn = document.getElementById('prevQuestionBtn');
+      const nextBtn = document.getElementById('nextQuestionBtn');
+      const submitBtn = document.getElementById('submitRetryBtn');
+
+      prevBtn.disabled = state.currentRetryIndex <= 0;
+      prevBtn.style.opacity = state.currentRetryIndex <= 0 ? '0.5' : '1';
+
+      nextBtn.disabled = state.currentRetryIndex >= total - 1;
+      nextBtn.style.opacity = state.currentRetryIndex >= total - 1 ? '0.5' : '1';
+
+      if (submitBtn) {
+        submitBtn.style.display = state.retrySubmitted ? 'none' : 'inline-flex';
+      }
+    }
+
+    function exitRetryMode() {
+      switchMode('browse');
+    }
+
+    function retrySingleQuestion(id) {
+      // 切换到重做模式并定位到该题
+      switchMode('retry');
+      const retryList = state.wrongQuestions.filter(q => q.status === 'pending');
+      const idx = retryList.findIndex(q => q.id === id);
+      if (idx >= 0) {
+        state.currentRetryIndex = idx;
+        state.retrySubmitted = false;
+        state.retrySelectedOptions = [];
+        state.retryResult = null;
+        showRetryQuestion(retryList);
+      }
+    }
+
+    // ============================
+    // 批量操作
+    // ============================
+    function toggleSelection(id, checked) {
+      if (checked) {
+        state.selectedIds.add(id);
+      } else {
+        state.selectedIds.delete(id);
+      }
+      updateBatchBar();
+    }
+
+    function updateBatchBar() {
+      const bar = document.getElementById('batchBar');
+      const count = state.selectedIds.size;
+
+      if (count > 0 && state.mode === 'browse') {
+        bar.classList.add('show');
+        document.getElementById('selectedCount').textContent = count;
+      } else {
+        bar.classList.remove('show');
+      }
+    }
+
+    function clearSelection() {
+      state.selectedIds.clear();
+      document.querySelectorAll('.card-checkbox').forEach(cb => {
+        cb.checked = false;
+      });
+      updateBatchBar();
+    }
+
+    function batchMarkMastered() {
+      if (state.selectedIds.size === 0) return;
+      showConfirm(`确定要将选中的 ${state.selectedIds.size} 道错题标记为已掌握吗？`, () => {
+        state.selectedIds.forEach(id => {
+          const q = state.wrongQuestions.find(wq => wq.id === id);
+          if (q && q.status === 'pending') {
+            q.status = 'mastered';
+            const mockQ = MockData.wrongQuestions.find(mq => mq.id === id);
+            if (mockQ) mockQ.status = 'mastered';
+          }
+        });
+        // 更新统计
+        MockData.wrongStats.pending = state.wrongQuestions.filter(wq => wq.status === 'pending').length;
+        MockData.wrongStats.mastered = state.wrongQuestions.filter(wq => wq.status === 'mastered').length;
+        MockData.wrongStats.masteryRate = Math.round((MockData.wrongStats.mastered / MockData.wrongStats.total) * 100);
+        renderStats();
+        renderTopHits();
+        clearSelection();
+        renderWrongList();
+        showToast(`已标记 ${state.selectedIds.size} 道错题为已掌握`, 'success');
+      });
+    }
+
+    function batchRemove() {
+      if (state.selectedIds.size === 0) return;
+      showConfirm(`确定要移除选中的 ${state.selectedIds.size} 道错题吗？`, () => {
+        const idsToRemove = new Set(state.selectedIds);
+        state.wrongQuestions = state.wrongQuestions.filter(q => !idsToRemove.has(q.id));
+        // 同步到 MockData
+        state.selectedIds.forEach(id => {
+          const idx = MockData.wrongQuestions.findIndex(mq => mq.id === id);
+          if (idx >= 0) MockData.wrongQuestions.splice(idx, 1);
+        });
+        // 更新统计
+        MockData.wrongStats.total = MockData.wrongQuestions.length;
+        MockData.wrongStats.pending = MockData.wrongQuestions.filter(wq => wq.status === 'pending').length;
+        MockData.wrongStats.mastered = MockData.wrongQuestions.filter(wq => wq.status === 'mastered').length;
+        MockData.wrongStats.masteryRate = MockData.wrongStats.total > 0
+          ? Math.round((MockData.wrongStats.mastered / MockData.wrongStats.total) * 100)
+          : 0;
+        renderStats();
+        renderTopHits();
+        clearSelection();
+        renderWrongList();
+        showToast(`已移除 ${idsToRemove.size} 道错题`, 'success');
+      });
+    }
+
+    // ============================
+    // 单个操作
+    // ============================
+    function markMastered(btn, id) {
+      const q = state.wrongQuestions.find(wq => wq.id === id);
+      if (q) {
+        q.status = 'mastered';
+        const mockQ = MockData.wrongQuestions.find(mq => mq.id === id);
+        if (mockQ) mockQ.status = 'mastered';
+      }
+      const card = btn.closest('.wrong-card');
+      if (card) {
+        card.dataset.status = 'mastered';
+        card.style.opacity = '0.5';
+        card.classList.add('mastered-card');
+      }
+      // 更新统计
+      MockData.wrongStats.pending = state.wrongQuestions.filter(wq => wq.status === 'pending').length;
+      MockData.wrongStats.mastered = state.wrongQuestions.filter(wq => wq.status === 'mastered').length;
+      MockData.wrongStats.masteryRate = Math.round((MockData.wrongStats.mastered / MockData.wrongStats.total) * 100);
+      renderStats();
+      renderTopHits();
+      showToast('已标记为掌握', 'success');
+    }
+
+    function removeWrong(btn, id) {
+      showConfirm('确定要移除此错题吗？', () => {
+        state.wrongQuestions = state.wrongQuestions.filter(q => q.id !== id);
+        const idx = MockData.wrongQuestions.findIndex(mq => mq.id === id);
+        if (idx >= 0) MockData.wrongQuestions.splice(idx, 1);
+        // 更新统计
+        MockData.wrongStats.total = MockData.wrongQuestions.length;
+        MockData.wrongStats.pending = MockData.wrongQuestions.filter(wq => wq.status === 'pending').length;
+        MockData.wrongStats.mastered = MockData.wrongQuestions.filter(wq => wq.status === 'mastered').length;
+        MockData.wrongStats.masteryRate = MockData.wrongStats.total > 0
+          ? Math.round((MockData.wrongStats.mastered / MockData.wrongStats.total) * 100)
+          : 0;
+        renderStats();
+        renderTopHits();
+        renderWrongList();
+        showToast('已移除', 'success');
+      });
+    }
+
+    function clearWrongBook() {
+      showConfirm('确定要清空错题本吗？此操作不可恢复。', () => {
+        localStorage.removeItem('wrongQuestions');
+        showToast('错题本已清空', 'success');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      });
+    }
+
+    // ============================
+    // 工具函数
+    // ============================
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function truncateText(str, maxLen) {
+      if (!str) return '';
+      return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
+    }
+
+    // ============================
+    // 事件绑定
+    // ============================
+    function bindEvents() {
+      // 模式切换
+      document.querySelectorAll('#modeToggle .seg-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchMode(btn.dataset.mode);
+        });
+      });
+
+      // 状态筛选（通过模式切换处理）
+      document.querySelectorAll('#browseFilters .filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#browseFilters .filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.statusFilter = btn.dataset.status;
+          renderWrongList();
+        });
+      });
+    }
+
+    // ============================
+    // 启动
+    // ============================
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

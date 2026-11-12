@@ -1,0 +1,13 @@
+{
+  "name": "yunshu-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["frontend/portal", "frontend/admin", "frontend/shared"],
+  "engines": {"node": ">=22.12.0"},
+  "scripts": {
+    "dev:portal": "npm run dev --workspace=@yunshu/portal",
+    "dev:admin": "npm run dev --workspace=@yunshu/admin",
+    "build": "npm run build --workspace=@yunshu/portal && npm run build --workspace=@yunshu/admin",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

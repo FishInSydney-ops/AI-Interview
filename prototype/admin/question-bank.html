@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面试题库管理 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      width: 220px;
+      padding: 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #409eff;
+    }
+
+    .filter-select {
+      padding: 10px 36px 10px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23909399' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    .filter-select:disabled {
+      background-color: #f5f7fa;
+      color: #c0c4cc;
+      cursor: not-allowed;
+    }
+
+    .untagged-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #606266;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .untagged-check input {
+      cursor: pointer;
+    }
+
+    .untagged-check.disabled {
+      color: #c0c4cc;
+      cursor: not-allowed;
+    }
+
+    .untagged-check.disabled input {
+      cursor: not-allowed;
+    }
+
+    /* 卡片本身已有 24px 内边距，这里不再重复内缩，
+       让表格与说明条、分页线一样铺满卡片内容区 */
+    .table-wrapper {
+      overflow-x: auto;
+      padding: 0;
+    }
+
+    /* 表格铺满后，用首尾单元格把 24px 内边距补回来，保证文字与工具条对齐 */
+    .table th:first-child,
+    .table td:first-child {
+      padding-left: 24px;
+    }
+
+    .table th:last-child,
+    .table td:last-child {
+      padding-right: 24px;
+    }
+
+    .table td {
+      vertical-align: top;
+    }
+
+    /* 说明条 */
+    .qb-tip {
+      padding: 12px 24px;
+      background: rgba(64, 158, 255, 0.05);
+      border-bottom: 1px solid rgba(64, 158, 255, 0.15);
+      font-size: 13px;
+      color: #606266;
+      line-height: 1.7;
+    }
+
+    /* 题目列 */
+    .qb-question {
+      max-width: 460px;
+    }
+
+    .qb-question-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .qb-seq {
+      flex: none;
+      font-size: 12px;
+      color: #909399;
+      font-family: Consolas, Monaco, monospace;
+      padding-top: 2px;
+    }
+
+    .qb-content {
+      font-size: 14px;
+      color: #303133;
+      line-height: 1.6;
+    }
+
+    .qb-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      padding-left: 40px;
+    }
+
+    .qb-tag {
+      font-size: 12px;
+      padding: 1px 8px;
+      border-radius: 4px;
+      background: #f4f4f5;
+      color: #909399;
+      border: 1px solid #e9e9eb;
+    }
+
+    /* 来源列 */
+    .qb-source {
+      font-size: 13px;
+      color: #606266;
+      line-height: 1.6;
+    }
+
+    .qb-source-sub {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 2px;
+    }
+
+    /* 详情弹窗 */
+    .qb-detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .qb-detail-section + .qb-detail-section {
+      margin-top: 20px;
+    }
+
+    .qb-detail-title {
+      font-size: 13px;
+      color: #909399;
+      margin-bottom: 6px;
+    }
+
+    .qb-detail-content {
+      font-size: 14px;
+      color: #303133;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .qb-detail-empty {
+      font-size: 14px;
+      color: #c0c4cc;
+    }
+
+    .qb-edit-tips {
+      margin-top: 4px;
+      padding: 12px 16px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #909399;
+      line-height: 1.8;
+    }
+
+    /* 题目来路标记（文档解析来的题不带标记——那是主路径，打了反而是噪声） */
+    .qb-origin {
+      flex: none;
+      font-size: 12px;
+      line-height: 18px;
+      padding: 0 6px;
+      border-radius: 4px;
+      border: 1px solid #e9e9eb;
+      background: #f4f4f5;
+      color: #909399;
+    }
+
+    .qb-origin-manual {
+      border-color: rgba(103, 194, 58, 0.3);
+      background: rgba(103, 194, 58, 0.08);
+      color: #67c23a;
+    }
+
+    /* 录入 / 上传导入弹窗 */
+    .qb-form-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .qb-form-row .form-group {
+      flex: 1;
+    }
+
+    .qb-star {
+      color: #f56c6c;
+    }
+
+    .qb-import-file {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px dashed #dcdfe6;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #606266;
+      background: #fafafa;
+      cursor: pointer;
+    }
+
+    .qb-import-preview {
+      padding: 12px 16px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #606266;
+      line-height: 1.9;
+    }
+
+    .qb-import-item {
+      padding-top: 8px;
+      margin-top: 8px;
+      border-top: 1px dashed #e4e7ed;
+    }
+
+    .qb-import-stem {
+      color: #303133;
+      line-height: 1.6;
+    }
+
+    .qb-import-answer {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #909399;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* 空态 */
+    .qb-empty {
+      text-align: center;
+      padding: 60px 0 !important;
+      color: #909399;
+      font-size: 14px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid #e4e7ed;
+    }
+
+    .pagination-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .qb-page-size {
+      padding: 6px 28px 6px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #606266;
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23909399' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      cursor: pointer;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .page-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .page-btn.active {
+      background: #409eff;
+      border-color: #409eff;
+      color: white;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .search-input { width: 100%; }
+      .pagination { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon brand-mark" aria-hidden="true"></span>
+          <span class="logo-text">云枢智学后台</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">概览</div>
+          <a href="index.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>数据看板</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">内容管理</div>
+          <a href="subjects.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学科管理</span>
+          </a>
+          <a href="courses.html" class="nav-item">
+            <span class="icon">🎬</span>
+            <span>B站课程库</span>
+          </a>
+          <a href="questions.html" class="nav-item">
+            <span class="icon">📚</span>
+            <span>题库管理</span>
+          </a>
+          <a href="question-bank.html" class="nav-item active">
+            <span class="icon">🗂️</span>
+            <span>面试题库管理</span>
+          </a>
+          <a href="routes.html" class="nav-item">
+            <span class="icon">🗺️</span>
+            <span>学习路线</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">学员管理</div>
+          <a href="students.html" class="nav-item">
+            <span class="icon">🎓</span>
+            <span>学员管理</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">系统管理</div>
+          <a href="users.html" class="nav-item">
+            <span class="icon">👥</span>
+            <span>用户管理</span>
+          </a>
+          <a href="roles.html" class="nav-item">
+            <span class="icon">🔐</span>
+            <span>角色管理</span>
+          </a>
+          <a href="logs.html" class="nav-item">
+            <span class="icon">📝</span>
+            <span>操作日志</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title">面试题库管理</h1>
+        </div>
+        <div class="header-right">
+          <div class="notification-btn">
+            <span>🔔</span>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="admin-user-wrap">
+            <div class="admin-user" onclick="toggleAdminDropdown(event)">
+              <div class="user-avatar">A</div>
+              <span>管理员</span>
+              <span class="dropdown-arrow">▾</span>
+            </div>
+            <div class="admin-dropdown" id="adminDropdown">
+              <a href="../portal/index.html" class="admin-dropdown-item">🏠 返回前台</a>
+              <div class="admin-dropdown-divider"></div>
+              <a href="login.html" class="admin-dropdown-item" style="color:#f56c6c;" onclick="return handleLogout()">🚪 退出登录</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="toolbar">
+              <input type="text" class="search-input" id="searchInput" placeholder="搜索题干..." onkeydown="if(event.key==='Enter') applyQuery()">
+              <select class="filter-select" id="filterDirection" onchange="onDirectionChange()">
+                <option value="">全部方向</option>
+              </select>
+              <select class="filter-select" id="filterTopic" onchange="onTopicChange()">
+                <option value="">全部主题</option>
+              </select>
+              <select class="filter-select" id="filterDifficulty" onchange="applyQuery()">
+                <option value="">全部难度</option>
+                <option value="1">简单</option>
+                <option value="2">中等</option>
+                <option value="3">困难</option>
+              </select>
+              <label class="untagged-check" id="untaggedWrap">
+                <input type="checkbox" id="filterUntagged" onchange="onUntaggedChange()">
+                <span>只看未分类</span>
+              </label>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn btn-primary" onclick="applyQuery()">查询</button>
+              <button class="btn btn-secondary" onclick="resetQuery()">重置</button>
+              <button class="btn btn-secondary" onclick="showImportModal()">📥 上传 Markdown</button>
+              <button class="btn btn-primary" onclick="showAddQuestion()">+ 录入题目</button>
+            </div>
+          </div>
+
+          <div class="qb-tip">
+            这一页是所有方向的面试题总览。题目有两个来路：上传 Markdown 文档解析入库（主）、手工录入。
+            不管哪一路进来，题干与参考答案在这一页都只能看不能改，这里只改主题与难度。
+            主题下拉里的题数包含 0 题的词表主题，方便复查主题覆盖率；标「· 词表外」的主题不在配置的词表内。
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>题目</th>
+                  <th style="width:150px;">方向</th>
+                  <th style="width:200px;">来源</th>
+                  <th style="width:80px;">难度</th>
+                  <th style="width:130px;">主题</th>
+                  <th style="width:220px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="questionTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info">
+              <span>共 <strong id="totalRecords">0</strong> 条记录</span>
+              <select class="qb-page-size" id="pageSizeSelect" onchange="changePageSize(this.value)">
+                <option value="10">10 条/页</option>
+                <option value="20">20 条/页</option>
+                <option value="50">50 条/页</option>
+              </select>
+            </div>
+            <div class="pagination-btns" id="paginationBtns"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================
+    // 难度字典（与后端一致：1 简单 / 2 中等 / 3 困难）
+    // ============================
+    const DIFFICULTY_OPTIONS = [
+      { value: 1, label: '简单', cls: 'badge-success' },
+      { value: 2, label: '中等', cls: 'badge-warning' },
+      { value: 3, label: '困难', cls: 'badge-danger' }
+    ];
+
+    // 未分类在数据里是空字符串；编辑弹窗里用哨兵值表示「清空主题」这一选项
+    const TOPIC_UNTAGGED_SENTINEL = '__untagged__';
+
+    // ============================
+    // 状态管理
+    // ============================
+    let query = { keyword: '', direction: '', topic: '', difficulty: '', untagged: false };
+    let currentPage = 1;
+    let pageSize = 10;
+    let filteredData = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initDirectionOptions();
+      renderTopicOptions();
+      applyQuery();
+    });
+
+    // 登录检查
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+
+    function handleLogout() {
+      showConfirm('确定要退出管理后台吗？', function() {
+        sessionStorage.removeItem('adminLoggedIn');
+        showToast('已退出登录', 'success');
+        setTimeout(function() { window.location.href = 'login.html'; }, 800);
+      });
+      return false;
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.admin-sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleAdminDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('adminDropdown').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('adminDropdown');
+      if (dd && !e.target.closest('.admin-user-wrap')) {
+        dd.classList.remove('show');
+      }
+    });
+
+    // ============================
+    // 筛选项
+    // ============================
+    function initDirectionOptions() {
+      const select = document.getElementById('filterDirection');
+      let html = '<option value="">全部方向</option>';
+      MockData.subjects.forEach(function(s) {
+        html += '<option value="' + s.name + '">' + s.name + '</option>';
+      });
+      select.innerHTML = html;
+    }
+
+    /**
+     * 主题下拉选项：词表主题（含 0 题的）+ 数据里出现的词表外主题
+     * 题数按「当前选中的方向」范围内的题目实时统计，避免和下方列表对不上
+     */
+    function renderTopicOptions() {
+      const select = document.getElementById('filterTopic');
+      const scope = MockData.kbQuestions.filter(function(q) {
+        return !query.direction || q.direction === query.direction;
+      });
+
+      const counts = {};
+      scope.forEach(function(q) {
+        if (!q.topic) return;
+        counts[q.topic] = (counts[q.topic] || 0) + 1;
+      });
+
+      const vocabulary = MockData.kbTopics || [];
+      const vocabularyList = vocabulary.map(function(t) { return t.topic; });
+      const options = vocabulary.map(function(t) {
+        return { topic: t.topic, inVocabulary: t.inVocabulary !== false };
+      });
+      Object.keys(counts).forEach(function(topic) {
+        if (vocabularyList.indexOf(topic) === -1) {
+          options.push({ topic: topic, inVocabulary: false });
+        }
+      });
+
+      let html = '<option value="">全部主题</option>';
+      options.forEach(function(item) {
+        const picked = query.topic === item.topic ? ' selected' : '';
+        const outside = item.inVocabulary ? '' : ' · 词表外';
+        html += '<option value="' + item.topic + '"' + picked + '>' +
+          item.topic + '（' + (counts[item.topic] || 0) + ' 题）' + outside + '</option>';
+      });
+      select.innerHTML = html;
+    }
+
+    function onDirectionChange() {
+      query.direction = document.getElementById('filterDirection').value;
+      query.topic = '';
+      document.getElementById('filterTopic').value = '';
+      renderTopicOptions();
+    }
+
+    // 主题与「只看未分类」互斥
+    function onTopicChange() {
+      query.topic = document.getElementById('filterTopic').value;
+      if (query.topic) {
+        query.untagged = false;
+        setUntaggedUI(false, true);
+      }
+    }
+
+    function onUntaggedChange() {
+      query.untagged = document.getElementById('filterUntagged').checked;
+      if (query.untagged) {
+        query.topic = '';
+        document.getElementById('filterTopic').value = '';
+        setUntaggedUI(true, false);
+      } else {
+        setUntaggedUI(false, false);
+      }
+    }
+
+    function setUntaggedUI(untagged, disableCheckbox) {
+      const topicSelect = document.getElementById('filterTopic');
+      const checkbox = document.getElementById('filterUntagged');
+      const wrap = document.getElementById('untaggedWrap');
+
+      topicSelect.disabled = untagged;
+      checkbox.disabled = disableCheckbox;
+      wrap.classList.toggle('disabled', disableCheckbox);
+    }
+
+    function applyQuery() {
+      query.keyword = document.getElementById('searchInput').value.trim();
+      query.direction = document.getElementById('filterDirection').value;
+      query.topic = document.getElementById('filterTopic').value;
+      query.difficulty = document.getElementById('filterDifficulty').value;
+      query.untagged = document.getElementById('filterUntagged').checked;
+
+      filteredData = MockData.kbQuestions.filter(function(q) {
+        if (query.direction && q.direction !== query.direction) return false;
+        if (query.difficulty && String(q.difficulty) !== query.difficulty) return false;
+        if (query.untagged && q.topic) return false;
+        if (query.topic && q.topic !== query.topic) return false;
+        if (query.keyword && q.content.indexOf(query.keyword) === -1) return false;
+        return true;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function resetQuery() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterDirection').value = '';
+      document.getElementById('filterDifficulty').value = '';
+      document.getElementById('filterUntagged').checked = false;
+      setUntaggedUI(false, false);
+
+      query = { keyword: '', direction: '', topic: '', difficulty: '', untagged: false };
+      renderTopicOptions();
+      applyQuery();
+      showToast('已重置筛选条件', 'info');
+    }
+
+    function changePageSize(value) {
+      pageSize = parseInt(value, 10);
+      currentPage = 1;
+      renderTable();
+    }
+
+    // ============================
+    // 列表渲染
+    // ============================
+    function getDifficultyMeta(value) {
+      return DIFFICULTY_OPTIONS.find(function(d) { return d.value === value; }) ||
+        { value: value, label: '未知', cls: 'badge-info' };
+    }
+
+    function getTopicBadge(topic) {
+      if (!topic) return '<span class="badge badge-warning">未分类</span>';
+      return '<span class="badge badge-primary">' + topic + '</span>';
+    }
+
+    /** 题目来路标记：文档解析来的题不带标记——那是主路径，打了反而是噪声 */
+    function getOriginMark(origin) {
+      if (origin === 'manual') return '<span class="qb-origin qb-origin-manual">手工录入</span>';
+      return '';
+    }
+
+    /** 方向列：面试方向就是学科，题目的唯一归属，筛选下拉也是这一列的值 */
+    function renderDirectionCell(q) {
+      return '<div class="qb-source">' + (q.direction || '—') + '</div>';
+    }
+
+    /** 来源列：只讲这道题是从哪份文档的第几题来的；手工录入的没有源文档，如实标出来 */
+    function renderSourceCell(q) {
+      if (q.origin === 'manual') {
+        return '<div class="qb-source">✍️ 手工录入</div>' +
+          '<div class="qb-source-sub">无来源文档</div>';
+      }
+      return '<div class="qb-source">' + (q.docTitle || '—') + '</div>' +
+        '<div class="qb-source-sub">第 ' + q.seq + ' 题</div>';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('questionTableBody');
+      const total = filteredData.length;
+      const totalPages = Math.ceil(total / pageSize) || 1;
+
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start = (currentPage - 1) * pageSize;
+      const pageData = filteredData.slice(start, start + pageSize);
+
+      let html = '';
+      if (pageData.length === 0) {
+        // 两种空态分开：只看未分类时说明「已经标完了」，其余情况说明「没搜到」
+        const emptyText = query.untagged
+          ? '没有未分类的题目 —— 题库里的题都标好主题了'
+          : '没有符合条件的题目';
+        html = '<tr><td class="qb-empty" colspan="6">' + emptyText + '</td></tr>';
+      } else {
+        pageData.forEach(function(q) {
+          const diff = getDifficultyMeta(q.difficulty);
+          const tags = (q.tags || []).map(function(t) {
+            return '<span class="qb-tag">' + t + '</span>';
+          }).join('');
+
+          html += '<tr>' +
+            '<td>' +
+              '<div class="qb-question">' +
+                '<div class="qb-question-head">' +
+                  '<span class="qb-seq">#' + q.id + '</span>' +
+                  getOriginMark(q.origin) +
+                  '<span class="qb-content">' + q.content + '</span>' +
+                '</div>' +
+                (tags ? '<div class="qb-tags">' + tags + '</div>' : '') +
+              '</div>' +
+            '</td>' +
+            '<td>' + renderDirectionCell(q) + '</td>' +
+            '<td>' + renderSourceCell(q) + '</td>' +
+            '<td><span class="badge ' + diff.cls + '">' + diff.label + '</span></td>' +
+            '<td>' + getTopicBadge(q.topic) + '</td>' +
+            '<td>' +
+              '<div class="action-btns">' +
+                '<button class="btn btn-secondary btn-sm" onclick="showDetail(\'' + q.id + '\')">详情</button>' +
+                '<button class="btn btn-secondary btn-sm" onclick="showEdit(\'' + q.id + '\')">编辑</button>' +
+                '<button class="btn btn-secondary btn-sm" style="color:#f56c6c;" onclick="deleteQuestion(\'' + q.id + '\')">删除</button>' +
+              '</div>' +
+            '</td>' +
+          '</tr>';
+        });
+      }
+
+      tbody.innerHTML = html;
+      document.getElementById('totalRecords').textContent = total;
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      const container = document.getElementById('paginationBtns');
+      if (filteredData.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>&#8249;</button>`;
+
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, currentPage + 2);
+
+      if (startPage > 1) {
+        html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<button class="page-btn" disabled>...</button>`;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<button class="page-btn" disabled>...</button>`;
+        html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+      }
+
+      html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>&#8250;</button>`;
+
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    // ============================
+    // 详情
+    // ============================
+    function findQuestion(id) {
+      return MockData.kbQuestions.find(function(q) { return q.id === id; });
+    }
+
+    /** 参考答案为空时的说法按来路区分，免得把「没填」说成「文档没给」 */
+    function getNoAnswerText(q) {
+      if (q.origin === 'manual') return '（录入时没有填参考答案）';
+      return '（这份文档里，这道题标题下面没有正文）';
+    }
+
+    /** 详情里的来源一行：手工录入的题没有源文档与行号，如实说 */
+    function getSourceText(q) {
+      if (q.origin === 'manual') {
+        return '✍️ 手工录入（无来源文档，也没有源文件行号）';
+      }
+      const linePart = q.sourceMdLine ? '（源文件第 ' + q.sourceMdLine + ' 行）' : '';
+      return (q.direction || '—') + ' / ' + (q.docTitle || '—') +
+        ' 第 ' + q.seq + ' 题' + linePart;
+    }
+
+    function showDetail(id) {
+      const q = findQuestion(id);
+      if (!q) return;
+
+      const diff = getDifficultyMeta(q.difficulty);
+      const tags = (q.tags || []).map(function(t) {
+        return '<span class="qb-tag">' + t + '</span>';
+      }).join('');
+
+      const body =
+        '<div class="qb-detail-meta">' +
+          getTopicBadge(q.topic) +
+          '<span class="badge ' + diff.cls + '">' + diff.label + '</span>' +
+          tags +
+        '</div>' +
+        '<div class="qb-detail-section">' +
+          '<div class="qb-detail-title">题干</div>' +
+          '<div class="qb-detail-content">' + q.content + '</div>' +
+        '</div>' +
+        '<div class="qb-detail-section">' +
+          '<div class="qb-detail-title">参考答案</div>' +
+          (q.referenceAnswer
+            ? '<div class="qb-detail-content">' + q.referenceAnswer + '</div>'
+            : '<div class="qb-detail-empty">' + getNoAnswerText(q) + '</div>') +
+        '</div>' +
+        '<div class="qb-detail-section">' +
+          '<div class="qb-detail-title">来源</div>' +
+          '<div class="qb-detail-content">' + getSourceText(q) + '</div>' +
+        '</div>' +
+        '<div class="qb-detail-section">' +
+          '<div class="qb-detail-title">创建于 ' + q.createdAt + ' · 最近修改于 ' + q.updatedAt + '</div>' +
+        '</div>';
+
+      const footer =
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">关闭</button>' +
+        '<button class="btn btn-primary" onclick="editFromDetail(\'' + q.id + '\')">编辑主题与难度</button>';
+
+      showModal('题目详情', body, footer);
+    }
+
+    function editFromDetail(id) {
+      const overlay = document.querySelector('.modal-overlay.active');
+      if (overlay) overlay.remove();
+      showEdit(id);
+    }
+
+    // ============================
+    // 编辑（只允许改主题与难度）
+    // ============================
+    /** 说明「题干与参考答案改不了」，并按来路告诉用户想改该去哪儿改 */
+    function getEditLockTip(origin) {
+      if (origin === 'manual') {
+        return '题干、参考答案与标签是手工录入的，这一页改不了 —— 要改内容只能删掉重新录入。';
+      }
+      return '题干、参考答案与标签是上传 Markdown 时解析出来的，这一页改不了 —— 要改内容请改好源文件重新上传导入。';
+    }
+
+    function showEdit(id) {
+      const q = findQuestion(id);
+      if (!q) return;
+
+      // 编辑时把题目自身的主题一并列出：词表外主题不会因为改难度而被动丢掉
+      const vocabularyList = (MockData.kbTopics || []).map(function(t) { return t.topic; });
+      const topics = vocabularyList.slice();
+      if (q.topic && topics.indexOf(q.topic) === -1) topics.push(q.topic);
+
+      let options = '<option value="' + TOPIC_UNTAGGED_SENTINEL + '"' +
+        (q.topic ? '' : ' selected') + '>未分类（清空主题）</option>';
+      topics.forEach(function(topic) {
+        options += '<option value="' + topic + '"' + (q.topic === topic ? ' selected' : '') +
+          '>' + topic + '</option>';
+      });
+
+      let diffOptions = '';
+      DIFFICULTY_OPTIONS.forEach(function(d) {
+        diffOptions += '<option value="' + d.value + '"' + (q.difficulty === d.value ? ' selected' : '') +
+          '>' + d.label + '</option>';
+      });
+
+      const body =
+        '<div class="form-group">' +
+          '<label class="form-label">主题</label>' +
+          '<select class="form-input" id="editTopic">' + options + '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">难度</label>' +
+          '<select class="form-input" id="editDifficulty">' + diffOptions + '</select>' +
+        '</div>' +
+        '<div class="qb-edit-tips">' +
+          '可选主题来自配置项 kb.question.topics，要增删主题请去「系统设置」。<br>' +
+          getEditLockTip(q.origin) +
+        '</div>';
+
+      const footer =
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-primary" onclick="confirmEdit(\'' + q.id + '\')">保存</button>';
+
+      showModal('编辑主题与难度', body, footer);
+    }
+
+    function confirmEdit(id) {
+      const q = findQuestion(id);
+      if (!q) return;
+
+      const topicValue = document.getElementById('editTopic').value;
+      const difficultyValue = parseInt(document.getElementById('editDifficulty').value, 10);
+
+      if (!topicValue && topicValue !== TOPIC_UNTAGGED_SENTINEL) {
+        showToast('主题不能为空', 'warning');
+        return;
+      }
+
+      q.topic = topicValue === TOPIC_UNTAGGED_SENTINEL ? '' : topicValue;
+      q.difficulty = difficultyValue;
+      q.updatedAt = getNow();
+
+      const overlay = document.querySelector('.modal-overlay.active');
+      if (overlay) overlay.remove();
+
+      showToast('保存成功', 'success');
+      renderTopicOptions();
+      applyQuery();
+    }
+
+    function getNow() {
+      const d = new Date();
+      const pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+        ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    // ============================
+    // 录入题目（手工新增一道题）
+    // ============================
+    /** 取号基准：现有题号的最大数字后缀 +1，删过题也不会撞号 */
+    function nextQuestionSeq() {
+      let max = 0;
+      MockData.kbQuestions.forEach(function(q) {
+        const n = parseInt(String(q.id).replace(/\D/g, ''), 10);
+        if (!isNaN(n) && n > max) max = n;
+      });
+      return max + 1;
+    }
+
+    function buildQuestionId(seq) {
+      return 'q' + String(seq).padStart(3, '0');
+    }
+
+    /** 录入单道题时用：取号即用 */
+    function nextQuestionId() {
+      return buildQuestionId(nextQuestionSeq());
+    }
+
+    /** 方向下拉：kb_question.direction 是 NOT NULL，录入和上传解析都必须落在某个方向上 */
+    function buildDirectionOptions() {
+      let html = '<option value="">请选择方向</option>';
+      MockData.subjects.forEach(function(s) {
+        html += '<option value="' + s.name + '">' + s.name + '</option>';
+      });
+      return html;
+    }
+
+    /** 主题下拉：词表主题 + 「未分类」（数据里未分类是空串，用哨兵值承接） */
+    function buildTopicOptions(selected) {
+      let html = '<option value="' + TOPIC_UNTAGGED_SENTINEL + '"' +
+        (selected ? '' : ' selected') + '>未分类（留空）</option>';
+      (MockData.kbTopics || []).forEach(function(t) {
+        html += '<option value="' + t.topic + '"' + (selected === t.topic ? ' selected' : '') +
+          '>' + t.topic + '</option>';
+      });
+      return html;
+    }
+
+    /** 难度下拉：默认中等（与表默认值 2 一致） */
+    function buildDifficultyOptions(selected) {
+      let html = '';
+      DIFFICULTY_OPTIONS.forEach(function(d) {
+        html += '<option value="' + d.value + '"' + (selected === d.value ? ' selected' : '') +
+          '>' + d.label + '</option>';
+      });
+      return html;
+    }
+
+    /** 逗号分隔的标签串转数组，中英文逗号都认 */
+    function parseTags(value) {
+      return value.split(/[,，]/).map(function(t) { return t.trim(); })
+        .filter(function(t) { return t; });
+    }
+
+    function showAddQuestion() {
+      const body =
+        '<div class="form-group">' +
+          '<label class="form-label">所属方向 <span class="qb-star">*</span></label>' +
+          '<select class="form-input" id="addDirection">' + buildDirectionOptions() + '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">题干 <span class="qb-star">*</span></label>' +
+          '<textarea class="form-input" id="addContent" rows="3" placeholder="题干会直接拿去提问与语音播报，别写「1.」这类题号前缀"></textarea>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">参考答案</label>' +
+          '<textarea class="form-input" id="addReferenceAnswer" rows="4" placeholder="参考答案是 AI 判定的唯一依据；可以留空，但留空后这道题的评语只会说「未作答」"></textarea>' +
+        '</div>' +
+        '<div class="qb-form-row">' +
+          '<div class="form-group">' +
+            '<label class="form-label">主题</label>' +
+            '<select class="form-input" id="addTopic">' + buildTopicOptions('') + '</select>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">难度</label>' +
+            '<select class="form-input" id="addDifficulty">' + buildDifficultyOptions(2) + '</select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">标签</label>' +
+          '<input type="text" class="form-input" id="addTags" placeholder="多个标签用逗号分隔，可留空">' +
+        '</div>' +
+        '<div class="qb-edit-tips">' +
+          '手工录入的题没有源文档，列表的来源列会标「✍️ 手工录入」。<br>' +
+          '录进来之后题干与参考答案在本页就不能再改了 —— 录错了只能删掉重录。' +
+        '</div>';
+
+      const footer =
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-primary" onclick="confirmAddQuestion()">保存</button>';
+
+      showModal('录入题目', body, footer);
+    }
+
+    function confirmAddQuestion() {
+      const direction = document.getElementById('addDirection').value;
+      const content = document.getElementById('addContent').value.trim();
+      const referenceAnswer = document.getElementById('addReferenceAnswer').value.trim();
+      const topicValue = document.getElementById('addTopic').value;
+      const difficulty = parseInt(document.getElementById('addDifficulty').value, 10);
+      const tags = parseTags(document.getElementById('addTags').value);
+
+      if (!direction) { showToast('请选择所属方向', 'warning'); return; }
+      if (!content) { showToast('题干不能为空', 'warning'); return; }
+
+      const now = getNow();
+
+      // 手工录入的题没有源文档：docTitle 留空、seq 记 0，来源列按 origin 如实标「手工录入」
+      MockData.kbQuestions.unshift({
+        id: nextQuestionId(),
+        direction: direction,
+        docTitle: '',
+        seq: 0,
+        content: content,
+        referenceAnswer: referenceAnswer,
+        topic: topicValue === TOPIC_UNTAGGED_SENTINEL ? '' : topicValue,
+        difficulty: difficulty,
+        tags: tags,
+        sourceMdLine: null,
+        origin: 'manual',
+        createdAt: now,
+        updatedAt: now
+      });
+
+      const overlay = document.querySelector('.modal-overlay.active');
+      if (overlay) overlay.remove();
+
+      showToast('已录入题目，当前共 ' + MockData.kbQuestions.length + ' 道', 'success');
+      renderTopicOptions();
+      applyQuery();
+    }
+
+    // ============================
+    // 上传 Markdown 解析入库（题库主来源）
+    // ============================
+    let importState = { direction: '', fileName: '', fileSize: 0, questions: [] };
+
+    /** 第一段：选方向 + 选 .md 文件 */
+    function showImportModal() {
+      importState = { direction: '', fileName: '', fileSize: 0, questions: [] };
+
+      const body =
+        '<div class="form-group">' +
+          '<label class="form-label">所属方向 <span class="qb-star">*</span></label>' +
+          '<select class="form-input" id="importDirection">' + buildDirectionOptions() + '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Markdown 题库文档 <span class="qb-star">*</span></label>' +
+          '<input type="file" class="qb-import-file" id="importFile" accept=".md,text/markdown" onchange="onImportFileChange(this)">' +
+        '</div>' +
+        '<div class="qb-edit-tips">' +
+          '按 Markdown 标题逐题切分：标题当题干，标题下面的正文当参考答案，原文照抄、不做改写。<br>' +
+          '标题只认 <strong>#</strong> 到 <strong>###</strong>；单次最多导入 500 道题。<br>' +
+          '上传的文件系统不留存，解析入库之后只保留文档名，不能对同一份文档再次解析。' +
+        '</div>';
+
+      const footer =
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-primary" onclick="toImportPreview()">解析预览</button>';
+
+      showModal('上传 Markdown 导入题目', body, footer);
+    }
+
+    function onImportFileChange(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      if (!/\.md$/i.test(file.name)) {
+        input.value = '';
+        showToast('只支持 Markdown（.md）文件', 'warning');
+        return;
+      }
+
+      importState.fileName = file.name;
+      importState.fileSize = file.size;
+
+      const reader = new FileReader();
+      reader.onload = function() {
+        importState.questions = parseMarkdownQuestions(String(reader.result));
+        showToast('已解析出 ' + importState.questions.length + ' 道题', 'success');
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    /**
+     * 轻量解析：一层标题切一道题，标题行下面的连续正文当参考答案
+     * 原型里在前端直接解析，真实实现是上传后由服务端做结构化解析再回写 kb_question
+     */
+    function parseMarkdownQuestions(text) {
+      const items = [];
+
+      text.split(/\r?\n/).forEach(function(line, index) {
+        const heading = /^#{1,3}\s+(.+?)\s*$/.exec(line);
+        if (heading) {
+          // 标题里常见的「1. 」「一、」题号前缀去掉，题干要能直接拿去提问
+          items.push({
+            content: heading[1].replace(/^(\d+[.、)]|[一二三四五六七八九十]+、)\s*/, ''),
+            answerLines: [],
+            sourceMdLine: index + 1
+          });
+          return;
+        }
+        if (items.length > 0 && line.trim()) {
+          items[items.length - 1].answerLines.push(line.trim());
+        }
+      });
+
+      return items.map(function(item) {
+        return {
+          content: item.content,
+          referenceAnswer: item.answerLines.join('\n'),
+          sourceMdLine: item.sourceMdLine
+        };
+      });
+    }
+
+    function toImportPreview() {
+      const direction = document.getElementById('importDirection').value;
+      if (!direction) { showToast('请选择所属方向', 'warning'); return; }
+      if (!importState.fileName) { showToast('请先选择 Markdown 文件', 'warning'); return; }
+      if (importState.questions.length === 0) {
+        showToast('这个文件里没解析出题目 —— 题干是按 # 到 ### 标题切的，检查一下文件格式', 'warning');
+        return;
+      }
+      if (importState.questions.length > 500) {
+        showToast('单次最多导入 500 道题，这个文件解析出 ' + importState.questions.length + ' 道', 'warning');
+        return;
+      }
+
+      importState.direction = direction;
+      renderImportPreview();
+    }
+
+    /** 第二段：解析预览 + 批量标注（主题、难度、标签整份文档一次性给） */
+    function renderImportPreview() {
+      const total = importState.questions.length;
+
+      const samples = importState.questions.slice(0, 3).map(function(item) {
+        return '<div class="qb-import-item">' +
+          '<div class="qb-import-stem">' + item.content + '</div>' +
+          '<div class="qb-import-answer">' +
+            (item.referenceAnswer || '（标题下面没有正文，这道题没有参考答案）') +
+            '　· 源文件第 ' + item.sourceMdLine + ' 行' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      const body =
+        '<div class="qb-import-preview">' +
+          '<div>文件：<strong>' + importState.fileName + '</strong>（' + formatFileSize(importState.fileSize) + '）</div>' +
+          '<div>解析出 <strong>' + total + '</strong> 道题，按标题切分，源文件行号已记录。</div>' +
+          '<div>' + (total > 3 ? '下面是前 3 道：' : '下面是解析结果：') + '</div>' +
+          samples +
+        '</div>' +
+        '<div class="qb-form-row">' +
+          '<div class="form-group">' +
+            '<label class="form-label">统一主题</label>' +
+            '<select class="form-input" id="importTopic">' + buildTopicOptions('') + '</select>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">统一难度</label>' +
+            '<select class="form-input" id="importDifficulty">' + buildDifficultyOptions(2) + '</select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">统一标签</label>' +
+          '<input type="text" class="form-input" id="importTags" placeholder="多个标签用逗号分隔，可留空">' +
+        '</div>' +
+        '<div class="qb-edit-tips">' +
+          '主题、难度与标签是整份文档一次性标注的，导入后可以在列表里逐题改主题与难度。<br>' +
+          '这 ' + total + ' 道题会直接入库，归属方向「' + (importState.direction || '—') +
+          '」，来源只记文档名「' + importState.fileName + '」。' +
+        '</div>';
+
+      const footer =
+        '<button class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-primary" onclick="confirmImport()">开始导入</button>';
+
+      const overlay = document.querySelector('.modal-overlay.active');
+      if (overlay) overlay.remove();
+      showModal('上传 Markdown 导入题目 · 解析预览', body, footer);
+    }
+
+    function confirmImport() {
+      const direction = importState.direction;
+      const topicValue = document.getElementById('importTopic').value;
+      const difficulty = parseInt(document.getElementById('importDifficulty').value, 10);
+      const tags = parseTags(document.getElementById('importTags').value);
+      const now = getNow();
+
+      // 解析结果直接落 kb_question：不留文档实体，只在 docTitle 里记下文档名 + seq
+      // 一次要 N 个题号：先把基准取出来自己往上加，别在 map 里反复读数组（这时新题还没插进去）
+      const startSeq = nextQuestionSeq();
+
+      const newQuestions = importState.questions.map(function(item, index) {
+        return {
+          id: buildQuestionId(startSeq + index),
+          direction: direction,
+          docTitle: importState.fileName,
+          seq: index + 1,
+          content: item.content,
+          referenceAnswer: item.referenceAnswer,
+          topic: topicValue === TOPIC_UNTAGGED_SENTINEL ? '' : topicValue,
+          difficulty: difficulty,
+          tags: tags,
+          sourceMdLine: item.sourceMdLine,
+          createdAt: now,
+          updatedAt: now
+        };
+      });
+
+      // 整批插到最前面，文档内的题目顺序保持不变
+      MockData.kbQuestions.unshift.apply(MockData.kbQuestions, newQuestions);
+
+      const overlay = document.querySelector('.modal-overlay.active');
+      if (overlay) overlay.remove();
+
+      showToast('导入成功，共 ' + newQuestions.length + ' 道题', 'success');
+      renderTopicOptions();
+      applyQuery();
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) return '0KB';
+      if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + 'KB';
+      return (bytes / 1024 / 1024).toFixed(1) + 'MB';
+    }
+
+    // ============================
+    // 删除（逻辑删除）
+    // ============================
+    function deleteQuestion(id) {
+      const q = findQuestion(id);
+      if (!q) return;
+
+      showConfirm(getDeleteTip(q), function() {
+        const idx = MockData.kbQuestions.findIndex(function(item) { return item.id === id; });
+        if (idx !== -1) MockData.kbQuestions.splice(idx, 1);
+
+        showToast('删除成功', 'success');
+        renderTopicOptions();
+        applyQuery();
+      });
+    }
+
+    /** 删除提示按来路区分：上传的 Markdown 系统不留存，两种来路删了都只能靠自己再补一遍 */
+    function getDeleteTip(q) {
+      if (q.origin === 'manual') {
+        return '确定要删除这道题吗？这是手工录入的题，系统里没有源文档，删掉就找不回来了。';
+      }
+      return '确定要删除这道题吗？上传的 Markdown 系统不留存，删掉之后没法重新解析，只能再上传一次源文件。';
+    }
+  </script>
+</body>
+</html>

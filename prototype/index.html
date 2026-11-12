@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云枢智学 - 原型总览</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    /* 入口页特有样式 */
+    .entry-header {
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .entry-header .container {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .entry-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .entry-brand .brand-mark {
+      font-size: 26px;
+    }
+
+    .entry-brand-tag {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-round);
+      padding: 2px 10px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .header-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: var(--radius-round);
+      border: 1px solid var(--border-color);
+      color: var(--text-regular);
+      background: var(--bg-white);
+    }
+
+    .header-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    /* 顶部横幅 */
+    .entry-hero {
+      background: var(--brand-gradient);
+      color: #fff;
+      padding: 56px 0;
+    }
+
+    .entry-hero h1 {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .entry-hero p {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-top: 12px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .hero-btn {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: var(--radius-round);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .hero-btn:hover {
+      background: rgba(255, 255, 255, 0.26);
+      color: #fff;
+    }
+
+    .hero-btn-primary {
+      background: #fff;
+      color: #667eea;
+      border-color: #fff;
+    }
+
+    .hero-btn-primary:hover {
+      background: #fff;
+      color: #764ba2;
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-top: 36px;
+    }
+
+    .hero-stat-num {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .hero-stat-label {
+      font-size: 13px;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    /* 分组 */
+    .entry-main {
+      padding: 36px 0 60px;
+    }
+
+    .entry-group + .entry-group {
+      margin-top: 44px;
+    }
+
+    .group-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .group-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .group-count {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-round);
+      padding: 2px 10px;
+    }
+
+    .group-hint {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-left: auto;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .page-card {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+
+    .page-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-light);
+    }
+
+    .page-icon {
+      flex: none;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border-radius: 10px;
+      background: #f0f5ff;
+    }
+
+    .page-card.is-admin .page-icon {
+      background: #f4f4f7;
+    }
+
+    .page-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .page-file {
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--primary-color);
+      margin-top: 2px;
+    }
+
+    .page-desc {
+      font-size: 13px;
+      color: var(--text-regular);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .page-tag {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--warning-color);
+      background: #fdf6ec;
+      border-radius: var(--radius-round);
+      padding: 1px 8px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* 底部说明 */
+    .entry-note {
+      margin-top: 44px;
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    .entry-note h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .entry-note ul {
+      font-size: 13px;
+      color: var(--text-regular);
+      line-height: 2;
+    }
+
+    .entry-note code {
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--primary-dark);
+      background: #f5f7fa;
+      border-radius: var(--radius-sm);
+      padding: 1px 6px;
+    }
+
+    .entry-footer {
+      border-top: 1px solid var(--border-light);
+      background: var(--bg-white);
+      padding: 24px 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶栏 -->
+  <header class="entry-header">
+    <div class="container">
+      <div class="entry-brand">
+        <span class="brand-mark"></span>
+        <span>云枢智学</span>
+        <span class="entry-brand-tag">页面原型</span>
+      </div>
+      <div class="header-actions">
+        <a href="portal/index.html" class="header-btn">学员前台</a>
+        <a href="admin/login.html" class="header-btn">管理后台</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 横幅 -->
+  <section class="entry-hero">
+    <div class="container">
+      <h1>云枢智学 页面原型总览</h1>
+      <p>AI 赋能的智能面试训练平台 · 学员前台 13 页 + 管理后台 12 页</p>
+      <div class="hero-actions">
+        <a href="portal/index.html" class="hero-btn hero-btn-primary">进入学员前台 →</a>
+        <a href="admin/login.html" class="hero-btn">进入管理后台 →</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-num">2</div>
+          <div class="hero-stat-label">端（学员前台 / 管理后台）</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">25</div>
+          <div class="hero-stat-label">页面总数</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">8</div>
+          <div class="hero-stat-label">AI 技术学科</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">25</div>
+          <div class="hero-stat-label">后台权限点</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="entry-main">
+    <div class="container">
+
+      <!-- 学员前台 -->
+      <section class="entry-group">
+        <div class="group-head">
+          <span class="group-title">🖥️ 学员前台</span>
+          <span class="group-count">13 页</span>
+          <span class="group-hint">portal/ · 除登录注册外无需登录，可直接打开</span>
+        </div>
+        <div class="card-grid">
+
+          <a href="portal/index.html" class="page-card">
+            <div class="page-icon">🏠</div>
+            <div>
+              <div class="page-name">首页</div>
+              <div class="page-file">portal/index.html</div>
+              <div class="page-desc">平台介绍、快速开始入口、学习统计、热门阶段</div>
+            </div>
+          </a>
+
+          <a href="portal/login.html" class="page-card">
+            <div class="page-icon">🔐</div>
+            <div>
+              <div class="page-name">登录</div>
+              <div class="page-file">portal/login.html</div>
+              <div class="page-desc">账号密码 / 手机验证码双 Tab，含第三方登录入口</div>
+            </div>
+          </a>
+
+          <a href="portal/register.html" class="page-card">
+            <div class="page-icon">📝</div>
+            <div>
+              <div class="page-name">注册</div>
+              <div class="page-file">portal/register.html</div>
+              <div class="page-desc">手机号注册、密码强度检测、协议勾选校验</div>
+            </div>
+          </a>
+
+          <a href="portal/forgot-password.html" class="page-card">
+            <div class="page-icon">🔑</div>
+            <div>
+              <div class="page-name">找回密码</div>
+              <div class="page-file">portal/forgot-password.html</div>
+              <div class="page-desc">验证手机 → 重置密码 → 完成 三步式流程</div>
+            </div>
+          </a>
+
+          <a href="portal/profile.html" class="page-card">
+            <div class="page-icon">👤</div>
+            <div>
+              <div class="page-name">个人中心</div>
+              <div class="page-file">portal/profile.html</div>
+              <div class="page-desc">头像与资料维护、学习数据统计</div>
+            </div>
+          </a>
+
+          <a href="portal/questions.html" class="page-card">
+            <div class="page-icon">📚</div>
+            <div>
+              <div class="page-name">题库</div>
+              <div class="page-file">portal/questions.html</div>
+              <div class="page-desc">学科 → 阶段 → 题目三级浏览，查看解析 / 开始练习</div>
+            </div>
+          </a>
+
+          <a href="portal/practice.html" class="page-card">
+            <div class="page-icon">✍️</div>
+            <div>
+              <div class="page-name">刷题练习</div>
+              <div class="page-file">portal/practice.html</div>
+              <div class="page-desc">顺序 / 随机模式、答题卡、简答题 AI 批改、断点续做</div>
+            </div>
+          </a>
+
+          <a href="portal/wrong-book.html" class="page-card">
+            <div class="page-icon">📕</div>
+            <div>
+              <div class="page-name">错题本</div>
+              <div class="page-file">portal/wrong-book.html</div>
+              <div class="page-desc">浏览 / 重做双模式，连续答对 3 次自动标记已掌握</div>
+            </div>
+          </a>
+
+          <a href="portal/routes.html" class="page-card">
+            <div class="page-icon">🗺️</div>
+            <div>
+              <div class="page-name">学习路线</div>
+              <div class="page-file">portal/routes.html</div>
+              <div class="page-desc">按学科查看路线，课程按顺序外跳 B 站学习</div>
+            </div>
+          </a>
+
+          <a href="portal/ai-config.html" class="page-card">
+            <div class="page-icon">⚙️</div>
+            <div>
+              <div class="page-name">AI 面试配置</div>
+              <div class="page-file">portal/ai-config.html</div>
+              <div class="page-desc">选择技术方向、难度、题目数量（3/5/8/10/15）</div>
+            </div>
+          </a>
+
+          <a href="portal/ai-interview.html" class="page-card">
+            <div class="page-icon">🤖</div>
+            <div>
+              <div class="page-name">AI 模拟面试</div>
+              <div class="page-file">portal/ai-interview.html</div>
+              <div class="page-desc">对话式面试、语音输入与播报、实时评分</div>
+            </div>
+          </a>
+
+          <a href="portal/interview-report.html" class="page-card">
+            <div class="page-icon">📊</div>
+            <div>
+              <div class="page-name">面试报告</div>
+              <div class="page-file">portal/interview-report.html</div>
+              <div class="page-desc">综合评分、能力分析、优缺点与改进建议</div>
+            </div>
+          </a>
+
+          <a href="portal/interview-history.html" class="page-card">
+            <div class="page-icon">🗂️</div>
+            <div>
+              <div class="page-name">面试记录</div>
+              <div class="page-file">portal/interview-history.html</div>
+              <div class="page-desc">历史面试列表、分数统计、查看报告 / 再来一次</div>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- 管理后台 -->
+      <section class="entry-group">
+        <div class="group-head">
+          <span class="group-title">🛠️ 管理后台</span>
+          <span class="group-count">12 页</span>
+          <span class="group-hint">admin/ · 除登录页外需先登录（默认 admin / 123456）</span>
+        </div>
+        <div class="card-grid">
+
+          <a href="admin/login.html" class="page-card is-admin">
+            <div class="page-icon">🔑</div>
+            <div>
+              <div class="page-name">后台登录<span class="page-tag">入口</span></div>
+              <div class="page-file">admin/login.html</div>
+              <div class="page-desc">管理员登录，默认账号 admin / 123456</div>
+            </div>
+          </a>
+
+          <a href="admin/index.html" class="page-card is-admin">
+            <div class="page-icon">📊</div>
+            <div>
+              <div class="page-name">数据看板</div>
+              <div class="page-file">admin/index.html</div>
+              <div class="page-desc">统计卡片、用户增长趋势、题目学科分布、最近活动</div>
+            </div>
+          </a>
+
+          <a href="admin/subjects.html" class="page-card is-admin">
+            <div class="page-icon">📚</div>
+            <div>
+              <div class="page-name">学科管理</div>
+              <div class="page-file">admin/subjects.html</div>
+              <div class="page-desc">学科增删改与排序，学科下阶段维护</div>
+            </div>
+          </a>
+
+          <a href="admin/courses.html" class="page-card is-admin">
+            <div class="page-icon">🎬</div>
+            <div>
+              <div class="page-name">B站课程库</div>
+              <div class="page-file">admin/courses.html</div>
+              <div class="page-desc">课程维护、所属学科（含「其他学科」）、批量导入</div>
+            </div>
+          </a>
+
+          <a href="admin/questions.html" class="page-card is-admin">
+            <div class="page-icon">📝</div>
+            <div>
+              <div class="page-name">题库管理</div>
+              <div class="page-file">admin/questions.html</div>
+              <div class="page-desc">题目 CRUD、审核上下架、Excel 导入导出</div>
+            </div>
+          </a>
+
+          <a href="admin/question-bank.html" class="page-card is-admin">
+            <div class="page-icon">💬</div>
+            <div>
+              <div class="page-name">面试题库管理</div>
+              <div class="page-file">admin/question-bank.html</div>
+              <div class="page-desc">跨方向面试题、Markdown 上传解析、手工录入、主题难度维护</div>
+            </div>
+          </a>
+
+          <a href="admin/routes.html" class="page-card is-admin">
+            <div class="page-icon">🗺️</div>
+            <div>
+              <div class="page-name">学习路线管理</div>
+              <div class="page-file">admin/routes.html</div>
+              <div class="page-desc">路线与关联课程、课程顺序调整、学员视角预览</div>
+            </div>
+          </a>
+
+          <a href="admin/students.html" class="page-card is-admin">
+            <div class="page-icon">🎓</div>
+            <div>
+              <div class="page-name">学员管理</div>
+              <div class="page-file">admin/students.html</div>
+              <div class="page-desc">前台注册学员列表、学习统计与面试记录详情</div>
+            </div>
+          </a>
+
+          <a href="admin/users.html" class="page-card is-admin">
+            <div class="page-icon">👥</div>
+            <div>
+              <div class="page-name">用户管理</div>
+              <div class="page-file">admin/users.html</div>
+              <div class="page-desc">后台账号维护、角色分配、重置密码</div>
+            </div>
+          </a>
+
+          <a href="admin/roles.html" class="page-card is-admin">
+            <div class="page-icon">🛡️</div>
+            <div>
+              <div class="page-name">角色管理</div>
+              <div class="page-file">admin/roles.html</div>
+              <div class="page-desc">超级管理员 / 内容审核 / 运营人员，6 组 25 项权限配置</div>
+            </div>
+          </a>
+
+          <a href="admin/logs.html" class="page-card is-admin">
+            <div class="page-icon">📋</div>
+            <div>
+              <div class="page-name">操作日志</div>
+              <div class="page-file">admin/logs.html</div>
+              <div class="page-desc">日志查询、类型筛选、导出与清空</div>
+            </div>
+          </a>
+
+          <a href="admin/settings.html" class="page-card is-admin">
+            <div class="page-icon">⚙️</div>
+            <div>
+              <div class="page-name">系统设置</div>
+              <div class="page-file">admin/settings.html</div>
+              <div class="page-desc">基本信息设置：平台名称、描述、Logo、默认头像</div>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- 说明 -->
+      <section class="entry-note">
+        <h3>使用说明</h3>
+        <ul>
+          <li>· 双击本文件即可在浏览器中打开，也可从 <code>portal/index.html</code> 直接进学员前台</li>
+          <li>· 管理后台除登录页外均校验登录态，直接打开会跳回 <code>admin/login.html</code></li>
+          <li>· 目录约定：学员前台页面在 <code>portal/</code>，管理后台页面在 <code>admin/</code>，公共样式与脚本在 <code>css/</code>、<code>js/</code>，两端以 <code>../css/</code>、<code>../js/</code> 引用</li>
+          <li>· 全部使用本地 CSS 与 JS，无需启动服务；页面内数据均为演示数据，不连后端</li>
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="entry-footer">
+    <div class="container">
+      © 2026 云枢智学 版权所有 | 静态原型，仅用于需求确认与视觉评审
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI模拟面试 - 云枢智学</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ========== 布局 ========== */
+    .interview-layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .interview-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* ========== 顶部导航 ========== */
+    .interview-header {
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .back-btn:hover {
+      color: white;
+    }
+
+    .interview-info {
+      color: white;
+    }
+
+    .interview-info h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .interview-info p {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .header-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: var(--radius-round);
+      font-size: 12px;
+      color: white;
+    }
+
+    .header-status-badge.online {
+      background: rgba(103, 194, 58, 0.2);
+      border: 1px solid rgba(103, 194, 58, 0.5);
+    }
+
+    .header-status-badge.offline {
+      background: rgba(245, 108, 108, 0.2);
+      border: 1px solid rgba(245, 108, 108, 0.5);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .header-status-badge.online .status-dot {
+      background: #67c23a;
+      box-shadow: 0 0 6px rgba(103, 194, 58, 0.6);
+    }
+
+    .header-status-badge.offline .status-dot {
+      background: #f56c6c;
+      box-shadow: 0 0 6px rgba(245, 108, 108, 0.6);
+    }
+
+    .timer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .timer-icon {
+      font-size: 18px;
+    }
+
+    .timer-time {
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    .question-count {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-round);
+      color: white;
+      font-size: 13px;
+    }
+
+    .end-btn {
+      padding: 10px 20px;
+      background: rgba(245, 108, 108, 0.2);
+      border: 1px solid rgba(245, 108, 108, 0.5);
+      border-radius: var(--radius-round);
+      color: #f56c6c;
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .end-btn:hover {
+      background: rgba(245, 108, 108, 0.3);
+    }
+
+    /* 进度面板 */
+    .progress-panel {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+    }
+
+    .progress-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+    }
+
+    .progress-item .label {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .progress-item .value {
+      font-weight: 600;
+    }
+
+    .progress-bar-wrapper {
+      flex: 1;
+      min-width: 120px;
+      max-width: 200px;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .score-average {
+      color: #e6a23c;
+    }
+
+    .score-average.high {
+      color: #67c23a;
+    }
+
+    .score-average.low {
+      color: #f56c6c;
+    }
+
+    .difficulty-tag {
+      padding: 2px 10px;
+      border-radius: var(--radius-round);
+      font-size: 12px;
+    }
+
+    .difficulty-tag.easy {
+      background: rgba(103, 194, 58, 0.2);
+      color: #67c23a;
+    }
+
+    .difficulty-tag.medium {
+      background: rgba(230, 162, 60, 0.2);
+      color: #e6a23c;
+    }
+
+    .difficulty-tag.hard {
+      background: rgba(245, 108, 108, 0.2);
+      color: #f56c6c;
+    }
+
+    /* ========== 对话区域 ========== */
+    .chat-container {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-right: 10px;
+      margin-bottom: 20px;
+    }
+
+    .chat-message {
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .chat-message.ai {
+      flex-direction: row;
+    }
+
+    .chat-message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .chat-message.ai .message-avatar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .chat-message.user .message-avatar {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .message-content {
+      max-width: 70%;
+    }
+
+    .message-bubble {
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .chat-message.ai .message-bubble {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-top-left-radius: 4px;
+    }
+
+    .chat-message.user .message-bubble {
+      background: rgba(64, 158, 255, 0.3);
+      color: white;
+      border-top-right-radius: 4px;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .message-time {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .chat-message.user .message-meta {
+      justify-content: flex-end;
+    }
+
+    .message-score {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .message-score.good {
+      background: rgba(103, 194, 58, 0.2);
+      color: #67c23a;
+    }
+
+    .message-score.medium {
+      background: rgba(230, 162, 60, 0.2);
+      color: #e6a23c;
+    }
+
+    .message-score.poor {
+      background: rgba(245, 108, 108, 0.2);
+      color: #f56c6c;
+    }
+
+    /* ========== 状态指示器 ========== */
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 13px;
+      padding: 10px 0;
+    }
+
+    .typing-indicator.show {
+      display: flex;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: 0s; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    .typing-speed {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.35);
+      padding: 2px 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+    }
+
+    /* 分析加载状态 */
+    .analysis-loading {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .analysis-loading.show {
+      display: flex;
+    }
+
+    .analysis-loading .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ========== 输入区域 ========== */
+    .chat-input {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .chat-input textarea {
+      width: 100%;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      color: white;
+      font-size: 15px;
+      outline: none;
+      transition: var(--transition);
+      resize: none;
+      min-height: 52px;
+      max-height: 150px;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+
+    .chat-input textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .chat-input textarea:focus {
+      border-color: rgba(64, 158, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .voice-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .voice-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .voice-btn.recording {
+      background: rgba(245, 108, 108, 0.3);
+      border-color: #f56c6c;
+      animation: pulse-recording 1.5s infinite;
+    }
+
+    @keyframes pulse-recording {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 108, 108, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(245, 108, 108, 0); }
+    }
+
+    .voice-btn .voice-tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .voice-btn .voice-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .voice-btn:hover .voice-tooltip {
+      display: block;
+    }
+
+    /* TTS 重播按钮 */
+    .speak-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .speak-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+
+    .speak-btn.speaking {
+      background: rgba(103,194,58,0.3);
+      border-color: #67c23a;
+      animation: speaking-pulse 1.2s infinite;
+    }
+
+    @keyframes speaking-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(103,194,58,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(103,194,58,0); }
+    }
+
+    .message-bubble .speak-btn-wrap {
+      float: right;
+      margin-top: 2px;
+    }
+
+    /* TTS 朗读状态条 */
+    .tts-status {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      font-size: 12px;
+      color: #67c23a;
+      margin-top: 4px;
+    }
+
+    .tts-status.show {
+      display: flex;
+    }
+
+    .tts-status .tts-wave {
+      display: inline-flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 14px;
+    }
+
+    .tts-status .tts-wave span {
+      display: block;
+      width: 3px;
+      background: #67c23a;
+      border-radius: 2px;
+      animation: wave-bar 0.8s ease-in-out infinite;
+    }
+
+    .tts-status .tts-wave span:nth-child(1) { height: 6px; animation-delay: 0s; }
+    .tts-status .tts-wave span:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+    .tts-status .tts-wave span:nth-child(3) { height: 4px; animation-delay: 0.3s; }
+    .tts-status .tts-wave span:nth-child(4) { height: 8px; animation-delay: 0.45s; }
+
+    @keyframes wave-bar {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.8); }
+    }
+
+    /* Header 语音开关 */
+    .voice-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .voice-toggle:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .voice-toggle.off {
+      opacity: 0.5;
+    }
+
+    .voice-toggle .toggle-dot {
+      width: 20px;
+      height: 12px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.3);
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .voice-toggle .toggle-dot::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: white;
+      top: 1px;
+      left: 1px;
+      transition: transform 0.3s;
+    }
+
+    .voice-toggle:not(.off) .toggle-dot {
+      background: #67c23a;
+    }
+
+    .voice-toggle:not(.off) .toggle-dot::after {
+      transform: translateX(8px);
+    }
+
+    /* 录音中状态 - textarea 边框 */
+    .chat-input.recording-active textarea {
+      border-color: #f56c6c !important;
+      box-shadow: 0 0 0 3px rgba(245,108,108,0.15);
+    }
+
+    .send-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .send-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ========== 侧边栏 ========== */
+    .interview-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-panel {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .sidebar-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .sidebar-panel-header .toggle-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      font-size: 16px;
+      transition: var(--transition);
+    }
+
+    .sidebar-panel-header .toggle-btn:hover {
+      color: white;
+    }
+
+    .sidebar-panel-body {
+      padding: 12px 16px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .sidebar-panel-body.collapsed {
+      display: none;
+    }
+
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .question-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .question-list-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    .question-list-item.current {
+      background: rgba(102, 126, 234, 0.15);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      color: white;
+    }
+
+    .question-list-item .q-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .question-list-item.current .q-number {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .question-list-item .q-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .question-list-item .q-score {
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .question-list-item .q-score.good {
+      color: #67c23a;
+    }
+
+    .question-list-item .q-score.medium {
+      color: #e6a23c;
+    }
+
+    .question-list-item .q-score.poor {
+      color: #f56c6c;
+    }
+
+    .question-list-item .q-score.pending {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 侧边栏评分统计 */
+    .sidebar-stats {
+      padding: 12px 16px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sidebar-stat-item {
+      flex: 1;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .sidebar-stat-item .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .sidebar-stat-item .stat-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 2px;
+    }
+
+    /* ========== 继续面试弹窗 ========== */
+    .resume-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .resume-card {
+      background: linear-gradient(135deg, #1e1e3f, #16213e);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 36px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .resume-card .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .resume-card h3 {
+      color: white;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .resume-card p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .resume-card .resume-detail {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 24px;
+    }
+
+    .resume-card .resume-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .resume-card .resume-actions button {
+      padding: 12px 28px;
+      border-radius: var(--radius-round);
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .resume-card .resume-actions .btn-continue {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .resume-card .resume-actions .btn-continue:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .resume-card .resume-actions .btn-restart {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .resume-card .resume-actions .btn-restart:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ========== 滚动条 ========== */
+    .chat-messages::-webkit-scrollbar,
+    .sidebar-panel-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track,
+    .sidebar-panel-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb,
+    .sidebar-panel-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover,
+    .sidebar-panel-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ========== 响应式 ========== */
+    @media (max-width: 900px) {
+      .interview-layout {
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .interview-sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .sidebar-panel {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .message-content {
+        max-width: 85%;
+      }
+
+      .interview-header {
+        padding: 12px 16px;
+      }
+
+      .header-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .header-right {
+        justify-content: space-between;
+      }
+
+      .progress-panel {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .progress-bar-wrapper {
+        max-width: none;
+      }
+
+      .sidebar-panel-body {
+        max-height: 200px;
+      }
+
+      .chat-container {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .interview-layout {
+        padding: 8px;
+      }
+
+      .header-right {
+        gap: 8px;
+      }
+
+      .question-count {
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+
+      .end-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+      }
+
+      .timer {
+        font-size: 12px;
+      }
+
+      .chat-input textarea {
+        padding: 12px 16px;
+        font-size: 14px;
+        min-height: 44px;
+      }
+
+      .voice-btn,
+      .send-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+      }
+
+      .message-content {
+        max-width: 90%;
+      }
+
+      .message-bubble {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      .resume-card {
+        padding: 24px 20px;
+      }
+
+      .resume-card .resume-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="interview-layout">
+    <!-- ==================== 主区域 ==================== -->
+    <div class="interview-main">
+      <!-- 顶部导航 -->
+      <div class="interview-header">
+        <div class="header-top">
+          <div class="header-left">
+            <div class="back-btn" onclick="location.href='index.html'">
+              <span>←</span>
+              <span>退出面试</span>
+            </div>
+            <div class="interview-info">
+              <h2>AI模拟面试</h2>
+              <p>AI应用与智能体开发 · <span id="difficultyLabel">中等难度</span></p>
+            </div>
+          </div>
+          <div class="header-right">
+            <!-- 网络状态指示器 -->
+            <div class="header-status-badge online" id="networkStatus">
+              <span class="status-dot"></span>
+              <span id="networkText">在线</span>
+            </div>
+            <!-- 计时器 -->
+            <div class="timer">
+              <span class="timer-icon">⏱️</span>
+              <span class="timer-time" id="timer">00:00</span>
+            </div>
+            <!-- 题目计数 -->
+            <div class="question-count" id="questionCountLabel">题目 0/10</div>
+            <!-- 语音播报开关 -->
+            <div class="voice-toggle" id="ttsToggle" onclick="toggleTTS()" title="语音播报开关">
+              <span id="ttsIcon">🔊</span>
+              <span>语音播报</span>
+              <div class="toggle-dot"></div>
+            </div>
+            <!-- 结束按钮 -->
+            <button class="end-btn" onclick="endInterview()">结束面试</button>
+          </div>
+        </div>
+
+        <!-- 进度面板 -->
+        <div class="progress-panel">
+          <div class="progress-item">
+            <span class="label">进度</span>
+            <span class="value" id="progressText">0/10</span>
+          </div>
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <span class="label">平均分</span>
+            <span class="value score-average" id="avgScoreDisplay">--</span>
+          </div>
+          <div class="progress-item">
+            <span class="label">已用时间</span>
+            <span class="value" id="elapsedTime">00:00</span>
+          </div>
+          <div class="progress-item">
+            <span class="difficulty-tag medium" id="difficultyTag">中等</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 对话区域 -->
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <!-- AI消息 -->
+          <div class="chat-message ai" data-msgid="msg_init">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <div class="message-bubble">
+                <span class="speak-btn-wrap"><button class="speak-btn" onclick="speakMessage(this, 'msg_init')" title="朗读题目">🔊</button></span>
+                你好，我是你的AI面试官。今天我们来进行一场AI应用与智能体开发的面试。<br><br>
+                请先简单介绍一下你自己，包括你的技术栈和项目经验。
+              </div>
+              <div class="tts-status" id="tts_msg_init"><div class="tts-wave"><span></span><span></span><span></span><span></span></div><span>正在朗读...</span></div>
+              <div class="message-meta">
+                <span class="message-time">14:30</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 用户消息 -->
+          <div class="chat-message user">
+            <div class="message-avatar">M</div>
+            <div class="message-content">
+              <div class="message-bubble">
+                面试官您好，我有2年的AI应用开发经验。主要技术栈是LangChain、RAG检索增强、大模型API调用、向量数据库。在上一家公司主要负责智能客服系统的开发，使用过Agent框架和Prompt工程来实现多轮对话。
+              </div>
+              <div class="message-meta">
+                <span class="message-time">14:31</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI消息 -->
+          <div class="chat-message ai" id="firstAiQuestion">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <div class="message-bubble">
+                很好的介绍。我注意到你提到了分布式锁，请问：<br><br>
+                <strong>在你的项目中，Redis分布式锁是如何实现的？使用的是什么方案？有什么注意事项？</strong>
+              </div>
+              <div class="message-meta">
+                <span class="message-time">14:32</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分析加载状态 -->
+        <div class="analysis-loading" id="analysisLoading">
+          <div class="spinner"></div>
+          <span>AI面试官正在分析你的回答...</span>
+        </div>
+
+        <!-- 打字指示器 -->
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span>AI面试官正在思考...</span>
+          <span class="typing-speed" id="typingSpeed"></span>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="chat-input">
+          <div class="input-wrapper">
+            <textarea id="userInput" placeholder="输入你的回答，或点击🎤语音输入..." rows="1" oninput="autoResize(this)"></textarea>
+          </div>
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="语音输入">
+            🎤
+            <span class="voice-tooltip" id="voiceTooltip">🎤 点击开始录音</span>
+          </button>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 侧边栏 ==================== -->
+    <div class="interview-sidebar">
+      <!-- 题目列表 -->
+      <div class="sidebar-panel" id="questionSidebar">
+        <div class="sidebar-panel-header">
+          <span>📋 面试题目</span>
+          <button class="toggle-btn" onclick="toggleSidebar(this)">▾</button>
+        </div>
+        <div class="sidebar-panel-body" id="sidebarBody">
+          <div class="question-list" id="questionList">
+            <div class="question-list-item current" data-qindex="0">
+              <span class="q-number">1</span>
+              <span class="q-text">Redis分布式锁的实现方案</span>
+              <span class="q-score pending">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 面试统计 -->
+      <div class="sidebar-panel">
+        <div class="sidebar-panel-header">
+          <span>📊 面试统计</span>
+          <span style="font-size:12px;color:rgba(255,255,255,0.4);">实时</span>
+        </div>
+        <div class="sidebar-panel-body">
+          <div class="sidebar-stats">
+            <div class="sidebar-stat-item">
+              <div class="stat-value" id="statAnswered">0</div>
+              <div class="stat-label">已回答</div>
+            </div>
+            <div class="sidebar-stat-item">
+              <div class="stat-value" id="statTotal">10</div>
+              <div class="stat-label">总题数</div>
+            </div>
+            <div class="sidebar-stat-item">
+              <div class="stat-value" id="statAvgScore" style="color:#e6a23c;">--</div>
+              <div class="stat-label">平均分</div>
+            </div>
+            <div class="sidebar-stat-item">
+              <div class="stat-value" id="statDuration" style="font-size:16px;">00:00</div>
+              <div class="stat-label">用时</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 继续面试弹窗容器 -->
+  <div id="resumeContainer"></div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    // ============================================================
+    // 配置
+    // ============================================================
+    const TOTAL_QUESTIONS = 10;
+
+    const aiResponses = [
+      '很好的介绍。我注意到你提到了分布式锁，请问：<br><br><strong>在你的项目中，Redis分布式锁是如何实现的？使用的是什么方案？有什么注意事项？</strong>',
+      '回答得不错。接下来我想问一下：<br><br><strong>MySQL中什么情况下索引会失效？如何避免？请结合实际场景说明。</strong>',
+      '你的理解很到位。<br><br><strong>如果让你设计一个秒杀系统，你会如何保证系统的高可用和数据一致性？</strong>',
+      '非常好的思路。下一个问题：<br><br><strong>请解释一下Spring Boot的自动配置原理，以及如何自定义一个Starter？</strong>',
+      '不错。继续：<br><br><strong>JVM的内存区域是如何划分的？哪些区域是线程私有的？哪些是共享的？</strong>',
+      '回答得很好。<br><br><strong>请谈谈你对微服务架构的理解，以及Spring Cloud中常用的组件有哪些？</strong>',
+      '好的，下一个问题：<br><br><strong>ConcurrentHashMap在JDK 1.7和1.8中的实现有什么区别？它是如何保证线程安全的？</strong>',
+      '很有深度。继续：<br><br><strong>请详细说说MySQL的MVCC机制是如何实现的？它解决了什么问题？</strong>',
+      '不错。<br><br><strong>Redis的持久化方式RDB和AOF有什么区别？实际项目中应该如何选择？</strong>',
+      '很好。最后一个问题：<br><br><strong>请描述一下一次完整的HTTP请求从浏览器到服务器的全过程，涉及哪些网络协议和组件？</strong>'
+    ];
+
+    const answerTemplates = [
+      '我们项目中使用的是Redis的SETNX命令结合Lua脚本来实现分布式锁。具体方案是：通过SET key value NX EX 30设置锁，使用Lua脚本保证原子性解锁。需要注意设置合理的超时时间，防止死锁；还要考虑锁的续期问题，我们使用了Redisson的看门狗机制自动续期。',
+      'MySQL索引失效的常见情况有：1) 使用LIKE左模糊匹配，如%keyword；2) 对索引列使用函数或运算，如WHERE UPPER(name)='TOM'；3) OR条件中有非索引列；4) 类型隐式转换，如字符串列用数字查询。避免方法主要是注意SQL写法，尽量不使用函数和左模糊。',
+      '我会从以下几个方面设计秒杀系统：1) 前端做限流，按钮置灰和验证码；2) Nginx层面做IP限流；3) Redis预减库存，使用Lua脚本保证原子性；4) 异步削峰，使用消息队列处理下单请求；5) 数据库层面乐观锁更新库存。保证高可用通过集群部署、熔断降级和服务隔离来实现。',
+      'Spring Boot的自动配置原理是基于@EnableAutoConfiguration注解，通过SpringFactoriesLoader加载META-INF/spring.factories文件中的配置类。每个配置类通过@Conditional系列注解判断是否生效。自定义Starter需要：1) 创建自动配置类；2) 在spring.factories中注册；3) 提供配置属性类供用户自定义。',
+      'JVM内存区域分为：1) 程序计数器(私有)；2) 虚拟机栈(私有)；3) 本地方法栈(私有)；4) 堆(共享)；5) 方法区(共享，JDK8后元空间实现)。其中堆是GC管理的主要区域，又分为新生代和老年代。',
+      '微服务架构是将单一应用拆分为多个小型服务，每个服务独立部署、独立运行。Spring Cloud常用组件包括：Eureka/Nacos(服务注册发现)、Gateway(网关)、Ribbon/Feign(负载均衡/远程调用)、Sentinel/Hystrix(熔断降级)、Sleuth(链路追踪)、Config/Nacos(配置中心)。',
+      'JDK 1.7的ConcurrentHashMap使用Segment分段锁机制，默认16个Segment，每个Segment继承ReentrantLock。JDK 1.8改用CAS+synchronized，锁的粒度更细，只锁数组的每个桶节点。当链表长度超过8时转为红黑树，查询效率从O(n)提升到O(log n)。',
+      'MVCC(Multi-Version Concurrency Control)通过每行记录的隐藏列实现：DB_TRX_ID(事务ID)、DB_ROLL_PTR(回滚指针)、DB_ROW_ID(行ID)。在REPEATABLE READ级别下，事务启动时创建ReadView，通过可见性算法判断数据版本是否可见。它解决了脏读和不可重复读问题。',
+      'RDB是定时快照方式，生成dump.rdb文件，适合备份和灾难恢复，但可能丢失最后一次快照后的数据。AOF是追加写日志，记录每条写命令，数据更完整但文件更大。实际项目中通常两者结合使用：RDB做冷备，AOF保证数据安全。Redis 4.0后支持混合持久化。',
+      '完整过程：1) 浏览器解析URL，进行DNS解析获取IP；2) 建立TCP连接(三次握手)；3) 如果是HTTPS则进行TLS握手；4) 浏览器发送HTTP请求；5) 服务器处理请求并返回HTTP响应；6) 浏览器解析HTML，构建DOM树；7) 加载CSS、JS等资源；8) 渲染页面。涉及DNS、TCP/IP、HTTP/HTTPS、TLS等协议。'
+    ];
+
+    // ============================================================
+    // 状态
+    // ============================================================
+    const SESSION_KEY = 'currentInterview';
+
+    let state = {
+      messages: [],
+      currentQuestionIndex: 1,
+      responseIndex: 0,
+      seconds: 0,
+      scores: [],
+      questionLabels: [],
+      isProcessing: false,
+      isRecording: false
+    };
+
+    // ============================================================
+    // TTS 语音播报
+    // ============================================================
+    let ttsEnabled = true;
+    let currentSpeakingBtn = null;
+    let currentSpeakingMsgId = null;
+
+    function speakMessage(btn, msgId) {
+      if (!ttsEnabled) return;
+      stopSpeaking();
+
+      // 从DOM获取消息文本
+      const msgEl = document.querySelector('[data-msgid="' + msgId + '"]');
+      if (!msgEl) return;
+      const bubble = msgEl.querySelector('.message-bubble');
+      if (!bubble) return;
+      const text = bubble.textContent.trim();
+
+      if (!window.speechSynthesis) {
+        showToast('您的浏览器不支持语音播报', 'warning');
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 1;
+
+      // 显示朗读状态
+      const ttsStatus = document.getElementById('tts_' + msgId);
+      if (ttsStatus) ttsStatus.classList.add('show');
+
+      // 高亮重播按钮
+      const speakBtn = btn || msgEl.querySelector('.speak-btn');
+      if (speakBtn) {
+        speakBtn.classList.add('speaking');
+        currentSpeakingBtn = speakBtn;
+      }
+      currentSpeakingMsgId = msgId;
+
+      utterance.onend = function() {
+        if (ttsStatus) ttsStatus.classList.remove('show');
+        if (currentSpeakingBtn) currentSpeakingBtn.classList.remove('speaking');
+        currentSpeakingBtn = null;
+        currentSpeakingMsgId = null;
+      };
+
+      utterance.onerror = function() {
+        if (ttsStatus) ttsStatus.classList.remove('show');
+        if (currentSpeakingBtn) currentSpeakingBtn.classList.remove('speaking');
+        currentSpeakingBtn = null;
+        currentSpeakingMsgId = null;
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeaking() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      if (currentSpeakingBtn) {
+        currentSpeakingBtn.classList.remove('speaking');
+        currentSpeakingBtn = null;
+      }
+      if (currentSpeakingMsgId) {
+        var oldStatus = document.getElementById('tts_' + currentSpeakingMsgId);
+        if (oldStatus) oldStatus.classList.remove('show');
+        currentSpeakingMsgId = null;
+      }
+    }
+
+    function toggleTTS() {
+      ttsEnabled = !ttsEnabled;
+      var toggle = document.getElementById('ttsToggle');
+      var icon = document.getElementById('ttsIcon');
+      if (ttsEnabled) {
+        toggle.classList.remove('off');
+        icon.textContent = '🔊';
+        showToast('语音播报已开启', 'success');
+      } else {
+        toggle.classList.add('off');
+        icon.textContent = '🔇';
+        stopSpeaking();
+        showToast('语音播报已关闭', 'info');
+      }
+    }
+
+    // ============================================================
+    // STT 语音输入
+    // ============================================================
+    let speechRecognition = null;
+
+    function initSpeechRecognition() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return null;
+
+      var recog = new SpeechRecognition();
+      recog.lang = 'zh-CN';
+      recog.continuous = true;
+      recog.interimResults = true;
+
+      recog.onresult = function(event) {
+        var input = document.getElementById('userInput');
+        var finalText = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalText += event.results[i][0].transcript;
+          }
+        }
+        if (finalText) {
+          input.value += finalText;
+          autoResize(input);
+        }
+      };
+
+      recog.onend = function() {
+        if (state.isRecording) {
+          // 自动停止了，更新状态
+          state.isRecording = false;
+          var btn = document.getElementById('voiceBtn');
+          var tooltip = document.getElementById('voiceTooltip');
+          var inputWrap = btn.closest('.chat-input');
+          btn.classList.remove('recording');
+          if (inputWrap) inputWrap.classList.remove('recording-active');
+          tooltip.textContent = '🎤 点击开始语音输入';
+          showToast('语音识别完成', 'success');
+        }
+      };
+
+      recog.onerror = function(event) {
+        state.isRecording = false;
+        var btn = document.getElementById('voiceBtn');
+        var tooltip = document.getElementById('voiceTooltip');
+        var inputWrap = btn.closest('.chat-input');
+        btn.classList.remove('recording');
+        if (inputWrap) inputWrap.classList.remove('recording-active');
+        tooltip.textContent = '🎤 点击开始语音输入';
+        if (event.error === 'not-allowed') {
+          showToast('请授权麦克风权限', 'warning');
+        } else if (event.error !== 'aborted') {
+          showToast('语音识别出错，请重试', 'warning');
+        }
+      };
+
+      return recog;
+    }
+
+    // ============================================================
+    // 会话持久化
+    // ============================================================
+    function saveSession() {
+      try {
+        const data = {
+          messages: state.messages,
+          currentQuestionIndex: state.currentQuestionIndex,
+          responseIndex: state.responseIndex,
+          seconds: state.seconds,
+          scores: state.scores,
+          questionLabels: state.questionLabels,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      } catch (e) {
+        // localStorage 满时静默失败
+      }
+    }
+
+    function loadSession() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    // ============================================================
+    // 计时器
+    // ============================================================
+    let timerInterval = null;
+
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        state.seconds++;
+        updateTimerDisplay();
+        autoSaveQuick();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(state.seconds / 60).toString().padStart(2, '0');
+      const secs = (state.seconds % 60).toString().padStart(2, '0');
+      const time = mins + ':' + secs;
+      document.getElementById('timer').textContent = time;
+      document.getElementById('elapsedTime').textContent = time;
+      document.getElementById('statDuration').textContent = time;
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      return m + ':' + s;
+    }
+
+    // 自动保存节流（每5秒保存一次）
+    let lastAutoSave = 0;
+
+    function autoSaveQuick() {
+      const now = Date.now();
+      if (now - lastAutoSave > 5000) {
+        lastAutoSave = now;
+        saveSession();
+      }
+    }
+
+    // ============================================================
+    // 消息管理
+    // ============================================================
+    function addMessage(content, type, score) {
+      const messages = document.getElementById('chatMessages');
+      const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      const avatar = type === 'ai' ? '🤖' : 'M';
+      const msgId = 'msg_' + Date.now();
+
+      // 构建消息时间
+      let timeHtml = '<div class="message-meta"><span class="message-time">' + time + '</span>';
+
+      // 如果是AI消息且分数存在，显示评分
+      if (type === 'ai' && score !== undefined && score !== null) {
+        const scoreClass = score >= 8 ? 'good' : score >= 6 ? 'medium' : 'poor';
+        timeHtml += '<span class="message-score ' + scoreClass + '">' + score + '分</span>';
+      }
+
+      timeHtml += '</div>';
+
+      // 用户消息评分由上一轮AI消息附带
+      if (type === 'user' && score !== undefined && score !== null) {
+        const scoreClass = score >= 8 ? 'good' : score >= 6 ? 'medium' : 'poor';
+        timeHtml = '<div class="message-meta"><span class="message-time">' + time + '</span>';
+        timeHtml += '<span class="message-score ' + scoreClass + '">' + score + '分</span>';
+        timeHtml += '</div>';
+      }
+
+      // AI消息带重播按钮和朗读状态
+      let bubbleExtra = '';
+      let ttsStatusHtml = '';
+      if (type === 'ai') {
+        bubbleExtra = '<span class="speak-btn-wrap"><button class="speak-btn" onclick="speakMessage(this, \'' + msgId + '\')" title="朗读题目">🔊</button></span>';
+        ttsStatusHtml = '<div class="tts-status" id="tts_' + msgId + '"><div class="tts-wave"><span></span><span></span><span></span><span></span></div><span>正在朗读...</span></div>';
+      }
+
+      const html = `
+        <div class="chat-message ${type}" data-msgid="${msgId}">
+          <div class="message-avatar">${avatar}</div>
+          <div class="message-content">
+            <div class="message-bubble">${bubbleExtra}${content}</div>
+            ${ttsStatusHtml}
+            ${timeHtml}
+          </div>
+        </div>
+      `;
+
+      messages.insertAdjacentHTML('beforeend', html);
+      messages.scrollTop = messages.scrollHeight;
+
+      // AI消息自动语音播报
+      if (type === 'ai') {
+        speakMessage(null, msgId);
+      }
+
+      // 保存到状态
+      state.messages.push({ content, type, score, time, msgId });
+      saveSession();
+    }
+
+    // ============================================================
+    // 进度面板更新
+    // ============================================================
+    function updateProgress() {
+      const answered = state.scores.length;
+      const total = TOTAL_QUESTIONS;
+
+      // 题目计数
+      document.getElementById('questionCountLabel').textContent = '题目 ' + state.currentQuestionIndex + '/' + total;
+      document.getElementById('progressText').textContent = answered + '/' + total;
+
+      // 进度条
+      const pct = Math.min((answered / total) * 100, 100);
+      document.getElementById('progressBarFill').style.width = pct + '%';
+
+      // 平均分
+      const avgEl = document.getElementById('avgScoreDisplay');
+      if (answered > 0) {
+        const sum = state.scores.reduce((a, b) => a + b, 0);
+        const avg = (sum / answered).toFixed(1);
+        avgEl.textContent = avg + '分';
+        avgEl.className = 'value score-average';
+        if (avg >= 8) avgEl.classList.add('high');
+        else if (avg >= 6) { /* keep default yellow */ }
+        else avgEl.classList.add('low');
+
+        document.getElementById('statAvgScore').textContent = avg + '分';
+        const statColor = avg >= 8 ? '#67c23a' : avg >= 6 ? '#e6a23c' : '#f56c6c';
+        document.getElementById('statAvgScore').style.color = statColor;
+      } else {
+        avgEl.textContent = '--';
+        avgEl.className = 'value score-average';
+        document.getElementById('statAvgScore').textContent = '--';
+        document.getElementById('statAvgScore').style.color = '#e6a23c';
+      }
+
+      // 统计面板
+      document.getElementById('statAnswered').textContent = answered;
+    }
+
+    function updateSidebarQuestion(index, score) {
+      const items = document.querySelectorAll('.question-list-item');
+      items.forEach(item => {
+        item.classList.toggle('current', parseInt(item.dataset.qindex) === index);
+      });
+
+      if (score !== undefined && items[index]) {
+        const scoreEl = items[index].querySelector('.q-score');
+        const scoreClass = score >= 8 ? 'good' : score >= 6 ? 'medium' : 'poor';
+        scoreEl.textContent = score + '分';
+        scoreEl.className = 'q-score ' + scoreClass;
+      }
+    }
+
+    function addSidebarQuestion(label, index) {
+      const list = document.getElementById('questionList');
+      const item = document.createElement('div');
+      item.className = 'question-list-item' + (index === state.currentQuestionIndex ? ' current' : '');
+      item.dataset.qindex = index;
+      item.onclick = function () {
+        scrollToQuestion(index);
+      };
+      item.innerHTML = `
+        <span class="q-number">${index + 1}</span>
+        <span class="q-text">${label}</span>
+        <span class="q-score pending">--</span>
+      `;
+      list.appendChild(item);
+    }
+
+    function scrollToQuestion(index) {
+      // 找到对应索引的AI消息并滚动到它
+      const messages = document.getElementById('chatMessages');
+      const aiMsgs = messages.querySelectorAll('.chat-message.ai');
+      if (aiMsgs[index]) {
+        aiMsgs[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // ============================================================
+    // 网络状态
+    // ============================================================
+    function updateNetworkStatus() {
+      const badge = document.getElementById('networkStatus');
+      const text = document.getElementById('networkText');
+      const online = navigator.onLine;
+      badge.className = 'header-status-badge ' + (online ? 'online' : 'offline');
+      text.textContent = online ? '在线' : '离线';
+    }
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+    // ============================================================
+    // 语音输入
+    // ============================================================
+    function toggleVoice() {
+      var btn = document.getElementById('voiceBtn');
+      var tooltip = document.getElementById('voiceTooltip');
+      var inputWrap = btn.closest('.chat-input');
+
+      if (state.isRecording) {
+        // 停止录音
+        state.isRecording = false;
+        btn.classList.remove('recording');
+        if (inputWrap) inputWrap.classList.remove('recording-active');
+        tooltip.textContent = '🎤 点击开始语音输入';
+        if (speechRecognition) {
+          try { speechRecognition.stop(); } catch(e) {}
+        }
+        return;
+      }
+
+      // 尝试使用真实语音识别
+      if (!speechRecognition) {
+        speechRecognition = initSpeechRecognition();
+      }
+
+      if (speechRecognition) {
+        // 使用真实 API
+        state.isRecording = true;
+        btn.classList.add('recording');
+        if (inputWrap) inputWrap.classList.add('recording-active');
+        tooltip.textContent = '🔴 录音中，点击停止...';
+        try {
+          speechRecognition.start();
+        } catch(e) {
+          // 可能已经在运行
+          state.isRecording = false;
+          btn.classList.remove('recording');
+          if (inputWrap) inputWrap.classList.remove('recording-active');
+          tooltip.textContent = '🎤 点击开始语音输入';
+        }
+      } else {
+        // 降级：模拟语音输入
+        state.isRecording = true;
+        btn.classList.add('recording');
+        if (inputWrap) inputWrap.classList.add('recording-active');
+        tooltip.textContent = '🔴 录音中，点击停止...';
+        showToast('您的浏览器不支持语音输入，将模拟识别', 'info');
+
+        setTimeout(function() {
+          if (state.isRecording) {
+            state.isRecording = false;
+            btn.classList.remove('recording');
+            if (inputWrap) inputWrap.classList.remove('recording-active');
+            tooltip.textContent = '🎤 点击开始语音输入';
+            var simulatedTexts = [
+              '我认为分布式锁的核心是保证互斥性和安全性，我们使用的是Redis的SET命令配合Lua脚本实现。',
+              '索引失效的情况主要有左模糊查询、对索引列使用函数、OR条件包含非索引列等。',
+              '秒杀系统的核心是限流和削峰，通过Redis预减库存和消息队列异步处理来保证系统稳定性。'
+            ];
+            var text = simulatedTexts[Math.floor(Math.random() * simulatedTexts.length)];
+            var input = document.getElementById('userInput');
+            input.value = text;
+            autoResize(input);
+            showToast('语音识别完成（模拟）', 'success');
+          }
+        }, 2000);
+      }
+    }
+
+    // ============================================================
+    // 自动调整 textarea
+    // ============================================================
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+    }
+
+    // ============================================================
+    // 发送消息
+    // ============================================================
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+
+      if (!message || state.isProcessing) return;
+
+      state.isProcessing = true;
+
+      // 添加用户消息
+      addMessage(message, 'user');
+      input.value = '';
+      input.style.height = 'auto';
+
+      // 显示分析加载状态
+      document.getElementById('analysisLoading').classList.add('show');
+
+      // 模拟AI分析延迟
+      setTimeout(() => {
+        document.getElementById('analysisLoading').classList.remove('show');
+
+        // 显示评分中...
+        showToast('AI面试官正在评分...', 'info', 1000);
+
+        // 再延迟一下模拟评分
+        setTimeout(() => {
+          // 显示打字指示器
+          document.getElementById('typingIndicator').classList.add('show');
+          document.getElementById('sendBtn').disabled = true;
+
+          // 模拟打字速度
+          let typingSpeed = Math.floor(Math.random() * 20 + 30);
+          document.getElementById('typingSpeed').textContent = typingSpeed + ' char/s';
+
+          // 模拟AI回复
+          const aiDelay = 1500 + Math.random() * 1500;
+
+          setTimeout(() => {
+            document.getElementById('typingIndicator').classList.remove('show');
+            document.getElementById('sendBtn').disabled = false;
+            state.isProcessing = false;
+
+            if (state.responseIndex < aiResponses.length) {
+              // 生成评分
+              const score = Math.floor(Math.random() * 3 + 7);
+              state.scores.push(score);
+
+              const responseText = aiResponses[state.responseIndex];
+              addMessage(responseText, 'ai', score);
+
+              // 记录当前问题的标签
+              const shortLabel = responseText.replace(/<br><br>.*$/, '').replace(/<[^>]+>/g, '').replace(/^[^：:]*[：:]\s*/, '').substring(0, 20) + '...';
+              state.questionLabels[state.responseIndex] = shortLabel;
+
+              // 更新侧边栏
+              updateSidebarQuestion(state.responseIndex, score);
+
+              state.responseIndex++;
+              state.currentQuestionIndex = state.responseIndex + 1;
+
+              // 更新进度
+              updateProgress();
+              saveSession();
+
+              // 显示评分
+              showScore(score, state.responseIndex);
+
+              // 检查是否需要添加新的侧边栏项
+              if (state.responseIndex < TOTAL_QUESTIONS) {
+                // 预添加下一个题目占位
+                const list = document.getElementById('questionList');
+                const existingItems = list.querySelectorAll('.question-list-item');
+                if (existingItems.length <= state.responseIndex) {
+                  addSidebarQuestion('问题 ' + (state.responseIndex + 1), state.responseIndex);
+                }
+                updateSidebarQuestion(state.responseIndex, undefined);
+              }
+
+            } else {
+              // 所有问题回答完毕
+              addMessage('好的，面试到此结束。感谢你的参与，稍后会为你生成面试报告。', 'ai', 10);
+              setTimeout(() => {
+                showConfirm('面试已完成，是否查看面试报告？', () => {
+                  clearSession();
+                  window.location.href = 'interview-report.html';
+                });
+              }, 1500);
+            }
+          }, aiDelay);
+        }, 800);
+      }, 1200);
+    }
+
+    // ============================================================
+    // 显示评分
+    // ============================================================
+    function showScore(score, questionNum) {
+      // 现在评分直接嵌入到消息的message-score中，但也显示一个弹出提示
+      showToast('第' + questionNum + '题得分：' + score + '分', score >= 8 ? 'success' : score >= 6 ? 'warning' : 'error');
+    }
+
+    // ============================================================
+    // 结束面试
+    // ============================================================
+    function endInterview() {
+      showConfirm('确定要结束面试吗？当前进度将保存。', () => {
+        showToast('面试已结束，正在生成报告...', 'success');
+        setTimeout(() => {
+          clearSession();
+          window.location.href = 'interview-report.html';
+        }, 1500);
+      });
+    }
+
+    // ============================================================
+    // 侧边栏折叠
+    // ============================================================
+    function toggleSidebar(btn) {
+      const body = btn.closest('.sidebar-panel').querySelector('.sidebar-panel-body');
+      body.classList.toggle('collapsed');
+      btn.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+    }
+
+    // ============================================================
+    // 回车发送
+    // ============================================================
+    document.getElementById('userInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // ============================================================
+    // 初始化 - 检查是否有未完成会话
+    // ============================================================
+    function initInterview() {
+      const saved = loadSession();
+
+      if (saved && saved.messages && saved.messages.length > 2) {
+        showResumeDialog(saved);
+      } else {
+        // 新会话，初始化状态
+        clearSession();
+        initNewSession();
+      }
+    }
+
+    function initNewSession() {
+      state.messages = [];
+      state.currentQuestionIndex = 1;
+      state.responseIndex = 0;
+      state.seconds = 0;
+      state.scores = [];
+      state.questionLabels = ['Redis分布式锁的实现方案'];
+
+      updateTimerDisplay();
+      updateProgress();
+
+      // 初始化侧边栏
+      const list = document.getElementById('questionList');
+      list.innerHTML = '';
+      addSidebarQuestion('Redis分布式锁的实现方案', 0);
+
+      document.getElementById('networkStatus').className = 'header-status-badge ' + (navigator.onLine ? 'online' : 'offline');
+      updateNetworkStatus();
+
+      startTimer();
+    }
+
+    function showResumeDialog(saved) {
+      const container = document.getElementById('resumeContainer');
+      const elapsed = formatTime(saved.seconds);
+      const answered = saved.scores ? saved.scores.length : 0;
+
+      container.innerHTML = `
+        <div class="resume-overlay" id="resumeOverlay">
+          <div class="resume-card">
+            <div class="icon">🔄</div>
+            <h3>检测到未完成的面试</h3>
+            <p>是否继续上次的面试？</p>
+            <div class="resume-detail">
+              已完成 ${answered}/${TOTAL_QUESTIONS} 题 · 用时 ${elapsed}
+            </div>
+            <div class="resume-actions">
+              <button class="btn-continue" onclick="resumeInterview()">继续</button>
+              <button class="btn-restart" onclick="restartInterview()">重新开始</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function resumeInterview() {
+      const saved = loadSession();
+      if (!saved) {
+        initNewSession();
+        return;
+      }
+
+      // 关闭弹窗
+      document.getElementById('resumeOverlay').remove();
+
+      // 恢复状态
+      state.messages = saved.messages || [];
+      state.currentQuestionIndex = saved.currentQuestionIndex || 1;
+      state.responseIndex = saved.responseIndex || 0;
+      state.seconds = saved.seconds || 0;
+      state.scores = saved.scores || [];
+      state.questionLabels = saved.questionLabels || [];
+
+      // 清空聊天区域（移除静态的示例消息）
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML = '';
+
+      // 重建所有消息
+      state.messages.forEach((msg, idx) => {
+        const time = msg.time || new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        const avatar = msg.type === 'ai' ? '🤖' : 'M';
+
+        let metaHtml = '<div class="message-meta"><span class="message-time">' + time + '</span>';
+        if (msg.score !== undefined && msg.score !== null) {
+          const sc = msg.score >= 8 ? 'good' : msg.score >= 6 ? 'medium' : 'poor';
+          metaHtml += '<span class="message-score ' + sc + '">' + msg.score + '分</span>';
+        }
+        metaHtml += '</div>';
+
+        const html = `
+          <div class="chat-message ${msg.type}">
+            <div class="message-avatar">${avatar}</div>
+            <div class="message-content">
+              <div class="message-bubble">${msg.content}</div>
+              ${metaHtml}
+            </div>
+          </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', html);
+      });
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // 初始化侧边栏
+      const list = document.getElementById('questionList');
+      list.innerHTML = '';
+
+      if (state.questionLabels.length === 0) {
+        // 如果没有标签，用responseIndex的数量生成默认标签
+        for (let i = 0; i < Math.max(state.responseIndex, 1); i++) {
+          state.questionLabels.push('问题 ' + (i + 1));
+        }
+      }
+
+      state.questionLabels.forEach((label, idx) => {
+        addSidebarQuestion(label, idx);
+        if (state.scores[idx] !== undefined) {
+          updateSidebarQuestion(idx, state.scores[idx]);
+        }
+      });
+
+      // 如果还有未回答的题目，添加下一个占位
+      if (state.responseIndex < TOTAL_QUESTIONS && state.questionLabels.length <= state.responseIndex) {
+        addSidebarQuestion('问题 ' + (state.responseIndex + 1), state.responseIndex);
+      }
+      updateSidebarQuestion(state.responseIndex, undefined);
+
+      // 更新UI
+      updateTimerDisplay();
+      updateProgress();
+      updateNetworkStatus();
+      startTimer();
+
+      showToast('已恢复面试', 'success');
+    }
+
+    function restartInterview() {
+      document.getElementById('resumeOverlay').remove();
+      clearSession();
+      // 重置为初始的两条示例消息
+      location.reload();
+    }
+
+    // ============================================================
+    // 启动
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // 先隐藏分析加载状态
+      document.getElementById('analysisLoading').classList.remove('show');
+
+      // 初始化网络状态
+      updateNetworkStatus();
+
+      // 检查session
+      initInterview();
+
+      // 如果没有恢复会话且是新会话，startTimer会在initNewSession里被调用
+      // 但如果页面硬编码的消息存在（新加载但session为空），我们需要启动计时器
+      const saved = loadSession();
+      if (!saved) {
+        // initNewSession 已经处理了
+      } else if (saved.messages && saved.messages.length <= 2) {
+        // session数据太少，当作新会话
+        clearSession();
+        initNewSession();
+      }
+
+      // 自动播报欢迎语
+      setTimeout(function() {
+        speakMessage(null, 'msg_init');
+      }, 800);
+    });
+  </script>
+</body>
+</html>
